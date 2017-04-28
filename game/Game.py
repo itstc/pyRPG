@@ -1,5 +1,6 @@
 import pygame
-from map import World
+from map.World import World,Camera
+from mob.player import Player
 
 class Game:
 
@@ -8,17 +9,18 @@ class Game:
     def __init__(self, surface):
         self.surface = surface
         self.running = True
-        self.spriteList = pygame.sprite.Group()
-        self.map = World.World(self.surface,'res/test.tmx')
-        pygame.key.set_repeat(20,20)
+        self.camera = Camera()
+        self.entities = pygame.sprite.Group()
+        self.player = Player(self.surface,[64,128])
+        self.map = World(self.surface,'res/test.tmx')
+        pygame.key.set_repeat(1,1)
 
     def run(self):
         clock = pygame.time.Clock()
-
         while self.running:
+            dt = clock.tick(60)
 
             self.render()
-            clock.tick(60)
             self.handleEvent()
             self.update()
 
@@ -32,19 +34,29 @@ class Game:
                 self.handleKeyEvent(event.key)
 
     def handleKeyEvent(self,key):
+        moveSpeed = 8
         if key == pygame.K_w:
-            self.map.moveCamera(0,-1)
+            self.camera.moveCamera(0,-moveSpeed)
         elif key == pygame.K_a:
-            self.map.moveCamera(-1,0)
+            self.camera.moveCamera(-moveSpeed,0)
         elif key == pygame.K_s:
-            self.map.moveCamera(0,1)
+            self.camera.moveCamera(0,moveSpeed)
         elif key == pygame.K_d:
-            self.map.moveCamera(1,0)
+            self.camera.moveCamera(moveSpeed,0)
 
     def update(self):
         pass
 
     def render(self):
         self.surface.fill(Game.bg_color)
-        self.map.render()
+
+        self.map.render(self.camera)
+        self.player.render(self.camera)
+
         pygame.display.update()
+
+    def getCurrentMap(self):
+        return self.map
+
+    def loadMap(self,file):
+        self.map = World(self.surface,file)

@@ -28,3 +28,6 @@ class Sprite(pg.sprite.Sprite):
 
     def update(self):
         pass
+
+class Assets:
+    pass

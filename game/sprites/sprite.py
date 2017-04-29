@@ -1,7 +1,6 @@
 import pygame as pg
 import os
 
-
 class Spritesheet:
     def __init__(self,path):
         self.image = pg.image.load(os.path.join('res/', path)).convert_alpha()
@@ -15,19 +14,24 @@ class Spritesheet:
         return sheetArray[x:x + size[0],y:y + size[1]].make_surface()
 
 
-class Sprite(pg.sprite.Sprite):
+class MobSprite(pg.sprite.Sprite):
 
-    def __init__(self,surface,size,position):
-        pg.sprite.Sprite.__init__(self)
+    def __init__(self,image,size,position):
+        super().__init__()
 
         self.size = size
         self.position = position
-        self.image = pg.Surface(size)
-        self.image = pg.transform.scale(surface,size)
+        self.image = image
+        self.image = pg.transform.scale(image,size)
         self.rect = pg.Rect(position,size)
 
-    def update(self):
-        pass
+    def update(self,camera):
+        offset = camera.getView()
+        self.rect.topleft = [self.position[0] - offset[0], self.position[1] - offset[1]]
 
-class Assets:
-    pass
+class MobGroup(pg.sprite.Group):
+    def __init__(self):
+        super().__init__()
+
+    def update(self,camera):
+        pg.sprite.Group.update(self,camera)

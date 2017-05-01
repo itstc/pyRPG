@@ -26,8 +26,17 @@ class World:
                 py = y * World.size[1] - offset[1]
                 self.surface.blit(image,(px,py))
 
+<<<<<<< HEAD
     def getData(self):
         return self.mapData
 
     def getWorldSize(self):
         return (self.mapData.width * World.size[0], self.mapData.height * World.size[1])
+=======
+    def getMap(self):
+        return self.mapData
+
+    def getMapSize(self):
+        return (self.mapData.width * World.size[0], self.mapData.height * World.size[1])
+
+>>>>>>> d0a22a98c2fa60cbb45df88b208dc6e8f1fbd90b

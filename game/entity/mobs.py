@@ -22,9 +22,17 @@ class Player(Mob):
     def __init__(self,x,y):
         super().__init__(sprite.Spritesheet('playersheet.png').getSprite([16,24],3,1), (64,96), (x,y))
 
+<<<<<<< HEAD
 
     def getPosition(self):
         return self.position
+=======
+    def getPosition(self):
+        return self.position
+
+    def getSize(self):
+        return self.size
+>>>>>>> d0a22a98c2fa60cbb45df88b208dc6e8f1fbd90b
 
     def move(self,x,y):
         self.position = (self.position[0] + x, self.position[1] + y)

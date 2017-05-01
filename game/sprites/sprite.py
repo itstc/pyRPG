@@ -33,6 +33,13 @@ class MobSprite(pg.sprite.Sprite):
         self.image = pg.transform.scale(image,size)
         self.rect = pg.Rect(position,size)
 
+<<<<<<< HEAD
+=======
+    def update(self,camera):
+        offset = camera.getView()
+        self.rect.center = [self.position[0] - offset[0], self.position[1] - offset[1]]
+
+>>>>>>> d0a22a98c2fa60cbb45df88b208dc6e8f1fbd90b
 class MobGroup(pg.sprite.Group):
     def __init__(self):
         super().__init__()

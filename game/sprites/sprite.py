@@ -27,7 +27,7 @@ class MobSprite(pg.sprite.Sprite):
 
     def update(self,camera):
         offset = camera.getView()
-        self.rect.topleft = [self.position[0] - offset[0], self.position[1] - offset[1]]
+        self.rect.center = [self.position[0] - offset[0], self.position[1] - offset[1]]
 
 class MobGroup(pg.sprite.Group):
     def __init__(self):

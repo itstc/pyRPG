@@ -11,11 +11,12 @@ class Game:
 
         self.surface = surface
         self.running = True
+        self.player = mobs.Player(512,512)
         self.entities = sprite.MobGroup()
-        self.entities.add(mobs.Player(128,256),mobs.Goblin(32,32),mobs.Skeleton(512,128))
+        self.entities.add(self.player,mobs.Goblin(32,32),mobs.Skeleton(512,128))
         self.map = World(self.surface,'res/test.tmx')
 
-        self.camera = Camera()
+        self.camera = Camera(self.map, self.player)
 
         pygame.key.set_repeat(1,1)
 
@@ -24,7 +25,7 @@ class Game:
         while self.running:
             dt = clock.tick(60)
 
-            pygame.display.set_caption('Game state: ' + str(clock.get_fps()//1))
+            pygame.display.set_caption('%s %i fps' % ('pyLota Alpha Build:', clock.get_fps()//1))
 
             self.render()
             self.handleEvent()
@@ -42,13 +43,15 @@ class Game:
     def handleKeyEvent(self,key):
         moveSpeed = 8
         if key == pygame.K_w:
-            self.camera.moveCamera(0,-moveSpeed)
+            self.player.move(0, -moveSpeed)
         elif key == pygame.K_a:
-            self.camera.moveCamera(-moveSpeed,0)
+            self.player.move(-moveSpeed,0)
         elif key == pygame.K_s:
-            self.camera.moveCamera(0,moveSpeed)
+            self.player.move(0, moveSpeed)
         elif key == pygame.K_d:
-            self.camera.moveCamera(moveSpeed,0)
+            self.player.move(moveSpeed,0)
+
+        self.camera.moveCamera()
 
     def update(self):
         self.entities.update(self.camera)
@@ -65,13 +68,19 @@ class Game:
         return self.map
 
     def loadMap(self,file):
-        self.map = world.World(self.surface,file)
+        self.map = World(self.surface,file)
 
 
 class Camera:
 
-    def __init__(self, position = (0,0)):
-        self.offset = position
+    def __init__(self, world, player):
+        self.player = player
+        self.currentWorld = world
+        self.worldSize = world.getMapSize()
+        self.windowSize = [900,600]
+
+        spawnPos = player.getPosition()
+        self.offset = (spawnPos[0] - self.windowSize[0] // 2,spawnPos[1] - self.windowSize[1] // 2)
 
     def isVisible(self,position):
         """
@@ -85,7 +94,15 @@ class Camera:
         # returns the camera position
         return (int(self.offset[0]), int(self.offset[1]))
 
-    def moveCamera(self,x=0,y=0):
+    def moveCamera(self):
         # moves the camera by x and y
         # -x,y are integers
-        self.offset = [self.offset[0] + x, self.offset[1] + y]
+        pPos = self.player.getPosition()
+        self.offset = [pPos[0]  - self.windowSize[0] // 2, pPos[1]  - self.windowSize[1] // 2]
+
+        # World Bounds
+        for coord in range(2):
+            if self.offset[coord] < 0:
+                self.offset[coord] = 0
+            elif self.offset[coord] > self.worldSize[coord] - self.windowSize[coord]:
+                self.offset[coord] = self.worldSize[coord] - self.windowSize[coord]

@@ -28,3 +28,7 @@ class World:
 
     def getMap(self):
         return self.mapData
+
+    def getMapSize(self):
+        return (self.mapData.width * World.size[0], self.mapData.height * World.size[1])
+

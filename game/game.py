@@ -12,10 +12,11 @@ class Game:
         self.surface = surface
         self.running = True
         self.entities = sprite.MobGroup()
-        self.entities.add(mobs.Player(128,256),mobs.Goblin(32,32),mobs.Skeleton(512,128))
+        self.player = mobs.Player(256,512)
+        self.entities.add(self.player,mobs.Goblin(32,32),mobs.Skeleton(512,128))
         self.map = World(self.surface,'res/test.tmx')
 
-        self.camera = Camera()
+        self.camera = Camera(surface.get_size(), self.map.getWorldSize(), self.player)
 
         pygame.key.set_repeat(1,1)
 
@@ -42,36 +43,50 @@ class Game:
     def handleKeyEvent(self,key):
         moveSpeed = 8
         if key == pygame.K_w:
-            self.camera.moveCamera(0,-moveSpeed)
+            self.player.move(0,-moveSpeed)
         elif key == pygame.K_a:
-            self.camera.moveCamera(-moveSpeed,0)
+            self.player.move(-moveSpeed,0)
         elif key == pygame.K_s:
-            self.camera.moveCamera(0,moveSpeed)
+            self.player.move(0,moveSpeed)
         elif key == pygame.K_d:
-            self.camera.moveCamera(moveSpeed,0)
+            self.player.move(moveSpeed,0)
+
+        self.camera.moveCamera()
 
     def update(self):
-        self.entities.update(self.camera)
+        pass
 
     def render(self):
+        # Clear Screen
         self.surface.fill(Game.bg_color)
 
+        # Draw components here
         self.map.render(self.camera)
-        self.entities.draw(self.surface)
+        self.entities.draw(self.surface,self.camera.getView())
 
         pygame.display.update()
 
     def getCurrentMap(self):
         return self.map
 
-    def loadMap(self,file):
-        self.map = world.World(self.surface,file)
+    def loadNewMap(self,file):
+        self.map = World(self.surface,file)
 
 
 class Camera:
 
-    def __init__(self, position = (0,0)):
-        self.offset = position
+    def __init__(self, screenSize, worldSize, target):
+        '''
+        :param screenSize: tuple
+        :param worldSize: tuple
+        :param target: Game object for camera to follow
+        '''
+        self.windowSize = screenSize
+        self.world = worldSize
+        self.target = target
+
+        self.offset = []
+        self.moveCamera()
 
     def isVisible(self,position):
         """
@@ -85,7 +100,15 @@ class Camera:
         # returns the camera position
         return (int(self.offset[0]), int(self.offset[1]))
 
-    def moveCamera(self,x=0,y=0):
+    def moveCamera(self):
         # moves the camera by x and y
         # -x,y are integers
-        self.offset = [self.offset[0] + x, self.offset[1] + y]
+        targetPos = self.target.getPosition()
+        self.offset = [targetPos[0] - self.windowSize[0] // 2, targetPos[1] - self.windowSize[1] // 2]
+
+        # Bounds of the World
+        for coord in range(2):
+            if self.offset[coord] < 0:
+                self.offset[coord] = 0
+            elif self.offset[coord] > self.world[coord] - self.windowSize[coord]:
+                self.offset[coord] = self.world[coord] - self.windowSize[coord]

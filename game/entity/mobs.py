@@ -20,10 +20,11 @@ class Skeleton(Mob):
 class Player(Mob):
     # TODO: Create a player and place it on the map
     def __init__(self,x,y):
-        super().__init__(sprite.Spritesheet('playersheet.png').getSprite([16,24],0,0), (64,96), (x,y))
+        super().__init__(sprite.Spritesheet('playersheet.png').getSprite([16,24],3,1), (64,96), (x,y))
 
-        def getStats(self):
-            return self.stats
 
-        def getPosition(self):
-            return self.rect.topleft
+    def getPosition(self):
+        return self.position
+
+    def move(self,x,y):
+        self.position = (self.position[0] + x, self.position[1] + y)

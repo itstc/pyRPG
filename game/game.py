@@ -1,4 +1,4 @@
-import pygame
+import pygame as pg
 
 from world import World
 from entity import mobs
@@ -6,55 +6,55 @@ from sprites import sprite
 
 
 class Game:
-    bg_color = pygame.Color('black')
+    bg_color = pg.Color('black')
     def __init__(self, surface):
 
         self.surface = surface
         self.running = True
-        self.entities = sprite.MobGroup()
-        self.player = mobs.Player(256,512)
-        self.entities.add(self.player,mobs.Goblin(32,32),mobs.Skeleton(512,128))
         self.map = World(self.surface,'res/test.tmx')
+        self.entities = sprite.MobGroup()
+        self.player = mobs.Player(self.map,256,512)
+        self.entities.add(self.player,mobs.Goblin(256,128),mobs.Skeleton(512,128))
 
         self.camera = Camera(surface.get_size(), self.map.getWorldSize(), self.player)
 
-        pygame.key.set_repeat(1,1)
+        pg.key.set_repeat(1,1)
 
     def run(self):
-        clock = pygame.time.Clock()
+        clock = pg.time.Clock()
         while self.running:
             dt = clock.tick(60)
 
-            pygame.display.set_caption('%s %i fps' % ('pyLota Alpha Build:', clock.get_fps()//1))
+            pg.display.set_caption('%s %i fps' % ('pyLota Alpha Build:', clock.get_fps()//1))
 
             self.render()
             self.handleEvent()
             self.update()
 
     def handleEvent(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
                 self.running = False
-                pygame.quit()
+                pg.quit()
                 exit()
-            elif event.type == pygame.KEYDOWN:
+            elif event.type == pg.KEYDOWN:
                 self.handleKeyEvent(event.key)
 
     def handleKeyEvent(self,key):
         moveSpeed = 8
-        if key == pygame.K_w:
+        if key == pg.K_w:
             self.player.move(0,-moveSpeed)
-        elif key == pygame.K_a:
+        elif key == pg.K_a:
             self.player.move(-moveSpeed,0)
-        elif key == pygame.K_s:
+        elif key == pg.K_s:
             self.player.move(0,moveSpeed)
-        elif key == pygame.K_d:
+        elif key == pg.K_d:
             self.player.move(moveSpeed,0)
 
         self.camera.moveCamera()
 
     def update(self):
-        pass
+        self.entities.update(self.map)
 
     def render(self):
         # Clear Screen
@@ -62,9 +62,12 @@ class Game:
 
         # Draw components here
         self.map.render(self.camera)
-        self.entities.draw(self.surface,self.camera.getView())
+        self.entities.draw(self.surface,self.camera)
 
-        pygame.display.update()
+        ppos = self.player.getPosition()
+        self.camera.drawRectangle(self.surface,pg.Color('green'),pg.Rect(ppos[0] - 64, ppos[1] - 64, 128, 128))
+
+        pg.display.update()
 
     def getCurrentMap(self):
         return self.map
@@ -111,3 +114,7 @@ class Camera:
                 self.offset[coord] = 0
             elif self.offset[coord] > self.world[coord] - self.windowSize[coord]:
                 self.offset[coord] = self.world[coord] - self.windowSize[coord]
+
+    def drawRectangle(self,surface,color,rect):
+        orect = pg.Rect((rect.topleft[0] - self.offset[0], rect.topleft[1] - self.offset[1]),rect.size)
+        pg.draw.rect(surface,color,orect,1)

@@ -13,8 +13,8 @@ class Game:
         self.running = True
         self.map = World(self.surface,'res/test.tmx')
         self.entities = sprite.MobGroup()
-        self.player = mobs.Player(self.map,256,512)
-        self.entities.add(self.player,mobs.Goblin(256,128),mobs.Skeleton(512,128))
+        self.player = mobs.Player(256,512)
+        self.entities.add(mobs.Goblin(256,128),mobs.Skeleton(512,128),self.player)
 
         self.camera = Camera(surface.get_size(), self.map.getWorldSize(), self.player)
 
@@ -55,6 +55,9 @@ class Game:
 
     def update(self):
         self.entities.update(self.map)
+
+        # Testing Mob Movement
+        self.entities.sprites()[0].move(-1,0)
 
     def render(self):
         # Clear Screen

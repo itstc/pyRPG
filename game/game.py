@@ -10,7 +10,9 @@ class Game:
     def __init__(self, surface):
 
         self.surface = surface
+        self.windowSize = surface.get_size()
         self.running = True
+        self.hud = HUD(surface)
         self.map = World(self.surface,'res/test.tmx')
         self.entities = sprite.MobGroup()
         self.player = mobs.Player(256,512)
@@ -70,6 +72,16 @@ class Game:
         ppos = self.player.getPosition()
         self.camera.drawRectangle(self.surface,pg.Color('green'),pg.Rect(ppos[0] - 64, ppos[1] - 64, 128, 128))
 
+        # Draw HUD Here
+
+        self.hud.drawHUDImage([0, 0], [self.windowSize[0] - 64,self.windowSize[1] - 192])
+        self.hud.drawHUDImage([1, 0], [self.windowSize[0] - 64,self.windowSize[1] - 128])
+        self.hud.drawHUDImage([2, 0], [self.windowSize[0] - 64,self.windowSize[1] - 64])
+
+        self.hud.drawString([self.windowSize[0] - 64, self.windowSize[1] - 192], '12')
+        self.hud.drawString([self.windowSize[0] - 64, self.windowSize[1] - 128], '10')
+        self.hud.drawString([self.windowSize[0] - 64, self.windowSize[1] - 64], '10')
+
         pg.display.update()
 
     def getCurrentMap(self):
@@ -121,3 +133,23 @@ class Camera:
     def drawRectangle(self,surface,color,rect):
         orect = pg.Rect((rect.topleft[0] - self.offset[0], rect.topleft[1] - self.offset[1]),rect.size)
         pg.draw.rect(surface,color,orect,1)
+
+class HUD():
+    sprite_size = [16,16]
+    def __init__(self,surface):
+        self.surface = surface
+        self.spritesheet = sprite.Spritesheet('hud.png')
+        self.font = pg.font.Font(pg.font.get_default_font(),16)
+
+    def drawString(self, position, string, color = pg.Color('white')):
+        text = self.font.render(string,1,color)
+        self.surface.blit(text,position)
+
+    def drawImage(self,image,position):
+        self.surface.blit(image,position)
+
+    def drawHUDImage(self,imagePosition,position,scale = [64,64]):
+        # Draws an image from the hud spritesheet
+        image = pg.transform.scale(self.spritesheet.getSprite(HUD.sprite_size,imagePosition[0],imagePosition[1]),scale)
+        pg.draw.rect(self.surface,pg.Color('black'),self.surface.blit(image,position),1)
+

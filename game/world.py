@@ -27,6 +27,7 @@ class World:
                 py = y * World.size[1] - offset[1]
                 self.surface.blit(image,(px,py))
 
+
     def getCollidableTiles(self, rect):
         collidables = []
         start = rect.topleft

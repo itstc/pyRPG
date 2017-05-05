@@ -37,16 +37,6 @@ class MobSprite(pg.sprite.Sprite):
         self.cooldown = 0
         self.direction = 0 # 0:top, 1:left, 2:down, 3:right
 
-    def update(self,dt):
-        # Update collision box position
-        self.rect.center = [self.position[0],self.position[1]]
-
-        if self.attacking:
-            self.cooldown += dt
-            if self.cooldown // 500 > 0:
-                self.attacking = False
-                self.cooldown = 0
-
     def getAttackRange(self,direction):
         tlPos = self.rect.topleft
         range = {
@@ -95,6 +85,8 @@ class MobGroup(pg.sprite.Group):
             proximity = pg.Rect(spr.position[0] - 64, spr.position[1] - 64, 128, 128)
             spr.fov = world.getCollidableTiles(proximity) + self.getProximityObjects(spr,proximity)
             spr.update(dt)
+
+        self.remove([spr for spr in self.sprites() if spr.stats.hp <= 0])
 
     def draw(self,surface,camera):
         '''

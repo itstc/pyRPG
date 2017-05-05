@@ -18,7 +18,7 @@ class Game:
         self.map = World(self.surface,'res/test.tmx')
         self.entities = sprite.MobGroup()
         self.player = mobs.Player(256,512)
-        self.entities.add(mobs.Goblin(256,128),mobs.Skeleton(512,128),self.player)
+        self.entities.add(mobs.Goblin(256,128),mobs.Skeleton(512,128),mobs.Skeleton(400,128),self.player)
 
         self.camera = Camera(surface.get_size(), self.map.getWorldSize(), self.player)
 
@@ -80,9 +80,6 @@ class Game:
 
     def update(self,dt):
         self.entities.update(self.map,dt)
-
-        # Testing Mob Movement
-        self.entities.sprites()[0].move(-1,0)
 
     def render(self):
         # Clear Screen
@@ -169,6 +166,7 @@ class HUD():
         self.surface.blit(text,position)
 
     def drawImage(self,image,position):
+        # Prints a surface on screen
         self.surface.blit(image,position)
 
     def drawHUDImage(self,imagePosition,position,scale = [64,64]):

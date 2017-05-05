@@ -31,3 +31,9 @@ class Player(Mob):
     def move(self,x,y):
         if not self.isColliding(x,y):
             self.position = (self.position[0] + x, self.position[1] + y)
+
+    def attack(self):
+        self.attacking = True
+        for obj in self.fov:
+            if self.getAttackRange(self.direction).colliderect(obj) and isinstance(obj,Mob):
+                print('Attacked Mob:', obj.name)

@@ -33,7 +33,7 @@ class Game:
 
             self.render()
             self.handleEvent()
-            self.update()
+            self.update(dt)
 
     def handleEvent(self):
         for event in pg.event.get():
@@ -47,16 +47,18 @@ class Game:
                 self.handleKeyEvent(event.key)
 
     def handleMouseEvent(self,pos):
-        direction = self.getMouseDirection(pos)
-        print(direction)
+        self.player.direction = self.getMouseDirection(pos)
+        if not self.player.attacking:
+            self.player.attack()
 
     def getMouseDirection(self,pos):
         playerPos = self.camera.getOffsetPosition(self.player.rect)
         polygons = {
-            'TOP': Polygon([(0,0), playerPos,(self.windowSize[0],0)]),
-            'LEFT': Polygon([(0,0), playerPos, (0, self.windowSize[1])]),
-            'DOWN': Polygon([(0, self.windowSize[1]), playerPos, self.windowSize]),
-            'RIGHT': Polygon([(self.windowSize[0],0), playerPos, self.windowSize])
+            # 0:top, 1:left, 2:down, 3:right
+            0: Polygon([(0,0), playerPos,(self.windowSize[0],0)]),
+            1: Polygon([(0,0), playerPos, (0, self.windowSize[1])]),
+            2: Polygon([(0, self.windowSize[1]), playerPos, self.windowSize]),
+            3: Polygon([(self.windowSize[0],0), playerPos, self.windowSize])
         }
 
         for key in polygons.keys():
@@ -76,8 +78,8 @@ class Game:
 
         self.camera.moveCamera()
 
-    def update(self):
-        self.entities.update(self.map)
+    def update(self,dt):
+        self.entities.update(self.map,dt)
 
         # Testing Mob Movement
         self.entities.sprites()[0].move(-1,0)

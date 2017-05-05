@@ -31,15 +31,36 @@ class MobSprite(pg.sprite.Sprite):
         self.position = pos
         self.image = image
         self.image = pg.transform.scale(image,size)
-        self.mask = pg.mask.from_surface(self.image)
         self.rect = pg.Rect(pos,[size[0]//2,size[1]])
         self.fov = []
+        self.attacking = False
+        self.cooldown = 0
+        self.direction = 0 # 0:top, 1:left, 2:down, 3:right
 
-    def update(self):
+    def update(self,dt):
         # Update collision box position
         self.rect.center = [self.position[0],self.position[1]]
 
+        if self.attacking:
+            self.cooldown += dt
+            if self.cooldown // 500 > 0:
+                self.attacking = False
+                self.cooldown = 0
+
+    def getAttackRange(self,direction):
+        tlPos = self.rect.topleft
+        range = {
+            0: pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1] - self.size[1] // 4, self.size[0] // 2 * 3,
+                           self.size[1] // 4),
+            1: pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1], self.size[0] // 2, self.size[1]),
+            2: pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1] + self.size[1], self.size[0] // 2 * 3,
+                            self.size[1] // 4),
+            3: pg.Rect(tlPos[0] + self.size[0] // 2, tlPos[1], self.size[0] // 2, self.size[1])
+        }
+        return range[direction]
+
     def getLegBox(self):
+        # Returns a pygame.Rect object of the legs of sprite
         legBox = pg.Rect(self.position[0]-self.size[0]//4, self.position[1],self.size[0]//2, self.size[1]//2)
         return legBox
 
@@ -49,7 +70,7 @@ class MobSprite(pg.sprite.Sprite):
         offset.center = [offset.center[0] + x, offset.center[1] + y]
         collide = False
         for i in self.fov:
-            if offset.colliderect(i):
+            if offset.colliderect(i.rect):
                 collide = True
         return collide
 
@@ -66,14 +87,14 @@ class MobGroup(pg.sprite.Group):
     def getProximityObjects(self,target,proximity):
         # Returns a list of proximity objects EXCEPT the target object
         sprites = self.sprites()
-        return [spr.rect for spr in sprites if proximity.colliderect(spr.rect) and spr != target]
+        return [spr for spr in sprites if proximity.colliderect(spr.rect) and spr != target]
 
-    def update(self,world):
+    def update(self,world,dt):
         # Adds objects into fov if they are collidables
         for spr in self.sprites():
             proximity = pg.Rect(spr.position[0] - 64, spr.position[1] - 64, 128, 128)
             spr.fov = world.getCollidableTiles(proximity) + self.getProximityObjects(spr,proximity)
-            spr.update()
+            spr.update(dt)
 
     def draw(self,surface,camera):
         '''
@@ -96,7 +117,12 @@ class MobGroup(pg.sprite.Group):
             # Draws sprite
             self.spritedict[spr] = surface_blit(spr.image, drawRect)
 
+            if spr.attacking:
+                camera.drawRectangle(surface, pg.Color('red'), spr.getAttackRange(spr.direction))
+
+
             # Draws collision box
             camera.drawRectangle(surface,pg.Color('cyan'),spr.rect)
             camera.drawRectangle(surface,pg.Color('purple'), spr.getLegBox())
+
         self.lostsprites = []

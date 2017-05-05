@@ -3,10 +3,12 @@ import pygame as pg
 from world import World
 from entity import mobs
 from sprites import sprite
+from util import Polygon
 
 
 class Game:
-    bg_color = pg.Color('black')
+    bg = pg.Color('black')
+    fg = pg.Color('white')
     def __init__(self, surface):
 
         self.surface = surface
@@ -39,8 +41,27 @@ class Game:
                 self.running = False
                 pg.quit()
                 exit()
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                self.handleMouseEvent(event.pos)
             elif event.type == pg.KEYDOWN:
                 self.handleKeyEvent(event.key)
+
+    def handleMouseEvent(self,pos):
+        direction = self.getMouseDirection(pos)
+        print(direction)
+
+    def getMouseDirection(self,pos):
+        playerPos = self.camera.getOffsetPosition(self.player.rect)
+        polygons = {
+            'TOP': Polygon([(0,0), playerPos,(self.windowSize[0],0)]),
+            'LEFT': Polygon([(0,0), playerPos, (0, self.windowSize[1])]),
+            'DOWN': Polygon([(0, self.windowSize[1]), playerPos, self.windowSize]),
+            'RIGHT': Polygon([(self.windowSize[0],0), playerPos, self.windowSize])
+        }
+
+        for key in polygons.keys():
+            if polygons[key].collide(pos):
+                return key
 
     def handleKeyEvent(self,key):
         moveSpeed = 8
@@ -63,17 +84,13 @@ class Game:
 
     def render(self):
         # Clear Screen
-        self.surface.fill(Game.bg_color)
+        self.surface.fill(Game.bg)
 
         # Draw components here
         self.map.render(self.camera)
         self.entities.draw(self.surface,self.camera)
 
-        ppos = self.player.getPosition()
-        self.camera.drawRectangle(self.surface,pg.Color('green'),pg.Rect(ppos[0] - 64, ppos[1] - 64, 128, 128))
-
         # Draw HUD Here
-
         self.hud.drawHUDImage([0, 0], [self.windowSize[0] - 64,self.windowSize[1] - 192])
         self.hud.drawHUDImage([1, 0], [self.windowSize[0] - 64,self.windowSize[1] - 128])
         self.hud.drawHUDImage([2, 0], [self.windowSize[0] - 64,self.windowSize[1] - 64])
@@ -112,6 +129,10 @@ class Camera:
         :return: bool
         """
         return (position[0] - self.offset[0] >= 0) and (position[1] - self.offset[1] >= 0)
+
+    def getOffsetPosition(self,rect):
+        return (rect.center[0] - self.offset[0], rect.center[1] - self.offset[1])
+
 
     def getView(self):
         # returns the camera position

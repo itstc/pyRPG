@@ -24,25 +24,28 @@ class Spritesheet:
 
 class MobSprite(pg.sprite.Sprite):
 
-    def __init__(self,image,size,position):
+    def __init__(self,image,size,pos):
         super().__init__()
 
         self.size = size
-        self.position = position
+        self.position = pos
         self.image = image
         self.image = pg.transform.scale(image,size)
         self.mask = pg.mask.from_surface(self.image)
-        self.rect = pg.Rect(position,size)
+        self.rect = pg.Rect(pos,[size[0]//2,size[1]])
         self.fov = []
-        self.collision_box = pg.Rect(self.position[0]-self.size[0]//4,self.position[1]+self.size[1]//4, self.size[0]//2, self.size[1]//2)
 
     def update(self):
         # Update collision box position
-        self.collision_box.center = [self.position[0],self.position[1] + self.size[1]//4]
+        self.rect.center = [self.position[0],self.position[1]]
+
+    def getLegBox(self):
+        legBox = pg.Rect(self.position[0]-self.size[0]//4, self.position[1],self.size[0]//2, self.size[1]//2)
+        return legBox
 
     def isColliding(self, x, y):
         # Takes offset x,y and sees if sprite is colliding with any objects in fov
-        offset = self.collision_box
+        offset = self.getLegBox()
         offset.center = [offset.center[0] + x, offset.center[1] + y]
         collide = False
         for i in self.fov:
@@ -63,7 +66,7 @@ class MobGroup(pg.sprite.Group):
     def getProximityObjects(self,target,proximity):
         # Returns a list of proximity objects EXCEPT the target object
         sprites = self.sprites()
-        return [i.collision_box for i in sprites if i.collision_box.colliderect(proximity) and i != target]
+        return [spr.rect for spr in sprites if proximity.colliderect(spr.rect) and spr != target]
 
     def update(self,world):
         # Adds objects into fov if they are collidables
@@ -88,11 +91,12 @@ class MobGroup(pg.sprite.Group):
         surface_blit = surface.blit
         for spr in sprites:
             # Offset the player position to be based on camera
-            spr.rect.center = [spr.position[0] - offset[0], spr.position[1] - offset[1]]
+            drawRect = (spr.position[0] - spr.size[0]//2 - offset[0], spr.position[1] - spr.size[1]//2 - offset[1])
 
             # Draws sprite
-            self.spritedict[spr] = surface_blit(spr.image, spr.rect)
+            self.spritedict[spr] = surface_blit(spr.image, drawRect)
 
             # Draws collision box
-            camera.drawRectangle(surface,pg.Color('red'),spr.collision_box)
+            camera.drawRectangle(surface,pg.Color('cyan'),spr.rect)
+            camera.drawRectangle(surface,pg.Color('purple'), spr.getLegBox())
         self.lostsprites = []

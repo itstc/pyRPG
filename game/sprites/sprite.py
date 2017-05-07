@@ -40,6 +40,9 @@ class AnimatedSprite:
         self.time = 0
         self.frame = 0
 
+    def currentFrame(self):
+        return self.images[self.frame]
+
 
 
 

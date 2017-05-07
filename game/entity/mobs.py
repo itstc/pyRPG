@@ -46,17 +46,27 @@ class Player(Mob):
     def __init__(self,x,y):
         sheet = sprite.Spritesheet('playersheet.png')
         super().__init__(sheet.getSprite([16,24],3,1), (64,96), (x,y))
+        self.isWalking = False
         self.states = {
             0:sprite.AnimatedSprite(sheet, [(3, 0), (4, 0), (5, 0)], [16, 24], self.size),
             1:sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1)], [16, 24], self.size),
             2:sprite.AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0)], [16, 24], self.size),
-            3:sprite.AnimatedSprite(sheet, [(3, 1), (4, 1), (5, 1)], [16, 24], self.size)
+            3:sprite.AnimatedSprite(sheet, [(3, 1), (4, 1), (5, 1)], [16, 24], self.size),
+            4:sprite.AnimatedSprite(sheet, [(6, 0), (7, 0)], [16, 24], self.size),
+            5:sprite.AnimatedSprite(sheet, [(6, 1), (7, 1)], [16, 24], self.size),
+            6:sprite.AnimatedSprite(sheet, [(8, 0), (9, 0)], [16, 24], self.size),
+            7:sprite.AnimatedSprite(sheet, [(8, 1), (9, 1)], [16, 24], self.size)
                        }
         self.stats = Mob.Stats(100,5)
 
     def update(self,dt):
         super().update(dt)
-        self.image = self.states[self.direction].update(dt)
+        if self.attacking:
+            self.image = self.states[self.direction + 4].update(dt)
+        elif self.isWalking:
+            self.image = self.states[self.direction].update(dt)
+        else:
+            self.image = self.states[self.direction].currentFrame()
 
     def getPosition(self):
         return self.position

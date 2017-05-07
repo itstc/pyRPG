@@ -45,6 +45,8 @@ class Game:
                 self.handleMouseEvent(event.pos)
             elif event.type == pg.KEYDOWN:
                 self.handleKeyEvent(event.key)
+            elif event.type == pg.KEYUP:
+                self.player.isWalking = False
 
     def handleMouseEvent(self,pos):
         self.player.direction = self.getMouseDirection(pos)
@@ -66,6 +68,7 @@ class Game:
                 return key
 
     def handleKeyEvent(self,key):
+        self.player.isWalking = True
         moveSpeed = 4
         if key == pg.K_w:
             self.player.direction = 0

@@ -66,14 +66,18 @@ class Game:
                 return key
 
     def handleKeyEvent(self,key):
-        moveSpeed = 8
+        moveSpeed = 4
         if key == pg.K_w:
+            self.player.direction = 0
             self.player.move(0,-moveSpeed)
         elif key == pg.K_a:
+            self.player.direction = 1
             self.player.move(-moveSpeed,0)
         elif key == pg.K_s:
+            self.player.direction = 2
             self.player.move(0,moveSpeed)
         elif key == pg.K_d:
+            self.player.direction = 3
             self.player.move(moveSpeed,0)
 
         self.camera.moveCamera()

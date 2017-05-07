@@ -21,6 +21,27 @@ class Spritesheet:
         sheetArray = pg.PixelArray(self.image)
         return sheetArray[x:x + size[0],y:y + size[1]].make_surface()
 
+class AnimatedSprite:
+    def __init__(self,sheet,sequence,size,scale):
+        self.images = []
+        self.time = 0
+        self.frame = 0
+        for pos in sequence:
+            self.images.append(pg.transform.scale(sheet.getSprite(size,pos[0],pos[1]),scale))
+
+    def update(self,dt):
+        self.time += dt
+        if self.time / 300 >= 1:
+            self.time = 0
+            self.frame = (self.frame + 1) % len(self.images)
+        return self.images[self.frame]
+
+    def reset(self):
+        self.time = 0
+        self.frame = 0
+
+
+
 
 class MobSprite(pg.sprite.Sprite):
 

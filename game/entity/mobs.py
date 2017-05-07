@@ -44,8 +44,19 @@ class Skeleton(Mob):
 class Player(Mob):
     # TODO: Create a player and place it on the map
     def __init__(self,x,y):
-        super().__init__(sprite.Spritesheet('playersheet.png').getSprite([16,24],3,1), (64,96), (x,y))
+        sheet = sprite.Spritesheet('playersheet.png')
+        super().__init__(sheet.getSprite([16,24],3,1), (64,96), (x,y))
+        self.states = {
+            0:sprite.AnimatedSprite(sheet, [(3, 0), (4, 0), (5, 0)], [16, 24], self.size),
+            1:sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1)], [16, 24], self.size),
+            2:sprite.AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0)], [16, 24], self.size),
+            3:sprite.AnimatedSprite(sheet, [(3, 1), (4, 1), (5, 1)], [16, 24], self.size)
+                       }
         self.stats = Mob.Stats(100,5)
+
+    def update(self,dt):
+        super().update(dt)
+        self.image = self.states[self.direction].update(dt)
 
     def getPosition(self):
         return self.position

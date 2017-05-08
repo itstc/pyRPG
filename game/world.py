@@ -49,7 +49,7 @@ class World:
         return (self.mapData.width * World.size[0], self.mapData.height * World.size[1])
 
 class WorldObject:
-
+    collidable = True
     def __init__(self,rect,property):
         self.rect = rect
         self.property = property

@@ -22,8 +22,9 @@ class Spritesheet:
         return sheetArray[x:x + size[0],y:y + size[1]].make_surface()
 
 class AnimatedSprite:
-    def __init__(self,sheet,sequence,size,scale):
+    def __init__(self,sheet,sequence,size,scale,rate):
         self.images = []
+        self.rate = rate
         self.time = 0
         self.frame = 0
         for pos in sequence:
@@ -31,7 +32,7 @@ class AnimatedSprite:
 
     def update(self,dt):
         self.time += dt
-        if self.time / 300 >= 1:
+        if self.time / self.rate >= 1:
             self.time = 0
             self.frame = (self.frame + 1) % len(self.images)
         return self.images[self.frame]
@@ -42,9 +43,6 @@ class AnimatedSprite:
 
     def currentFrame(self):
         return self.images[self.frame]
-
-
-
 
 class MobSprite(pg.sprite.Sprite):
 
@@ -78,23 +76,23 @@ class MobSprite(pg.sprite.Sprite):
         legBox = pg.Rect(self.position[0]-self.size[0]//4, self.position[1],self.size[0]//2, self.size[1]//2)
         return legBox
 
-    def isColliding(self, x, y):
-        # Takes offset x,y and sees if sprite is colliding with any objects in fov
-        offset = self.getLegBox()
-        offset.center = [offset.center[0] + x, offset.center[1] + y]
-        collide = False
-        for i in self.fov:
-            if offset.colliderect(i.rect):
-                collide = True
-        return collide
-
     def move(self,x,y):
         # Moves sprite if not colliding
         if not self.isColliding(x,y):
             self.position = [self.position[0] + x, self.position[1] + y]
 
+    def draw(self,surface,camera, offset):
 
-class MobGroup(pg.sprite.Group):
+        # Draw Health Bar
+        pg.draw.rect(surface, pg.Color('red'), pg.Rect(offset[0], offset[1] - 16, self.size[0], 8))
+        pg.draw.rect(surface, pg.Color('green'),pg.Rect(offset[0], offset[1] - 16, int(self.size[0] * (self.stats.hp / self.stats.maxHP)), 8))
+
+        # Draws collision box
+        camera.drawRectangle(surface, pg.Color('cyan'), self.rect)
+        camera.drawRectangle(surface, pg.Color('purple'), self.getLegBox())
+
+
+class EntityGroup(pg.sprite.Group):
     def __init__(self):
         super().__init__()
 
@@ -109,8 +107,6 @@ class MobGroup(pg.sprite.Group):
             proximity = pg.Rect(spr.position[0] - 64, spr.position[1] - 64, 128, 128)
             spr.fov = world.getCollidableTiles(proximity) + self.getProximityObjects(spr,proximity)
             spr.update(dt)
-
-        self.remove([spr for spr in self.sprites() if spr.stats.hp <= 0])
 
     def draw(self,surface,camera):
         '''
@@ -132,13 +128,6 @@ class MobGroup(pg.sprite.Group):
 
             # Draws sprite
             self.spritedict[spr] = surface_blit(spr.image, drawRect)
-
-            if spr.attacking:
-                camera.drawRectangle(surface, pg.Color('red'), spr.getAttackRange(spr.direction))
-
-
-            # Draws collision box
-            camera.drawRectangle(surface,pg.Color('cyan'),spr.rect)
-            camera.drawRectangle(surface,pg.Color('purple'), spr.getLegBox())
+            spr.draw(surface,camera,drawRect)
 
         self.lostsprites = []

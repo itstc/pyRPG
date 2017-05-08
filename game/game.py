@@ -1,7 +1,7 @@
 import pygame as pg
 
 from world import World
-from entity import mobs
+from entity import mobs,items
 from sprites import sprite
 from util import Polygon
 
@@ -16,9 +16,11 @@ class Game:
         self.running = True
         self.hud = HUD(surface)
         self.map = World(self.surface,'res/test.tmx')
-        self.entities = sprite.MobGroup()
+        self.entities = sprite.EntityGroup()
         self.player = mobs.Player(256,512)
+        self.entities.add(items.Potion(64,64),items.Bow(128,128),items.Club(256,64),items.Axe(64,256),items.Sword(64,512))
         self.entities.add(mobs.Goblin(256,128),mobs.Skeleton(512,128),mobs.Skeleton(400,128),self.player)
+
 
         self.camera = Camera(surface.get_size(), self.map.getWorldSize(), self.player)
 

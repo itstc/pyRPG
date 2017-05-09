@@ -95,4 +95,3 @@ class Player(Mob):
         for obj in self.fov:
             if self.getAttackRange(self.direction).colliderect(obj) and isinstance(obj,Mob):
                 obj.stats.hurt(self.stats.ad)
-                print('Attacked Mob >', obj.name, obj.stats.hp, '/', obj.stats.maxHP)

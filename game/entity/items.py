@@ -24,7 +24,6 @@ class Item(pg.sprite.Sprite):
             self.bounce(dt,self.bouncing)
         for obj in self.fov:
             if self.rect.colliderect(obj.rect) and isinstance(obj,Player):
-                print('Player picked up item', self.name)
                 self.kill()
 
     def draw(self,surface,camera,offset):
@@ -61,3 +60,8 @@ class Sword(Item):
     name = 'Sword'
     def __init__(self,x,y):
         super().__init__(sprite.Spritesheet('items.png').getSprite([8,8],4,0),[32,32],[x,y])
+
+class Spear(Item):
+    name = 'Spear'
+    def __init__(self,x,y):
+        super().__init__(sprite.Spritesheet('items.png').getSprite([8,8],5,0),[32,32],[x,y])

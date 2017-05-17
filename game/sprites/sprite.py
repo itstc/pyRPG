@@ -44,53 +44,6 @@ class AnimatedSprite:
     def currentFrame(self):
         return self.images[self.frame]
 
-class MobSprite(pg.sprite.Sprite):
-
-    def __init__(self,image,size,pos):
-        super().__init__()
-
-        self.size = size
-        self.position = pos
-        self.image = image
-        self.image = pg.transform.scale(image,size)
-        self.rect = pg.Rect(pos,[size[0]//2,size[1]])
-        self.fov = []
-        self.attacking = False
-        self.cooldown = 0
-        self.direction = 0 # 0:top, 1:left, 2:down, 3:right
-
-    def getAttackRange(self,direction):
-        tlPos = self.rect.topleft
-        range = {
-            0: pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1] - self.size[1] // 4, self.size[0] // 2 * 3,
-                           self.size[1] // 4),
-            1: pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1], self.size[0] // 2, self.size[1]),
-            2: pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1] + self.size[1], self.size[0] // 2 * 3,
-                            self.size[1] // 4),
-            3: pg.Rect(tlPos[0] + self.size[0] // 2, tlPos[1], self.size[0] // 2, self.size[1])
-        }
-        return range[direction]
-
-    def getLegBox(self):
-        # Returns a pygame.Rect object of the legs of sprite
-        legBox = pg.Rect(self.position[0]-self.size[0]//4, self.position[1],self.size[0]//2, self.size[1]//2)
-        return legBox
-
-    def move(self,x,y):
-        # Moves sprite if not colliding
-        if not self.isColliding(x,y):
-            self.position = [self.position[0] + x, self.position[1] + y]
-
-    def draw(self,surface,camera, offset):
-
-        # Draw Health Bar
-        pg.draw.rect(surface, pg.Color('red'), pg.Rect(offset[0], offset[1] - 16, self.size[0], 8))
-        pg.draw.rect(surface, pg.Color('green'),pg.Rect(offset[0], offset[1] - 16, int(self.size[0] * (self.stats.hp / self.stats.maxHP)), 8))
-
-        # Draws collision box
-        camera.drawRectangle(surface, pg.Color('cyan'), self.rect)
-        camera.drawRectangle(surface, pg.Color('purple'), self.getLegBox())
-
 
 class EntityGroup(pg.sprite.Group):
     def __init__(self):

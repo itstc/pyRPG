@@ -18,7 +18,7 @@ class Game:
         self.map = World(self.surface,'res/test.tmx')
         self.entities = sprite.EntityGroup()
         self.player = mobs.Player(256,512)
-        self.entities.add(items.Potion(64,64),items.Bow(128,128),items.Club(256,64),items.Axe(64,256),items.Sword(64,512),items.Spear(900,512))
+        self.entities.add(items.Potion(64,64),items.Potion(128,64),items.Potion(256,64),items.Potion(512,64))
         self.entities.add(mobs.Goblin(256,128),mobs.Skeleton(512,128),mobs.Skeleton(400,128),self.player)
 
 

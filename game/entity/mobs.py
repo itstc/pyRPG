@@ -2,12 +2,53 @@ import pygame as pg
 from sprites import sprite
 
 
-class Mob(sprite.MobSprite):
+class Mob(pg.sprite.Sprite):
     sprite_size = [16,32]
     collidable = True
     def __init__(self,image,size,position,health,ad):
-        super().__init__(image,size,position)
+        super().__init__()
         self.stats = Mob.Stats(health,ad)
+        self.size = size
+        self.position = position
+        self.image = image
+        self.image = pg.transform.scale(image,size)
+        self.rect = pg.Rect(position,[size[0]//2,size[1]])
+        self.fov = []
+        self.attacking = False
+        self.cooldown = 0
+        self.direction = 0 # 0:top, 1:left, 2:down, 3:right
+
+    def getAttackRange(self,direction):
+        tlPos = self.rect.topleft
+        range = {
+            0: pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1] - self.size[1] // 4, self.size[0] // 2 * 3,
+                           self.size[1] // 4),
+            1: pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1], self.size[0] // 2, self.size[1]),
+            2: pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1] + self.size[1], self.size[0] // 2 * 3,
+                            self.size[1] // 4),
+            3: pg.Rect(tlPos[0] + self.size[0] // 2, tlPos[1], self.size[0] // 2, self.size[1])
+        }
+        return range[direction]
+
+    def getLegBox(self):
+        # Returns a pygame.Rect object of the legs of sprite
+        legBox = pg.Rect(self.position[0]-self.size[0]//4, self.position[1],self.size[0]//2, self.size[1]//2)
+        return legBox
+
+    def move(self,x,y):
+        # Moves sprite if not colliding
+        if not self.isColliding(x,y):
+            self.position = [self.position[0] + x, self.position[1] + y]
+
+    def draw(self,surface,camera, offset):
+
+        # Draw Health Bar
+        pg.draw.rect(surface, pg.Color('red'), pg.Rect(offset[0], offset[1] - 16, self.size[0], 8))
+        pg.draw.rect(surface, pg.Color('green'),pg.Rect(offset[0], offset[1] - 16, int(self.size[0] * (self.stats.hp / self.stats.maxHP)), 8))
+
+        # Draws collision box
+        camera.drawRectangle(surface, pg.Color('cyan'), self.rect)
+        camera.drawRectangle(surface, pg.Color('purple'), self.getLegBox())
 
     def update(self,dt):
         # Update collision box position
@@ -59,6 +100,7 @@ class Player(Mob):
     def __init__(self,x,y):
         sheet = sprite.Spritesheet('playersheet.png')
         super().__init__(sheet.getSprite([16,24],3,1), (64,96), (x,y),100,9)
+        self.stats.hp = 50
         self.isWalking = False
         self.states = {
             0:sprite.AnimatedSprite(sheet, [(3, 0), (4, 0), (5, 0)], [16, 24], self.size,300),
@@ -70,6 +112,8 @@ class Player(Mob):
             6:sprite.AnimatedSprite(sheet, [(8, 0), (9, 0)], [16, 24], self.size,200),
             7:sprite.AnimatedSprite(sheet, [(8, 1), (9, 1)], [16, 24], self.size,200)
                        }
+
+        self.inventory = Inventory(10)
 
     def update(self,dt):
         super().update(dt)
@@ -95,3 +139,24 @@ class Player(Mob):
         for obj in self.fov:
             if self.getAttackRange(self.direction).colliderect(obj) and isinstance(obj,Mob):
                 obj.stats.hurt(self.stats.ad)
+
+class Inventory:
+    def __init__(self,capacity):
+        self.items = []
+        self.capacity = capacity
+
+    def addItem(self,item):
+        if len(self.items) < self.capacity:
+            self.items.append(item)
+            self.displayInventory()
+
+    def displayInventory(self):
+        print('Inventory (%i):' % len(self.items))
+        for item in self.items:
+            print(item.name)
+
+    def useItem(self,name):
+        pass
+
+    def removeItem(self,name):
+        pass

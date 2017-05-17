@@ -5,25 +5,26 @@ from sprites import sprite
 
 class Item(pg.sprite.Sprite):
     collidable = False
-    name = 'Item'
-    def __init__(self,image,size,pos):
+    def __init__(self,name,image,size,pos):
         super().__init__()
         self.image = pg.transform.scale(image,size)
         self.size = size
         self.position = pos
         self.rect = pg.Rect(pos,size)
         self.fov = []
-        self.bouncing = random.choice([True,False])
+        self.bouncing = True
         self.time = 0
 
     def update(self,dt):
         self.time += dt
         if self.time / 500 > 1:
             self.bouncing = not self.bouncing
-            self.time = 0
             self.bounce(dt,self.bouncing)
+            self.time = 0
+
         for obj in self.fov:
             if self.rect.colliderect(obj.rect) and isinstance(obj,Player):
+                obj.inventory.addItem(self)
                 self.kill()
 
     def draw(self,surface,camera,offset):
@@ -33,35 +34,21 @@ class Item(pg.sprite.Sprite):
         if bounce: self.position[1] -= (dt/1000) * 40
         else: self.position[1] += (dt/1000) * 40
 
-class Potion(Item):
+class UsableItem:
+    def use(self,player):
+        pass
+
+class Consumables(Item,UsableItem):
+    def __init__(self,name,image,pos):
+        super().__init__(name, image, [24,24], pos)
+
+class Potion(Consumables):
     name = 'Potion'
     def __init__(self,x,y):
-        super().__init__(sprite.Spritesheet('items.png').getSprite([8,8],0,0),[24,24],[x,y])
+        super().__init__(Potion.name,sprite.Spritesheet('items.png').getSprite([8,8],0,0),[x,y])
 
-
-class Bow(Item):
-    name = 'Bow'
-    def __init__(self,x,y):
-        super().__init__(sprite.Spritesheet('items.png').getSprite([8,8],1,0),[32,32],[x,y])
-
-
-class Club(Item):
-    name = 'Club'
-    def __init__(self,x,y):
-        super().__init__(sprite.Spritesheet('items.png').getSprite([8,8],2,0),[32,32],[x,y])
-
-
-class Axe(Item):
-    name = 'Axe'
-    def __init__(self,x,y):
-        super().__init__(sprite.Spritesheet('items.png').getSprite([8,8],3,0),[32,32],[x,y])
-
-class Sword(Item):
-    name = 'Sword'
-    def __init__(self,x,y):
-        super().__init__(sprite.Spritesheet('items.png').getSprite([8,8],4,0),[32,32],[x,y])
-
-class Spear(Item):
-    name = 'Spear'
-    def __init__(self,x,y):
-        super().__init__(sprite.Spritesheet('items.png').getSprite([8,8],5,0),[32,32],[x,y])
+    def use(self,player):
+        if player.stats.hp + 50 > player.stats.maxHP:
+            player.stats.hp = player.stats.maxHP
+        else:
+            player.stats.hp += 50

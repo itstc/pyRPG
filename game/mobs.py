@@ -1,5 +1,6 @@
 import pygame as pg
-from sprites import sprite
+import sprite
+from inventory import Inventory
 
 
 class Mob(pg.sprite.Sprite):
@@ -102,6 +103,8 @@ class Player(Mob):
         super().__init__(sheet.getSprite([16,24],3,1), (64,96), (x,y),100,9)
         self.stats.hp = 50
         self.isWalking = False
+        self.using = False
+
         self.states = {
             0:sprite.AnimatedSprite(sheet, [(3, 0), (4, 0), (5, 0)], [16, 24], self.size,300),
             1:sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1)], [16, 24], self.size,300),
@@ -113,7 +116,7 @@ class Player(Mob):
             7:sprite.AnimatedSprite(sheet, [(8, 1), (9, 1)], [16, 24], self.size,200)
                        }
 
-        self.inventory = Inventory(10)
+        self.inventory = Inventory(self,10)
 
     def update(self,dt):
         super().update(dt)
@@ -121,6 +124,11 @@ class Player(Mob):
             self.image = self.states[self.direction + 4].update(dt)
         elif self.isWalking:
             self.image = self.states[self.direction].update(dt)
+        elif self.using:
+            self.cooldown += dt
+            if self.cooldown // 500 > 0:
+                self.using = False
+                self.cooldown = 0
         else:
             self.image = self.states[self.direction].currentFrame()
 
@@ -139,24 +147,3 @@ class Player(Mob):
         for obj in self.fov:
             if self.getAttackRange(self.direction).colliderect(obj) and isinstance(obj,Mob):
                 obj.stats.hurt(self.stats.ad)
-
-class Inventory:
-    def __init__(self,capacity):
-        self.items = []
-        self.capacity = capacity
-
-    def addItem(self,item):
-        if len(self.items) < self.capacity:
-            self.items.append(item)
-            self.displayInventory()
-
-    def displayInventory(self):
-        print('Inventory (%i):' % len(self.items))
-        for item in self.items:
-            print(item.name)
-
-    def useItem(self,name):
-        pass
-
-    def removeItem(self,name):
-        pass

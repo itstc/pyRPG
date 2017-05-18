@@ -1,9 +1,10 @@
 import pygame as pg
+import mobs,items,sprite
 
-from world import World
-from entity import mobs,items
-from sprites import sprite
 from util import Polygon
+from world import World
+
+
 
 
 class Game:
@@ -18,7 +19,8 @@ class Game:
         self.map = World(self.surface,'res/test.tmx')
         self.entities = sprite.EntityGroup()
         self.player = mobs.Player(256,512)
-        self.entities.add(items.Potion(64,64),items.Potion(128,64),items.Potion(256,64),items.Potion(512,64))
+        self.player.inventory.addItem(items.Potion())
+        self.entities.add(items.Potion().drop(64,64),items.Potion().drop(128,64),items.Potion().drop(256,64))
         self.entities.add(mobs.Goblin(256,128),mobs.Skeleton(512,128),mobs.Skeleton(400,128),self.player)
 
 
@@ -84,6 +86,10 @@ class Game:
         elif key == pg.K_d:
             self.player.direction = 3
             self.player.move(moveSpeed,0)
+        elif key == pg.K_e:
+            if not self.player.using:
+                self.player.using = True
+                self.player.inventory.useItem(0)
 
         self.camera.moveCamera()
 
@@ -99,13 +105,8 @@ class Game:
         self.entities.draw(self.surface,self.camera)
 
         # Draw HUD Here
-        self.hud.drawHUDImage([0, 0], [self.windowSize[0] - 64,self.windowSize[1] - 192])
-        self.hud.drawHUDImage([1, 0], [self.windowSize[0] - 64,self.windowSize[1] - 128])
-        self.hud.drawHUDImage([2, 0], [self.windowSize[0] - 64,self.windowSize[1] - 64])
-
-        self.hud.drawString([self.windowSize[0] - 64, self.windowSize[1] - 192], '12')
-        self.hud.drawString([self.windowSize[0] - 64, self.windowSize[1] - 128], '10')
-        self.hud.drawString([self.windowSize[0] - 64, self.windowSize[1] - 64], '10')
+        self.hud.drawImage(self.player.inventory.getItemData(0)[0], [0,self.windowSize[1] - 64])
+        self.hud.drawString([0, self.windowSize[1] - 64], str(self.player.inventory.getItemData(0)[1]))
 
         pg.display.update()
 
@@ -174,10 +175,12 @@ class HUD():
         text = self.font.render(string,1,color)
         self.surface.blit(text,position)
 
-    def drawImage(self,image,position):
+    def drawImage(self,image,position,scale = [64,64]):
         # Prints a surface on screen
-        self.surface.blit(image,position)
-
+        if image:
+            pg.draw.rect(self.surface,pg.Color('cyan'),self.surface.blit(pg.transform.scale(image,scale),position),1)
+        else:
+            pg.draw.rect(self.surface, pg.Color('cyan'), pg.Rect(position,scale),1)
     def drawHUDImage(self,imagePosition,position,scale = [64,64]):
         # Draws an image from the hud spritesheet
         image = pg.transform.scale(self.spritesheet.getSprite(HUD.sprite_size,imagePosition[0],imagePosition[1]),scale)

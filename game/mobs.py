@@ -103,7 +103,6 @@ class Player(Mob):
         super().__init__(sheet.getSprite([16,24],3,1), (64,96), (x,y),100,9)
         self.stats.hp = 50
         self.isWalking = False
-        self.using = False
 
         self.states = {
             0:sprite.AnimatedSprite(sheet, [(3, 0), (4, 0), (5, 0)], [16, 24], self.size,300),
@@ -124,11 +123,6 @@ class Player(Mob):
             self.image = self.states[self.direction + 4].update(dt)
         elif self.isWalking:
             self.image = self.states[self.direction].update(dt)
-        elif self.using:
-            self.cooldown += dt
-            if self.cooldown // 500 > 0:
-                self.using = False
-                self.cooldown = 0
         else:
             self.image = self.states[self.direction].currentFrame()
 

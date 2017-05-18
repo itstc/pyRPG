@@ -1,8 +1,8 @@
 import pygame as pg
 import mobs,items,sprite
-
-from util import Polygon
+from events import EventListener
 from world import World
+from gui import GUI
 
 
 
@@ -15,6 +15,7 @@ class Game:
         self.surface = surface
         self.windowSize = surface.get_size()
         self.running = True
+        self.events = EventListener(self)
         self.hud = HUD(surface)
         self.map = World(self.surface,'res/test.tmx')
         self.entities = sprite.EntityGroup()
@@ -25,6 +26,7 @@ class Game:
 
 
         self.camera = Camera(surface.get_size(), self.map.getWorldSize(), self.player)
+        self.gui = GUI([256,256])
 
         pg.key.set_repeat(1,1)
 
@@ -36,62 +38,8 @@ class Game:
             pg.display.set_caption('%s %i fps' % ('pyLota Alpha Build:', clock.get_fps()//1))
 
             self.render()
-            self.handleEvent()
+            self.events.handleEvent()
             self.update(dt)
-
-    def handleEvent(self):
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                self.running = False
-                pg.quit()
-                exit()
-            elif event.type == pg.MOUSEBUTTONDOWN:
-                self.handleMouseEvent(event.pos)
-            elif event.type == pg.KEYDOWN:
-                self.handleKeyEvent(event.key)
-            elif event.type == pg.KEYUP:
-                self.player.isWalking = False
-
-    def handleMouseEvent(self,pos):
-        self.player.direction = self.getMouseDirection(pos)
-        if not self.player.attacking:
-            self.player.attack()
-
-    def getMouseDirection(self,pos):
-        playerPos = self.camera.getOffsetPosition(self.player.rect)
-        polygons = {
-            # 0:top, 1:left, 2:down, 3:right
-            0: Polygon([(0,0), playerPos,(self.windowSize[0],0)]),
-            1: Polygon([(0,0), playerPos, (0, self.windowSize[1])]),
-            2: Polygon([(0, self.windowSize[1]), playerPos, self.windowSize]),
-            3: Polygon([(self.windowSize[0],0), playerPos, self.windowSize])
-        }
-
-        for key in polygons.keys():
-            if polygons[key].collide(pos):
-                return key
-
-    def handleKeyEvent(self,key):
-        self.player.isWalking = True
-        moveSpeed = 4
-        if key == pg.K_w:
-            self.player.direction = 0
-            self.player.move(0,-moveSpeed)
-        elif key == pg.K_a:
-            self.player.direction = 1
-            self.player.move(-moveSpeed,0)
-        elif key == pg.K_s:
-            self.player.direction = 2
-            self.player.move(0,moveSpeed)
-        elif key == pg.K_d:
-            self.player.direction = 3
-            self.player.move(moveSpeed,0)
-        elif key == pg.K_e:
-            if not self.player.using:
-                self.player.using = True
-                self.player.inventory.useItem(0)
-
-        self.camera.moveCamera()
 
     def update(self,dt):
         self.entities.update(self.map,dt)
@@ -107,6 +55,8 @@ class Game:
         # Draw HUD Here
         self.hud.drawImage(self.player.inventory.getItemData(0)[0], [0,self.windowSize[1] - 64])
         self.hud.drawString([0, self.windowSize[1] - 64], str(self.player.inventory.getItemData(0)[1]))
+
+        self.gui.draw(self.surface)
 
         pg.display.update()
 

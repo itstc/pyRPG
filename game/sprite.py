@@ -21,6 +21,12 @@ class Spritesheet:
         sheetArray = pg.PixelArray(self.image)
         return sheetArray[x:x + size[0],y:y + size[1]].make_surface()
 
+class AlphaSpritesheet(Spritesheet):
+    def __init__(self,path):
+        super().__init__(path)
+        self.image = pg.image.load(os.path.join('res/', path)).convert()
+
+
 class AnimatedSprite:
     def __init__(self,sheet,sequence,size,scale,rate):
         self.images = []

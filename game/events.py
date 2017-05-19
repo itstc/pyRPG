@@ -15,6 +15,8 @@ class EventListener:
                 exit()
             elif event.type == pg.MOUSEBUTTONDOWN:
                 self.handleMouseEvent(event.pos)
+            elif event.type == pg.MOUSEMOTION:
+                self.handleMouseMovement(event.pos,event.buttons)
             elif event.type == pg.KEYDOWN:
                 self.handleKeyEvent(event.key)
                 self.pressed = True
@@ -22,7 +24,21 @@ class EventListener:
                 self.pressed = False
                 self.game.player.isWalking = False
 
+    def handleMouseMovement(self, pos, buttons):
+        if self.game.gui.active:
+            if 1 in buttons:
+                self.game.gui.rect.centerx = pos[0]
+                self.game.gui.rect.top = pos[1]
+            else:
+                self.game.gui.isHoveringSlot(pos)
+
+
+
     def handleMouseEvent(self, pos):
+        # GUI handling
+        if self.game.gui.showing and self.game.gui.rect.collidepoint(pos):
+            self.game.gui.active = True
+
         self.game.player.direction = self.getMouseDirection(pos)
         if not self.game.player.attacking:
             self.game.player.attack()
@@ -62,5 +78,6 @@ class EventListener:
             self.game.player.inventory.useItem(0)
         elif key == pg.K_i and not self.pressed:
             self.game.gui.showing = not self.game.gui.showing
+            self.game.gui.hide()
 
         self.game.camera.moveCamera()

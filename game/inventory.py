@@ -29,6 +29,7 @@ class Inventory:
             self.items[index].amount -= 1
             if self.items[index].amount == 0:
                 self.removeItem(index)
+        self.displayInventory()
 
     def removeItem(self,index):
         self.items.pop(index)

@@ -75,3 +75,8 @@ class Potion(Consumables):
             player.stats.hp = player.stats.maxHP
         else:
             player.stats.hp += 50
+
+class Sword(Item):
+    name = 'Sword'
+    def __init__(self):
+        super().__init__(Sword.name,sprite.Spritesheet('items.png').getSprite([8,8],2,0))

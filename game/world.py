@@ -36,8 +36,8 @@ class World:
             for x in range(start[0] // World.size[0], end[0] // World.size[0] + 1):
                 try:
                     tile = self.mapData.get_tile_properties(x,y,0)
-                    if tile['Wall'] == 'true':
-                        collidables.append(WorldObject(pg.Rect((x * World.size[0], y * World.size[1]),World.size),'Wall'))
+                    if tile['collidable'] == 'true':
+                        collidables.append(WorldObject(pg.Rect((x * World.size[0], y * World.size[1]),World.size),'collidable'))
                 except:
                     continue
         return collidables

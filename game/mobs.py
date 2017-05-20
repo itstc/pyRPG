@@ -105,13 +105,13 @@ class Player(Mob):
         self.isWalking = False
 
         self.states = {
-            0:sprite.AnimatedSprite(sheet, [(3, 0), (4, 0), (5, 0)], [16, 24], self.size,300),
-            1:sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1)], [16, 24], self.size,300),
-            2:sprite.AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0)], [16, 24], self.size,300),
-            3:sprite.AnimatedSprite(sheet, [(3, 1), (4, 1), (5, 1)], [16, 24], self.size,300),
-            4:sprite.AnimatedSprite(sheet, [(6, 0), (7, 0)], [16, 24], self.size,200),
+            0:sprite.AnimatedSprite(sheet, [(3, 0), (4, 0), (5, 0)], [16, 24], self.size,200),
+            1:sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1)], [16, 24], self.size,200),
+            2:sprite.AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0)], [16, 24], self.size,200),
+            3:sprite.AnimatedSprite(sheet, [(3, 1), (4, 1), (5, 1)], [16, 24], self.size,200),
+            4:sprite.AnimatedSprite(sheet, [(8, 0), (9, 0)], [16, 24], self.size,200),
             5:sprite.AnimatedSprite(sheet, [(6, 1), (7, 1)], [16, 24], self.size,200),
-            6:sprite.AnimatedSprite(sheet, [(8, 0), (9, 0)], [16, 24], self.size,200),
+            6:sprite.AnimatedSprite(sheet, [(6, 0), (7, 0)], [16, 24], self.size,200),
             7:sprite.AnimatedSprite(sheet, [(8, 1), (9, 1)], [16, 24], self.size,200)
                        }
 

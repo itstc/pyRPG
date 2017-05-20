@@ -67,6 +67,7 @@ class Consumables(StackableItem,UsableItem):
 
 class Potion(Consumables):
     name = 'Potion'
+    desc = ['Consumable that buffs','the players health by','50 health points.']
     def __init__(self):
         super().__init__(Potion.name,sprite.Spritesheet('items.png').getSprite([8,8],0,0))
 
@@ -78,5 +79,6 @@ class Potion(Consumables):
 
 class Sword(Item):
     name = 'Sword'
+    desc = ['A sword that applies','10 additional attack',' damage to wielder.']
     def __init__(self):
         super().__init__(Sword.name,sprite.Spritesheet('items.png').getSprite([8,8],2,0))

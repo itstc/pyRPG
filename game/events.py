@@ -38,10 +38,11 @@ class EventListener:
         # GUI handling
         if self.game.gui.showing and self.game.gui.rect.collidepoint(pos):
             self.game.gui.active = True
-
-        self.game.player.direction = self.getMouseDirection(pos)
-        if not self.game.player.attacking:
-            self.game.player.attack()
+        else:
+            self.game.gui.active = False
+            self.game.player.direction = self.getMouseDirection(pos)
+            if not self.game.player.attacking:
+                self.game.player.attack()
 
     def getMouseDirection(self, pos):
         playerPos = self.game.camera.getOffsetPosition(self.game.player.rect)
@@ -78,6 +79,6 @@ class EventListener:
             self.game.player.inventory.useItem(0)
         elif key == pg.K_i and not self.pressed:
             self.game.gui.showing = not self.game.gui.showing
-            self.game.gui.hide()
+            self.game.gui.toggle()
 
         self.game.camera.moveCamera()

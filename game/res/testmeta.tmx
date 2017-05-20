@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="16" tileheight="16" nextobjectid="1">
+ <tileset firstgid="1" name="test" tilewidth="16" tileheight="16" tilecount="64" columns="8">
+  <image source="test.png" width="128" height="128"/>
+  <terraintypes>
+   <terrain name="grass" tile="-1"/>
+   <terrain name="dirt" tile="-1"/>
+   <terrain name="water" tile="-1"/>
+  </terraintypes>
+  <tile id="0" terrain="0,0,0,0">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="1" terrain="2,2,2,2">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="8" terrain="0,0,0,1">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="9" terrain="0,0,1,1">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="10" terrain="0,0,1,0">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="11" terrain="1,1,1,0">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="12" terrain="1,1,0,1">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="16" terrain="0,1,0,1">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="17" terrain="1,1,1,1">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="18" terrain="1,0,1,0">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="19" terrain="1,0,1,1">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="20" terrain="0,1,1,1">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="21">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="24" terrain="0,1,0,0">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="25" terrain="1,1,0,0">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="26" terrain="1,0,0,0">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="27">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="28">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="29">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="32" terrain="2,2,2,2">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="33" terrain="2,2,2,2">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="34" terrain="2,2,2,2">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="35">
+   <properties>
+    <property name="collidable" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="40" terrain="2,2,2,2">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="42" terrain="2,2,2,2">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="48" terrain="2,2,2,2">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="49" terrain="2,2,2,2">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="50" terrain="2,2,2,2">
+   <properties>
+    <property name="collidable" type="bool" value="true"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer name="Tile Layer 1" width="32" height="32">
+  <data encoding="csv">
+3221225473,3221225473,3221225473,3221225473,3221225473,3221225473,3221225473,3221225473,4,1,1,1,1,1,1,1,1,1,1,1,1,4,3221225473,3221225473,3221225473,9,10,10,21,18,18,18,
+3221225473,3221225473,3221225473,1,1,1,3221225473,3221225473,3221225473,4,4,1,1,1,1,1,4,4,4,5,4,3221225473,3221225473,3221225473,3221225473,17,18,18,18,18,18,12,
+3221225473,1,1,9,10,11,1,1,1,3221225473,1,4,4,4,4,4,3221225473,3221225473,3221225473,3221225473,3221225473,1,1,1,1,17,18,18,18,18,12,27,
+3221225473,1,1,17,18,20,11,1,1,1,3221225473,3221225473,3221225473,3221225473,3221225473,3221225473,3221225473,3221225473,3221225473,3221225473,3221225473,1,1,9,10,21,18,18,18,18,19,1,
+3221225473,1,1,17,18,18,20,10,10,10,10,11,1,1,1,1,1,1,9,11,1,9,10,21,18,18,18,18,18,12,27,1,
+3221225473,1,1,17,18,18,18,18,18,18,18,20,10,11,1,1,1,1,25,27,9,21,18,18,18,18,18,12,26,27,1,1,
+3221225473,1,1,17,18,18,18,18,18,18,18,18,18,19,1,1,1,9,10,10,21,18,18,18,18,18,18,19,1,1,1,1,
+3221225473,1,1,17,18,18,18,18,18,18,18,18,18,19,1,9,10,21,18,18,18,18,18,18,18,18,12,27,33,35,1,1,
+3221225473,1,1,17,18,18,18,18,18,18,18,18,18,20,10,21,18,18,18,18,18,18,18,18,12,26,27,1,41,2,34,34,
+3221225473,1,1,17,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,19,1,1,1,41,2,2,2,
+3221225473,1,1,17,18,18,18,12,26,26,26,26,26,26,26,13,18,18,18,18,18,18,18,18,19,1,1,1,49,2,2,2,
+3221225473,1,9,21,18,18,18,20,10,10,11,1,1,1,1,25,26,13,18,18,18,18,18,18,19,1,1,1,1,41,2,2,
+1,1,17,18,18,18,18,18,18,18,20,10,11,1,1,1,1,25,13,18,18,18,18,18,19,1,1,1,1,41,2,2,
+1,1,17,18,18,18,18,18,18,18,18,18,20,11,1,1,1,1,25,13,18,18,18,18,20,11,1,1,1,41,2,2,
+1,1,17,18,18,18,18,18,18,18,18,18,18,20,10,10,10,10,10,21,18,18,18,18,18,19,1,1,1,41,2,2,
+1,1,17,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,12,26,26,27,1,1,1,41,2,2,
+1,1,17,18,18,18,18,18,18,18,18,18,12,26,26,13,18,18,18,18,18,18,19,1,1,1,1,1,1,41,2,2,
+1,1,17,18,18,18,18,18,18,18,18,18,19,1,1,17,18,18,18,18,18,18,19,1,1,1,1,1,1,41,2,2,
+1,9,21,18,18,18,18,18,18,18,18,18,19,1,1,25,26,13,18,18,18,18,19,1,1,1,1,1,33,2,2,2,
+1,17,18,18,18,18,18,18,18,18,18,12,27,1,1,1,1,17,18,18,12,26,27,1,1,1,1,1,41,2,2,2,
+1,17,18,18,18,18,18,12,26,26,26,27,1,1,1,1,1,17,18,18,20,11,1,1,1,1,1,1,41,2,2,2,
+1,17,18,18,18,18,18,19,1,1,1,1,1,1,1,1,1,25,13,18,18,20,11,1,1,1,1,1,41,2,2,2,
+1,25,26,26,26,26,26,27,1,1,1,1,1,1,1,1,1,1,25,13,18,18,19,1,1,1,1,1,41,2,2,2,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,17,18,12,27,1,1,1,1,1,41,2,2,2,
+34,34,34,34,34,34,34,34,34,34,34,34,34,34,35,1,1,1,1,17,18,19,1,1,1,1,1,1,41,2,2,2,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,35,1,1,1,17,18,20,11,1,1,1,33,34,2,2,2,2,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,43,3221225473,1,1,17,18,18,19,1,33,34,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,43,3221225473,1,1,25,13,18,19,1,41,2,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,43,3221225473,3221225473,1,1,17,18,19,1,41,2,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,35,3221225473,3221225473,1,17,18,19,1,41,2,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,35,3221225473,1,17,18,19,1,41,2,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,43,3221225473,1,17,18,19,1,41,2,2,2,2,2,2,2
+</data>
+ </layer>
+</map>

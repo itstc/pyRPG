@@ -14,7 +14,7 @@ class World:
     def render(self,camera):
         # Gets the tiles based on camera location and blits to game.surface
         offset = camera.getView()
-        renderDistance = [self.surface.get_width() + 32,self.surface.get_height() + 32]
+        renderDistance = [self.surface.get_width(),self.surface.get_height()]
         for y in range(offset[1]//World.size[1] ,math.ceil((offset[1] + renderDistance[1]) / World.size[1])):
             for x in range(offset[0]//World.size[0], math.ceil((offset[0] + renderDistance[0]) / World.size[0])):
                 try:

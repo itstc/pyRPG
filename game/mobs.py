@@ -1,6 +1,7 @@
 import pygame as pg
-import sprite
+import sprite,particles
 from inventory import Inventory
+
 
 
 class Mob(pg.sprite.Sprite):
@@ -11,9 +12,9 @@ class Mob(pg.sprite.Sprite):
         self.stats = Mob.Stats(health,ad)
         self.size = size
         self.position = position
-        self.image = image
         self.image = pg.transform.scale(image,size)
         self.rect = pg.Rect(position,[size[0]//2,size[1]])
+        self.rect.center = self.position
         self.fov = []
         self.attacking = False
         self.cooldown = 0
@@ -48,12 +49,14 @@ class Mob(pg.sprite.Sprite):
         pg.draw.rect(surface, pg.Color('green'),pg.Rect(offset[0], offset[1] - 16, int(self.size[0] * (self.stats.hp / self.stats.maxHP)), 8))
 
         # Draws collision box
-        camera.drawRectangle(surface, pg.Color('cyan'), self.rect)
-        camera.drawRectangle(surface, pg.Color('purple'), self.getLegBox())
+        # camera.drawRectangle(surface, pg.Color('cyan'), self.rect)
+        # camera.drawRectangle(surface, pg.Color('purple'), self.getLegBox())
+
+        self.stats.draw(surface,camera)
 
     def update(self,dt):
         # Update collision box position
-        self.rect.center = [self.position[0],self.position[1]]
+        self.rect.center = self.position
 
         if self.attacking:
             self.cooldown += dt
@@ -63,6 +66,8 @@ class Mob(pg.sprite.Sprite):
 
         if self.stats.hp <= 0:
             self.kill()
+
+        self.stats.update(dt)
 
     def isColliding(self, x, y):
         # Takes offset x,y and sees if sprite is colliding with any objects in fov
@@ -79,28 +84,37 @@ class Mob(pg.sprite.Sprite):
             self.maxHP = health
             self.hp = health
             self.ad = ad
+            self.statQueue = []
 
         def damage(self,target):
-            target.setHP(self.ad)
+            target.stats.hurt(self.ad)
+            self.statQueue.append(particles.BouncyText(self,self.ad,[target.rect.centerx,target.rect.top]))
 
         def hurt(self,value):
             self.hp -= value
 
+        def update(self,dt):
+            for item in self.statQueue:
+                item.update(dt)
+
+        def draw(self,surface,camera):
+            for item in self.statQueue:
+                item.draw(surface,camera)
 class Goblin(Mob):
     name = 'Goblin'
     def __init__(self,x,y):
-        super().__init__(sprite.Spritesheet('mobsheet.png').getSprite(Mob.sprite_size,0,0),(64,96),(x,y),25,8)
+        super().__init__(sprite.Spritesheet('mobsheet.png').getSprite(Mob.sprite_size,[0,0]),(64,96),(x,y),25,8)
 
 class Skeleton(Mob):
     name = 'Skeleton'
     def __init__(self,x,y):
-        super().__init__(sprite.Spritesheet('mobsheet.png').getSprite(Mob.sprite_size,1,0),(64,128),(x,y),30,10)
+        super().__init__(sprite.Spritesheet('mobsheet.png').getSprite(Mob.sprite_size,[1,0]),(64,128),(x,y),30,10)
 
 class Player(Mob):
     # TODO: Create a player and place it on the map
     def __init__(self,x,y):
         sheet = sprite.Spritesheet('playersheet.png')
-        super().__init__(sheet.getSprite([16,24],3,1), (64,96), (x,y),100,9)
+        super().__init__(sheet.getSprite([16,24],[3,1]), (64,96), (x,y),100,9)
         self.stats.hp = 50
         self.isWalking = False
 
@@ -140,4 +154,4 @@ class Player(Mob):
         self.attacking = True
         for obj in self.fov:
             if self.getAttackRange(self.direction).colliderect(obj) and isinstance(obj,Mob):
-                obj.stats.hurt(self.stats.ad)
+                self.stats.damage(obj)

@@ -17,17 +17,22 @@ class Game:
         self.events = EventListener(self)
         self.hud = HUD(surface)
         self.map = World(self.surface,'res/testmeta.tmx')
-        self.entities = sprite.EntityGroup()
-        self.player = mobs.Player(256,512)
-        self.player.inventory.addItem(items.Potion())
-        self.entities.add(items.Potion().drop(64,64),items.Potion().drop(128,64),items.Potion().drop(256,64),items.Sword().drop(64,256),items.Sword().drop(64,512))
-        self.entities.add(mobs.Goblin(256,128),mobs.Skeleton(512,128),mobs.Skeleton(400,128),self.player)
+        self.itemManager = items.ItemController('data/items.json')
 
+        self.player = mobs.Player(256,512)
+        self.player.inventory.addItem(self.itemManager.getItem(0))
+
+        self.entities = sprite.EntityGroup()
+        self.entities.add([
+            self.itemManager.getItem(0).drop(64, 64),
+            self.itemManager.getItem(1).drop(64, 256)
+        ])
+        self.entities.add(mobs.Goblin(256,128),mobs.Skeleton(512,128),mobs.Skeleton(400,128),self.player)
 
         self.camera = Camera(surface.get_size(), self.map.getWorldSize(), self.player)
         self.gui = ui.InventoryGUI(self.surface,self.player.inventory)
 
-        pg.key.set_repeat(1,1)
+        pg.key.set_repeat(5,5)
 
     def run(self):
         clock = pg.time.Clock()
@@ -83,7 +88,8 @@ class Camera:
         :param rect: pygame.Rect()
         :return: bool
         """
-        return (position[0] - self.offset[0] >= 0) and (position[1] - self.offset[1] >= 0)
+        return (position[0] - self.offset[0] >= 0) and (position[1] - self.offset[1] >= 0) and \
+               (position[1] - self.offset[1] <= self.windowSize[0]) and (position[1] - self.offset[1] <= self.windowSize[1])
 
     def getOffsetPosition(self,rect):
         return (rect.center[0] - self.offset[0], rect.center[1] - self.offset[1])

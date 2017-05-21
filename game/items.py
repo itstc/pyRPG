@@ -1,13 +1,13 @@
 import pygame as pg
-import random
+import random,json
 import sprite
 from mobs import Player
-
+from particles import BouncyText as Text
 class Item:
     stackable = False
-    def __init__(self,name,image):
+    def __init__(self,name,imageData):
         self.name = name
-        self.image = image
+        self.image = sprite.Spritesheet('items.png').getSprite(imageData[0], imageData[1])
         self.amount = 1
 
     def drop(self,x,y):
@@ -53,32 +53,47 @@ class ItemSprite(pg.sprite.Sprite):
 
 class StackableItem(Item):
     stackable = True
-    def __init__(self,name,image):
-        super().__init__(name,image)
+    def __init__(self,name,imageData):
+        super().__init__(name,imageData)
 
 
 class UsableItem:
     def use(self,player):
         pass
 
-class Consumables(StackableItem,UsableItem):
-    def __init__(self,name,image):
-        super().__init__(name,image)
-
-class Potion(Consumables):
-    name = 'Potion'
-    desc = ['Consumable that buffs','the players health by','50 health points.']
-    def __init__(self):
-        super().__init__(Potion.name,sprite.Spritesheet('items.png').getSprite([8,8],0,0))
+class Consumable(StackableItem,UsableItem):
+    desc = ["A Consumable that", "heals you"]
+    def __init__(self,name,imageData,attribute):
+        super().__init__(name,imageData)
+        self.attribute = attribute
 
     def use(self,player):
-        if player.stats.hp + 50 > player.stats.maxHP:
+        player.stats.statQueue.append(Text(player.stats,self.attribute,[player.rect.centerx,player.rect.top],24,pg.Color(76, 243, 94),pg.Color(101, 199, 2)))
+        if player.stats.hp + self.attribute > player.stats.maxHP:
             player.stats.hp = player.stats.maxHP
         else:
-            player.stats.hp += 50
+            player.stats.hp += self.attribute
 
-class Sword(Item):
-    name = 'Sword'
-    desc = ['A sword that applies','10 additional attack',' damage to wielder.']
-    def __init__(self):
-        super().__init__(Sword.name,sprite.Spritesheet('items.png').getSprite([8,8],2,0))
+class Weapon(Item,UsableItem):
+    desc = ["A Weapon that buffs","you"]
+    def __init__(self,name,imageData,attribute):
+        super().__init__(name,imageData)
+        self.attribute = attribute
+
+    def use(self,player):
+        player.stats.ad += self.attribute
+
+class ItemController():
+    itemClass = {'Consumable': Consumable,
+                 'Weapon': Weapon}
+
+    def __init__(self,file):
+        with open(file,'r') as f:
+            self.data = json.load(f)
+
+    def getItem(self,id):
+        item = self.data[str(id)]
+        cls = ItemController.itemClass[item['class']]
+        return cls(item['name'],item['imageData'],item['attribute'])
+
+

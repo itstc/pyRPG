@@ -7,7 +7,7 @@ class Spritesheet:
         self.width = self.image.get_width()
         self.height = self.image.get_height()
 
-    def getSprite(self,size,startX,startY):
+    def getSprite(self,size,start):
         '''
 
         :param size: int (Size to cut out)
@@ -16,8 +16,8 @@ class Spritesheet:
         :return: pygame.Surface (The image on spritesheet)
 
         '''
-        x = startX * size[0]
-        y = startY * size[1]
+        x = start[0] * size[0]
+        y = start[1] * size[1]
         sheetArray = pg.PixelArray(self.image)
         return sheetArray[x:x + size[0],y:y + size[1]].make_surface()
 
@@ -34,7 +34,7 @@ class AnimatedSprite:
         self.time = 0
         self.frame = 0
         for pos in sequence:
-            self.images.append(pg.transform.scale(sheet.getSprite(size,pos[0],pos[1]),scale))
+            self.images.append(pg.transform.scale(sheet.getSprite(size,pos),scale))
 
     def update(self,dt):
         self.time += dt
@@ -82,11 +82,12 @@ class EntityGroup(pg.sprite.Group):
         sprites = self.sprites()
         surface_blit = surface.blit
         for spr in sprites:
-            # Offset the player position to be based on camera
-            drawRect = (spr.position[0] - spr.size[0]//2 - offset[0], spr.position[1] - spr.size[1]//2 - offset[1])
+            if camera.isVisible(spr.position):
+                # Offset the player position to be based on camera
+                drawRect = (spr.position[0] - spr.size[0]//2 - offset[0], spr.position[1] - spr.size[1]//2 - offset[1])
 
-            # Draws sprite
-            self.spritedict[spr] = surface_blit(spr.image, drawRect)
-            spr.draw(surface,camera,drawRect)
+                # Draws sprite
+                self.spritedict[spr] = surface_blit(spr.image, drawRect)
+                spr.draw(surface,camera,drawRect)
 
         self.lostsprites = []

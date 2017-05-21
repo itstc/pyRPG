@@ -16,6 +16,9 @@ class StringRenderer():
             text = font.render(str(strings[i]),1,color)
             surface.blit(text, (position[0], position[1] + (i * font.size(strings[i])[1])))
 
+    def getStringSize(self,string):
+        return self.font.size(str(string))
+
     def getStringsSize(self,strings):
         size = [self.font.size(strings[0])[0],0]
         for string in strings:
@@ -30,7 +33,7 @@ class GUI(StringRenderer):
         self.showing = False
         self.active = False
         self.spritesheet = sprite.AlphaSpritesheet('ui.png')
-        self.interface = pg.transform.scale(self.spritesheet.getSprite([32,48],0,0),size)
+        self.interface = pg.transform.scale(self.spritesheet.getSprite([32,48],[0,0]),size)
         self.interface.set_alpha(200)
         self.rect = pg.Rect(pos,size)
 
@@ -117,7 +120,7 @@ class InventoryGUI(GUI):
             self.position = pos
             self.size = size
             self.item = item
-            self.image = pg.transform.scale(sprite.Spritesheet('ui.png').getSprite([16,16],2,0),size)
+            self.image = pg.transform.scale(sprite.Spritesheet('ui.png').getSprite([16,16],[2,0]),size)
 
         def update(self):
             self.rect.topleft = [self.gui.rect.topleft[0] + self.position[0],self.gui.rect.topleft[1] + self.position[1]]

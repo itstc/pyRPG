@@ -11,8 +11,6 @@ class Inventory:
         elif len(self.items) < self.capacity:
             self.items.append(item)
 
-        self.displayInventory()
-
     def displayInventory(self):
         print('Inventory (%i):' % len(self.items))
         for item in self.items:

@@ -87,7 +87,7 @@ class InventoryGUI(GUI):
             tile.draw()
 
         if self.selectedSlot and self.selectedSlot.item:
-            panel = pg.Surface([200, 100])
+            panel = pg.Surface([200, 110])
             panel.fill(pg.Color('black'))
             panel.set_alpha(200)
             self.drawString(panel,self.selectedSlot.item.name,[8,8])

@@ -5,7 +5,7 @@ from inventory import Inventory
 
 
 class Mob(pg.sprite.Sprite):
-    sprite_size = [16,32]
+    sprite_size = [16,16]
     collidable = True
     def __init__(self,image,size,position,health,ad):
         super().__init__()
@@ -103,12 +103,12 @@ class Mob(pg.sprite.Sprite):
 class Goblin(Mob):
     name = 'Goblin'
     def __init__(self,x,y):
-        super().__init__(sprite.Spritesheet('mobsheet.png').getSprite(Mob.sprite_size,[0,0]),(64,96),(x,y),25,8)
+        super().__init__(sprite.Spritesheet('mobsheet.png').getSprite(Mob.sprite_size,[0,0]),(64,64),(x,y),25,8)
 
 class Skeleton(Mob):
     name = 'Skeleton'
     def __init__(self,x,y):
-        super().__init__(sprite.Spritesheet('mobsheet.png').getSprite(Mob.sprite_size,[1,0]),(64,128),(x,y),30,10)
+        super().__init__(sprite.Spritesheet('mobsheet.png').getSprite([16,32],[1,0]),(64,128),(x,y),30,10)
 
 class Player(Mob):
     # TODO: Create a player and place it on the map

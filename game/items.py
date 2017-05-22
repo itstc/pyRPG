@@ -75,7 +75,7 @@ class Consumable(StackableItem,UsableItem):
             player.stats.hp += self.attribute
 
 class Weapon(Item,UsableItem):
-    desc = ["A Weapon that buffs","you"]
+    desc = ["A stackable item that","increases a players", "defence by 5" ]
     def __init__(self,name,imageData,attribute):
         super().__init__(name,imageData)
         self.attribute = attribute

@@ -25,9 +25,10 @@ class Game:
         self.entities = sprite.EntityGroup()
         self.entities.add([
             self.itemManager.getItem(0).drop(64, 64),
-            self.itemManager.getItem(1).drop(64, 256)
+            self.itemManager.getItem(5).drop(64, 256),
+            self.itemManager.getItem(6).drop(64, 512)
         ])
-        self.entities.add(mobs.Goblin(256,128),mobs.Skeleton(512,128),mobs.Skeleton(400,128),self.player)
+        self.entities.add(mobs.Goblin(256,256),mobs.Skeleton(512,512),mobs.Skeleton(400,400),self.player)
 
         self.camera = Camera(surface.get_size(), self.map.getWorldSize(), self.player)
         self.gui = ui.InventoryGUI(self.surface,self.player.inventory)

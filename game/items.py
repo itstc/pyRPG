@@ -62,7 +62,7 @@ class UsableItem:
         pass
 
 class Consumable(StackableItem,UsableItem):
-    desc = ["A Consumable that", "heals you"]
+    desc = ["A Consumable that heals","you 15 health."]
     def __init__(self,name,imageData,attribute):
         super().__init__(name,imageData)
         self.attribute = attribute

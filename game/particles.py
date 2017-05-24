@@ -4,12 +4,13 @@ import ui
 class BouncyText(ui.StringRenderer):
     critical = pg.Color(236,208,120)
 
-    def __init__(self, host, value, position, size = 24, state = pg.Color(192,41,66), back = pg.Color(84,36,55)):
-        super().__init__(size)
+    def __init__(self, host, value, position, size = 32, state = pg.Color(192,41,66), back = pg.Color(84,36,55)):
+        super().__init__()
+        self.size = size
         self.host = host
         self.value = value
         self.position = list(position)
-        self.position[0] -= self.getStringSize(value)[0] // 2
+        self.position[0] -= self.getStringSize(value,size)[0] // 2
 
         self.fg = state
         self.bg = back
@@ -23,7 +24,7 @@ class BouncyText(ui.StringRenderer):
             if self.lifeTime <= 0:
                 self.alive = False
 
-            self.position[1] -= 0.1*dt
+            self.position[1] -= 0.05*dt
         else:
             self.host.statQueue.remove(self)
 
@@ -31,8 +32,8 @@ class BouncyText(ui.StringRenderer):
         offset = camera.getView()
         ox = self.position[0] + 3
         if self.alive:
-            self.drawString(surface, self.value, (ox - offset[0],self.position[1] - offset[1]), self.bg)
-            self.drawString(surface,self.value,(self.position[0]- offset[0],self.position[1]- offset[1]),self.fg)
+            self.drawString(surface, self.value,(ox - offset[0],self.position[1] - offset[1]),self.size,self.bg)
+            self.drawString(surface,self.value,(self.position[0] - offset[0],self.position[1] - offset[1]),self.size,self.fg)
 
 
 

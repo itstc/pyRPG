@@ -2,22 +2,19 @@ import pygame as pg
 import sprite
 
 class StringRenderer():
-    def __init__(self,size = 16):
-        self.font = pg.font.Font(pg.font.get_default_font(), size)
-        self.size = size
 
-    def drawString(self,surface, string, position, color = pg.Color('white')):
-        text = self.font.render(str(string),1,color)
+    def drawString(self,surface, string, position,size = 16,color = pg.Color('white')):
+        text = pg.font.Font('res/gamefont.ttf', size).render(str(string),1,color)
         surface.blit(text,position)
 
     def drawStrings(self, surface, strings, position, size = 16, color = pg.Color('white')):
-        font = pg.font.Font(pg.font.get_default_font(), size)
+        font = pg.font.Font('res/gamefont.ttf', size)
         for i in range(len(strings)):
             text = font.render(str(strings[i]),1,color)
             surface.blit(text, (position[0], position[1] + (i * font.size(strings[i])[1])))
 
-    def getStringSize(self,string):
-        return self.font.size(str(string))
+    def getStringSize(self,string,size):
+        return pg.font.Font('res/gamefont.ttf', size).size(str(string))
 
     def getStringsSize(self,strings):
         size = [self.font.size(strings[0])[0],0]
@@ -27,8 +24,8 @@ class StringRenderer():
 
 class GUI(StringRenderer):
     black = pg.Color(0,0,0,200)
-    def __init__(self,surface,size,pos = [0,0], fontsize = 16):
-        super().__init__(fontsize)
+    def __init__(self,surface,size,pos = [0,0]):
+        super().__init__()
         self.surface = surface
         self.showing = False
         self.active = False
@@ -53,7 +50,7 @@ class GUI(StringRenderer):
 
 class InventoryGUI(GUI):
     def __init__(self,surface,inventory):
-        super().__init__(surface,[256,384],fontsize=20)
+        super().__init__(surface,[256,384])
         self.inventory = inventory
         self.grid = []
         start = [16,64]
@@ -90,8 +87,8 @@ class InventoryGUI(GUI):
             panel = pg.Surface([200, 110])
             panel.fill(pg.Color('black'))
             panel.set_alpha(200)
-            self.drawString(panel,self.selectedSlot.item.name,[8,8])
-            self.drawStrings(panel, self.selectedSlot.item.desc, [8, 32])
+            self.drawString(panel,self.selectedSlot.item.name,[8,8],24)
+            self.drawStrings(panel, self.selectedSlot.item.desc, [8, 32],18)
 
             # Display panel on screen
             self.surface.blit(panel, self.selectedSlot.rect.center)
@@ -114,7 +111,7 @@ class InventoryGUI(GUI):
 
     class tile(StringRenderer):
         def __init__(self,gui,size,pos,item = None):
-            super().__init__(20)
+            super().__init__()
             self.gui = gui
             self.rect = pg.Rect(pos,size)
             self.position = pos
@@ -129,4 +126,4 @@ class InventoryGUI(GUI):
             self.gui.interface.blit(self.image,self.position)
             if self.item:
                 self.gui.interface.blit(pg.transform.scale(self.item.image,self.size),self.position)
-                self.drawString(self.gui.interface,self.item.amount,self.position)
+                self.drawString(self.gui.interface,self.item.amount,(self.position[0]+2,self.position[1]+2))

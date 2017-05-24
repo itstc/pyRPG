@@ -11,12 +11,14 @@ class Game:
     fg = pg.Color('white')
     def __init__(self, surface):
 
-        self.surface = surface
+        self.windowScreen = surface
         self.windowSize = surface.get_size()
+
+        self.end = False
         self.running = True
         self.events = EventListener(self)
         self.hud = HUD(surface)
-        self.map = World(self.surface,'res/testmeta.tmx')
+        self.map = World(self.windowScreen,'res/testmeta.tmx')
         self.itemManager = items.ItemController('data/items.json')
 
         self.player = mobs.Player(256,512)
@@ -31,7 +33,7 @@ class Game:
         self.entities.add(mobs.Goblin(256,256),mobs.Skeleton(512,512),mobs.Skeleton(400,400),self.player)
 
         self.camera = Camera(surface.get_size(), self.map.getWorldSize(), self.player)
-        self.gui = ui.InventoryGUI(self.surface,self.player.inventory)
+        self.gui = ui.InventoryGUI(self.windowScreen,self.player.inventory)
 
         pg.key.set_repeat(5,5)
 
@@ -50,15 +52,27 @@ class Game:
         self.entities.update(self.map,dt)
         self.gui.update()
 
+
     def render(self):
         # Clear Screen
-        self.surface.fill(Game.bg)
+        self.windowScreen.fill(Game.bg)
 
         # Draw components here
         self.map.render(self.camera)
-        self.entities.draw(self.surface,self.camera)
+        self.entities.draw(self.windowScreen,self.camera)
 
         self.gui.draw()
+
+        # End Game
+        if not self.entities.has(self.player):
+            self.end = True
+            panel = pg.Surface([400,200])
+            panel.fill(pg.Color(102,0,0))
+            panel.set_alpha(200)
+            string_size = ui.StringRenderer.getStringSize(self,'You are Dead!',48)
+            ui.StringRenderer.drawString(self,panel, 'You are Dead!', ((400 - string_size[0])//2,(200 - string_size[1])//2),48)
+
+            self.windowScreen.blit(panel,((self.windowSize[0] - 400)//2,(self.windowSize[1] - 200)//2))
 
         pg.display.update()
 
@@ -66,7 +80,7 @@ class Game:
         return self.map
 
     def loadMap(self,file):
-        self.map = World(self.surface,file)
+        self.map = World(self.windowScreen,file)
 
 
 class Camera:

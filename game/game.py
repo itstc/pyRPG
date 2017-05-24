@@ -66,13 +66,13 @@ class Game:
         # End Game
         if not self.entities.has(self.player):
             self.end = True
-            panel = pg.Surface([400,200])
-            panel.fill(pg.Color(102,0,0))
+            panel = pg.Surface([400,100])
+            panel.fill(pg.Color(135,27,51))
             panel.set_alpha(200)
             string_size = ui.StringRenderer.getStringSize(self,'You are Dead!',48)
-            ui.StringRenderer.drawString(self,panel, 'You are Dead!', ((400 - string_size[0])//2,(200 - string_size[1])//2),48)
+            ui.StringRenderer.drawString(self,panel, 'You are Dead!', ((400 - string_size[0])//2,(100 - string_size[1])//2),48)
 
-            self.windowScreen.blit(panel,((self.windowSize[0] - 400)//2,(self.windowSize[1] - 200)//2))
+            self.windowScreen.blit(panel,((self.windowSize[0] - 400)//2,(self.windowSize[1] - 100)//2))
 
         pg.display.update()
 

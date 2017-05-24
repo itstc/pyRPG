@@ -9,7 +9,6 @@ class Mob(pg.sprite.Sprite):
     collidable = True
     def __init__(self,images,size,position,health,ad):
         super().__init__()
-        self.images = images
         self.image = pg.Surface(size)
 
         self.size = size
@@ -80,15 +79,15 @@ class Mob(pg.sprite.Sprite):
         return collide
 
     class Actions:
-        def __init__(self,mob,states):
+        def __init__(self,mob,images):
             self.mob = mob
-            self.states = states
             self.current = 'idle_down'
             self.actions = {
                 'attack':False,
                 'walk': False,
             }
             self.direction = 'left'
+            self.images = images
 
         def __getitem__(self, item):
             return self.actions[item]
@@ -109,15 +108,14 @@ class Mob(pg.sprite.Sprite):
             if self.actions['walk']:
                 self.current = 'walk_%s' % self.direction
             elif self.actions['attack']:
-                #self.current = 'attack_%s' % self.direction
-                pass
+                self.current = 'attack_%s' % self.direction
             else:
                 self.current = 'idle_%s' % self.direction
 
-            self.states[self.current].update(dt)
+            self.images[self.current].update(dt)
 
         def draw(self):
-            self.mob.image = self.states[self.current].currentFrame()
+            self.mob.image = self.images[self.current].currentFrame()
 
     class Stats:
         def __init__(self,health,ad):
@@ -145,11 +143,20 @@ class Goblin(Mob):
     name = 'Goblin'
     def __init__(self,x,y):
         size = (64,64)
+        sheet = sprite.Spritesheet('mobsheet.png')
         states = {
-            'idle_up': sprite.AnimatedSprite(sprite.Spritesheet('mobsheet.png'), [(0, 0), (1, 0)], [16, 16], size, 800),
-            'idle_left': sprite.AnimatedSprite(sprite.Spritesheet('mobsheet.png'), [(0, 0), (1, 0)], [16, 16], size, 800),
-            'idle_down': sprite.AnimatedSprite(sprite.Spritesheet('mobsheet.png'), [(0, 0), (1, 0)], [16, 16], size, 800),
-            'idle_right': sprite.AnimatedSprite(sprite.Spritesheet('mobsheet.png'), [(0, 0), (1, 0)], [16, 16], size, 800)
+            'idle_up': sprite.AnimatedSprite(sheet, [(1, 1)], [16, 16], size, 800),
+            'idle_left': sprite.AnimatedSprite(sheet, [(0,0),(1,0)], [16, 16], size, 800),
+            'idle_down': sprite.AnimatedSprite(sheet, [(0, 1)], [16, 16], size, 800),
+            'idle_right': sprite.AnimatedSprite(sheet, [(2, 0),(3,0)], [16, 16], size, 800),
+            'walk_up':sprite.AnimatedSprite(sheet, [(1, 1)], [16, 16],size,200),
+            'walk_left':sprite.AnimatedSprite(sheet, [(0, 0)], [16, 16],size,200),
+            'walk_down':sprite.AnimatedSprite(sheet, [(0, 1)], [16, 16],size,200),
+            'walk_right':sprite.AnimatedSprite(sheet, [(1, 0)], [16, 16],size,200),
+            'attack_up':sprite.AnimatedSprite(sheet, [(6, 1), (7, 1)], [16, 16],size,500),
+            'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0)], [16, 16],size,500),
+            'attack_down':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1)], [16, 16],size,500),
+            'attack_right':sprite.AnimatedSprite(sheet, [(6, 0), (7, 0)], [16, 16],size,500)
         }
         super().__init__(states,size,(x,y),25,8)
         self.maxcd = 1000
@@ -167,14 +174,28 @@ class Skeleton(Mob):
     name = 'Skeleton'
     def __init__(self,x,y):
         size = (64,128)
+        sheet = sprite.Spritesheet('mobsheet.png')
         states = {
-            'idle_up': sprite.AnimatedSprite(sprite.Spritesheet('mobsheet.png'), [(2, 0), (3, 0)], [16, 32], size, 800),
-            'idle_left': sprite.AnimatedSprite(sprite.Spritesheet('mobsheet.png'), [(2, 0), (3, 0)], [16, 32], size, 800),
-            'idle_down': sprite.AnimatedSprite(sprite.Spritesheet('mobsheet.png'), [(2, 0), (3, 0)], [16, 32], size, 800),
-            'idle_right': sprite.AnimatedSprite(sprite.Spritesheet('mobsheet.png'), [(2, 0), (3, 0)], [16, 32], size, 800)
+            'idle_up': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 800),
+            'idle_left': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 800),
+            'idle_down': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 800),
+            'idle_right': sprite.AnimatedSprite(sheet, [(2,1), (3,1)], [16, 32], size, 800),
+            'attack_up': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 1000),
+            'attack_left': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 1000),
+            'attack_down': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 1000),
+            'attack_right': sprite.AnimatedSprite(sheet, [(2,1), (3,1)], [16, 32], size, 1000)
 
         }
         super().__init__(states,size,(x,y),30,10)
+        self.maxcd = 1000
+        self.cooldown = 1000
+
+    def update(self,dt):
+        super().update(dt)
+        for obj in self.fov:
+            if isinstance(obj,Player) and self.getAttackRange(self.action.direction).colliderect(obj):
+                if not self.action['attack']:
+                    self.action.attack(obj)
 
 
 class Player(Mob):

@@ -3,11 +3,11 @@ import sprite
 
 class StringRenderer():
 
-    def drawString(self,surface, string, position,size = 16,color = pg.Color('white')):
+    def drawString(self,surface, string, position,size = 16,color = pg.Color(224,228,204)):
         text = pg.font.Font('res/gamefont.ttf', size).render(str(string),1,color)
         surface.blit(text,position)
 
-    def drawStrings(self, surface, strings, position, size = 16, color = pg.Color('white')):
+    def drawStrings(self, surface, strings, position, size = 16, color = pg.Color(224,228,204)):
         font = pg.font.Font('res/gamefont.ttf', size)
         for i in range(len(strings)):
             text = font.render(str(strings[i]),1,color)

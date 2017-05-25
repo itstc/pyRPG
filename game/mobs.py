@@ -127,7 +127,7 @@ class Mob(pg.sprite.Sprite):
 
         def damage(self,target):
             target.stats.hurt(self.ad)
-            target.stats.statQueue.append(particles.BouncyText(target.stats,self.ad,[target.rect.centerx,target.rect.top - 8]))
+            self.statQueue.append(particles.BouncyText(self,self.ad,[target.rect.centerx,target.rect.top - 16]))
 
         def hurt(self,value):
             self.hp -= value

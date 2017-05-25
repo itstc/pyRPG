@@ -1,7 +1,7 @@
 import pygame as pg
 import mobs,items,sprite,ui
 from events import EventListener
-from world import World
+import world
 
 
 
@@ -18,10 +18,10 @@ class Game:
         self.running = True
         self.events = EventListener(self)
         self.hud = HUD(surface)
-        self.map = World(self.windowScreen,'res/testmeta.tmx')
+        self.map = world.Dungeon([32,32])
         self.itemManager = items.ItemController('data/items.json')
 
-        self.player = mobs.Player(256,512)
+        self.player = mobs.Player(self.map.spawn[0],self.map.spawn[1])
         self.player.inventory.addItem(self.itemManager.getItem(0))
 
         self.entities = sprite.EntityGroup()
@@ -58,7 +58,7 @@ class Game:
         self.windowScreen.fill(Game.bg)
 
         # Draw components here
-        self.map.render(self.camera)
+        self.map.render(self.windowScreen,self.camera)
         self.entities.draw(self.windowScreen,self.camera)
 
         self.gui.draw()

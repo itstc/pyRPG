@@ -7,6 +7,7 @@ from inventory import Inventory
 class Mob(pg.sprite.Sprite):
     sprite_size = [16,16]
     collidable = True
+    type = 'mob'
     def __init__(self,images,size,position,health,ad):
         super().__init__()
         self.image = pg.Surface(size)
@@ -22,6 +23,7 @@ class Mob(pg.sprite.Sprite):
 
         self.action = Mob.Actions(self,images)
         self.stats = Mob.Stats(health,ad)
+
     def getAttackRange(self,direction):
         tlPos = self.rect.topleft
         range = {
@@ -79,6 +81,7 @@ class Mob(pg.sprite.Sprite):
         return collide
 
     class Actions:
+        # Handles all the mob actions here
         def __init__(self,mob,images):
             self.mob = mob
             self.current = 'idle_down'
@@ -118,6 +121,7 @@ class Mob(pg.sprite.Sprite):
             self.mob.image = self.images[self.current].currentFrame()
 
     class Stats:
+        # Handle all of mob stats here
         def __init__(self,health,ad):
             self.maxHP = health
             self.hp = health
@@ -219,8 +223,6 @@ class Player(Mob):
                        }
 
         super().__init__(states, size, pos, 100, 9)
-        self.stats.hp = 50
-        self.isWalking = False
         self.inventory = Inventory(self,10)
 
     def update(self,dt):

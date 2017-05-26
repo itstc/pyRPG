@@ -40,6 +40,7 @@ class AnimatedSprite:
         self.time += dt
         if self.time / self.rate >= 1:
             self.time = 0
+            # Loop through frames as frame increments
             self.frame = (self.frame + 1) % len(self.images)
         return self.images[self.frame]
 
@@ -64,7 +65,10 @@ class EntityGroup(pg.sprite.Group):
         # Adds objects into fov if they are collidables
         for spr in self.sprites():
             proximity = pg.Rect(spr.position[0] - 64, spr.position[1] - 64, 128, 128)
-            spr.fov = world.getCollidableTiles(proximity) + self.getProximityObjects(spr,proximity)
+            spr.fov = self.getProximityObjects(spr,proximity)
+            # if sprite is a mob check for worldobjects
+            if spr.type == 'mob':
+                spr.fov += world.getCollidableTiles(proximity)
             spr.update(dt)
 
     def draw(self,surface,camera):

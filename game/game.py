@@ -18,7 +18,7 @@ class Game:
         self.running = True
         self.events = EventListener(self)
         self.hud = HUD(surface)
-        self.map = world.dMap()
+        self.map = world.Dungeon()
         self.map.makeMap(32,32,50,20,30)
         self.itemManager = items.ItemController('data/items.json')
 

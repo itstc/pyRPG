@@ -19,6 +19,7 @@ class Item:
 
 
 class ItemSprite(pg.sprite.Sprite):
+    type = 'item'
     collidable = False
     def __init__(self,item,pos):
         super().__init__()
@@ -92,6 +93,7 @@ class ItemController():
             self.data = json.load(f)
 
     def getItem(self,id):
+        # Creates a item class for the item based on 'class' key in id
         item = self.data[str(id)]
         cls = ItemController.itemClass[item['class']]
         return cls(item['name'],item['imageData'],item['attribute'])

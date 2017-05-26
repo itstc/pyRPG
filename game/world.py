@@ -56,120 +56,7 @@ class WorldObject:
         self.rect = rect
         self.property = property
 
-class Dungeon():
-    tile_size = [64,64]
-    def __init__(self,size):
-        sheet = spritesheet('test.png')
-        self.tiles = {
-            0:pg.Surface(Dungeon.tile_size),
-            1: pg.transform.scale(sheet.getSprite([16,16],[0,0]),Dungeon.tile_size)
-                      }
-
-        self.map = [[0 for x in range(size[0])] for y in range(size[1])]
-        self.map_size = size
-
-        self.spawn = [0,0]
-        self.exit = [0,0]
-
-        self.createDungeon()
-
-    def create_room(self,room):
-        for y in range(room.y1,room.y2 + 1):
-            for x in range(room.x1, room.x2 + 1):
-                self.map[y][x] = 1
-
-    def create_h_tunnel(self,x1,x2,y):
-        for x in range(min(x1,x2),max(x1,x2) + 1):
-            self.map[y][x] = 1
-
-    def create_v_tunnel(self,y1,y2,x):
-        for y in range(min(y1,y2),max(y1,y2) + 1):
-            self.map[y][x] = 1
-
-    def createDungeon(self):
-        ROOM_MAX_SIZE = 6
-        ROOM_MIN_SIZE = 2
-        MAX_ROOMS = 30
-
-        rooms = []
-        num_rooms = 0
-
-        for r in range(MAX_ROOMS):
-            w = random.randint(ROOM_MIN_SIZE,ROOM_MAX_SIZE)
-            h = random.randint(ROOM_MIN_SIZE,ROOM_MAX_SIZE)
-
-            x = random.randint(0,self.map_size[0] - w -1)
-            y = random.randint(0,self.map_size[1] - h -1)
-
-            new_room = Dungeon.Room(x,y,w,h)
-
-            failed = False
-            for other_room in rooms:
-                if new_room.intersect(other_room):
-                    failed = True
-                    break
-
-            if not failed:
-                self.create_room(new_room)
-                (new_x,new_y) = new_room.center()
-
-                if num_rooms == 0:
-                    self.spawn = (new_x*Dungeon.tile_size[0],new_y*Dungeon.tile_size[1])
-                else:
-                    # If another room, create a tunnel passage
-                    (prev_x,prev_y) = rooms[num_rooms-1].center()
-                    if random.randint(0,1) == 1:
-                        self.create_h_tunnel(prev_x, new_x, prev_y)
-                        self.create_v_tunnel(prev_y, new_y, new_x)
-                    else:
-                        self.create_v_tunnel(prev_y, new_y, prev_x)
-                        self.create_h_tunnel(prev_x, new_x, new_y)
-
-                rooms.append(new_room)
-                num_rooms += 1
-
-        self.exit = rooms[num_rooms - 1].center()
-
-    def render(self,surface,camera):
-        offset = camera.getView()
-        renderDistance = [surface.get_width(),surface.get_height()]
-        render_x = [offset[0] // Dungeon.tile_size[0], math.ceil((offset[0] + renderDistance[0]) / World.size[0])]
-        render_y = [offset[1] // Dungeon.tile_size[1], math.ceil((offset[1] + renderDistance[1]) / World.size[1])]
-
-        for y in range(render_y[0],render_y[1]):
-            for x in range(render_x[0],render_x[1]):
-                try:
-                    image = self.tiles[self.map[y][x]]
-                except:
-                    continue
-                px = x * Dungeon.tile_size[0] - offset[0]
-                py = y * Dungeon.tile_size[1] - offset[1]
-                surface.blit(image,(px,py))
-
-    def getCollidableTiles(self, rect):
-        return []
-
-    def getWorldSize(self):
-        return (self.map_size[0] * World.size[0], self.map_size[1] * World.size[1])
-
-    class Room():
-        def __init__(self,x,y,w,h):
-            self.x1 = x
-            self.y1 = y
-            self.x2 = x + w
-            self.y2 = y + h
-
-        def center(self):
-            x = (self.x1 + self.x2) // 2
-            y = (self.y1 + self.y2) // 2
-            return (x,y)
-
-        def intersect(self,other):
-            return (self.x1 <= other.x2 and self.x2 >= other.x1 and
-                    self.y1 <= other.y2 and self.y2 >= other.y1)
-
-
-class dMap:
+class Dungeon:
     tile_size = [64,64]
 
     def __init__(self):
@@ -179,7 +66,7 @@ class dMap:
         sheet = spritesheet('tilesheet.png')
         self.tiles = {
             0: pg.transform.scale(sheet.getSprite([16, 16], [3, 0]), Dungeon.tile_size),
-            1: pg.Surface(dMap.tile_size),
+            1: pg.Surface(Dungeon.tile_size),
             2: pg.transform.scale(sheet.getSprite([16, 16], [2, 0]), Dungeon.tile_size),
             3: pg.transform.scale(sheet.getSprite([16, 16], [5, 0]), Dungeon.tile_size),
             4: pg.transform.scale(sheet.getSprite([16, 16], [5, 0]), Dungeon.tile_size),
@@ -237,10 +124,9 @@ class dMap:
         self.spawn = self.getCenterTile(self.roomList[0])
 
         finalRoom = self.getCenterTile(self.roomList[-1])
-        self.mapArr[finalRoom[1]//dMap.tile_size[1]][finalRoom[0]//dMap.tile_size[1]] = 6
+        self.mapArr[finalRoom[1]//Dungeon.tile_size[1]][finalRoom[0]//Dungeon.tile_size[1]] = 6
 
         walls = [(y,x) for y in range(self.size_y) for x in range(self.size_x) if self.mapArr[y][x] == 7]
-        print(walls)
         for wall in walls:
             try:
                 if self.mapArr[wall[0]+1][wall[1]] == 0:
@@ -249,7 +135,7 @@ class dMap:
                 continue
 
     def getCenterTile(self,room):
-        return ((room[2] * 2 + room[1])//2 * dMap.tile_size[0],(room[3] * 2 + room[0])//2 * dMap.tile_size[0])
+        return ((room[2] * 2 + room[1])//2 * Dungeon.tile_size[0],(room[3] * 2 + room[0])//2 * Dungeon.tile_size[0])
 
     def makeRoom(self):
         """Randomly produce room size"""
@@ -352,19 +238,7 @@ class dMap:
 
     def makePortal(self, px, py):
         """Create doors in walls"""
-        ptype = random.randrange(100)
-        if ptype > 95:  # Secret door
-            self.mapArr[py][px] = 5
-            return
-        elif ptype > 75:  # Closed door
-            self.mapArr[py][px] = 4
-            return
-        elif ptype > 40:  # Open door
-            self.mapArr[py][px] = 3
-            return
-        else:  # Hole in the wall
-            self.mapArr[py][px] = 2
-            self.mapArr[py][px] = 0
+        self.mapArr[py][px] = 0
 
     def joinCorridor(self, cno, xp, yp, ed, psb):
         """Check corridor endpoint and make an exit if it links to another room"""
@@ -429,8 +303,10 @@ class dMap:
     def render(self,surface,camera):
         offset = camera.getView()
         renderDistance = [surface.get_width(),surface.get_height()]
-        render_x = [offset[0] // dMap.tile_size[0], math.ceil((offset[0] + renderDistance[0]) / dMap.tile_size[0])]
-        render_y = [offset[1] // dMap.tile_size[1], math.ceil((offset[1] + renderDistance[1]) / dMap.tile_size[1])]
+
+        # amount of tiles to render on x and y
+        render_x = [offset[0] // Dungeon.tile_size[0], math.ceil((offset[0] + renderDistance[0]) / Dungeon.tile_size[0])]
+        render_y = [offset[1] // Dungeon.tile_size[1], math.ceil((offset[1] + renderDistance[1]) / Dungeon.tile_size[1])]
 
         for y in range(render_y[0],render_y[1]):
             for x in range(render_x[0],render_x[1]):
@@ -440,13 +316,33 @@ class dMap:
                     if tile_id == 1: image.fill(pg.Color(51,51,51))
                 except:
                     continue
-                px = x * dMap.tile_size[0] - offset[0]
-                py = y * dMap.tile_size[1] - offset[1]
+                px = x * Dungeon.tile_size[0] - offset[0]
+                py = y * Dungeon.tile_size[1] - offset[1]
                 surface.blit(image,(px,py))
 
     def getCollidableTiles(self, rect):
-        return []
+        collidables = []
+        start_pos = rect.topleft
+        end_pos =  rect.bottomright
+
+        render_x = [start_pos[0]//Dungeon.tile_size[0], end_pos[0]//Dungeon.tile_size[0] + 1]
+        render_y = [start_pos[1]//Dungeon.tile_size[1], end_pos[1]//Dungeon.tile_size[1] + 1]
+
+        for y in range(render_y[0], render_y[1]):
+            for x in range(render_x[0], render_x[1]):
+                if self.mapArr[y][x] == 2 or self.mapArr[y][x] == 7:
+                    # Append a WorldObject to return
+                    collidables.append(Dungeon.WorldObject((x*Dungeon.tile_size[0], y*Dungeon.tile_size[1]),Dungeon.tile_size))
+        return collidables
 
     def getWorldSize(self):
-        return (self.size_x * dMap.tile_size[0], self.size_y * dMap.tile_size[1])
+        return (self.size_x * Dungeon.tile_size[0], self.size_y * Dungeon.tile_size[1])
+
+    class WorldObject():
+        collidable = True
+        def __init__(self,pos,size):
+            self.rect = pg.Rect(pos, size)
+
+    class ExitTile(WorldObject):
+        collidable = True
 

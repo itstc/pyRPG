@@ -141,7 +141,7 @@ class Mob(pg.sprite.Sprite):
                 item.draw(surface,camera)
 class Goblin(Mob):
     name = 'Goblin'
-    def __init__(self,x,y):
+    def __init__(self,pos):
         size = (64,64)
         sheet = sprite.Spritesheet('mobsheet.png')
         states = {
@@ -158,7 +158,7 @@ class Goblin(Mob):
             'attack_down':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1)], [16, 16],size,500),
             'attack_right':sprite.AnimatedSprite(sheet, [(6, 0), (7, 0)], [16, 16],size,500)
         }
-        super().__init__(states,size,(x,y),25,8)
+        super().__init__(states,size,pos,25,8)
         self.maxcd = 1000
         self.cooldown = 1000
 
@@ -172,7 +172,7 @@ class Goblin(Mob):
 
 class Skeleton(Mob):
     name = 'Skeleton'
-    def __init__(self,x,y):
+    def __init__(self,pos):
         size = (64,128)
         sheet = sprite.Spritesheet('mobsheet.png')
         states = {
@@ -186,7 +186,7 @@ class Skeleton(Mob):
             'attack_right': sprite.AnimatedSprite(sheet, [(2,1), (3,1)], [16, 32], size, 1000)
 
         }
-        super().__init__(states,size,(x,y),30,10)
+        super().__init__(states,size,pos,30,10)
         self.maxcd = 1000
         self.cooldown = 1000
 
@@ -200,7 +200,7 @@ class Skeleton(Mob):
 
 class Player(Mob):
     # TODO: Create a player and place it on the map
-    def __init__(self,x,y):
+    def __init__(self,pos):
         size = (64,96)
         sheet = sprite.Spritesheet('playersheet.png')
         states = {
@@ -218,7 +218,7 @@ class Player(Mob):
             'attack_right':sprite.AnimatedSprite(sheet, [(10, 1), (11, 1)], [16, 24],size,200)
                        }
 
-        super().__init__(states, size, (x,y),100,9)
+        super().__init__(states, size, pos, 100, 9)
         self.stats.hp = 50
         self.isWalking = False
         self.inventory = Inventory(self,10)

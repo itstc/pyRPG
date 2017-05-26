@@ -1,7 +1,7 @@
 import pygame as pg
-import mobs,items,sprite,ui
+import random
+import mobs,items,sprite,ui,world
 from events import EventListener
-import world
 
 
 
@@ -18,10 +18,11 @@ class Game:
         self.running = True
         self.events = EventListener(self)
         self.hud = HUD(surface)
-        self.map = world.Dungeon([32,32])
+        self.map = world.dMap()
+        self.map.makeMap(32,32,50,20,30)
         self.itemManager = items.ItemController('data/items.json')
 
-        self.player = mobs.Player(self.map.spawn[0],self.map.spawn[1])
+        self.player = mobs.Player(self.map.spawn)
         self.player.inventory.addItem(self.itemManager.getItem(0))
 
         self.entities = sprite.EntityGroup()
@@ -30,7 +31,10 @@ class Game:
             self.itemManager.getItem(5).drop(64, 256),
             self.itemManager.getItem(6).drop(64, 512)
         ])
-        self.entities.add(mobs.Goblin(256,256),mobs.Skeleton(512,512),mobs.Skeleton(400,400),self.player)
+        self.entities.add(self.player)
+
+        for i in range(3):
+            self.entities.add(mobs.Skeleton(self.map.getCenterTile(random.choice(self.map.roomList[1:-1]))))
 
         self.camera = Camera(surface.get_size(), self.map.getWorldSize(), self.player)
         self.gui = ui.InventoryGUI(self.windowScreen,self.player.inventory)
@@ -78,9 +82,6 @@ class Game:
 
     def getCurrentMap(self):
         return self.map
-
-    def loadMap(self,file):
-        self.map = World(self.windowScreen,file)
 
 
 class Camera:

@@ -2,7 +2,7 @@ import pygame,cProfile
 from game import Game
 
 if __name__ == '__main__':
-    SIZE = (800,600)
+    SIZE = (1280,720)
     pygame.init()
     screen = pygame.display.set_mode(SIZE)
     pygame.display.set_caption('LOTA ALPHA')

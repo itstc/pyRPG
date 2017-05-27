@@ -26,15 +26,11 @@ class Game:
         self.player.inventory.addItem(self.itemManager.getItem(0))
 
         self.entities = sprite.EntityGroup()
-        self.entities.add([
-            self.itemManager.getItem(0).drop(64, 64),
-            self.itemManager.getItem(5).drop(64, 256),
-            self.itemManager.getItem(6).drop(64, 512)
-        ])
         self.entities.add(self.player)
 
-        for i in range(3):
-            self.entities.add(mobs.Skeleton(self.map.getCenterTile(random.choice(self.map.roomList[1:-1]))))
+        for room in self.map.roomList[1:]:
+            self.entities.add(mobs.Skeleton(room.getSpawnableSpace()),self.itemManager.getItem(random.randrange(6)).drop(room.getSpawnableSpace()))
+
 
         self.camera = Camera(surface.get_size(), self.map.getWorldSize(), self.player)
         self.gui = ui.InventoryGUI(self.windowScreen,self.player.inventory)
@@ -49,7 +45,7 @@ class Game:
             pg.display.set_caption('%s %i fps' % ('pyLota Alpha Build:', clock.get_fps()//1))
 
             self.render()
-            self.events.handleEvent()
+            self.events.handleEvent(dt)
             self.update(dt)
 
     def update(self,dt):

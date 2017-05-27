@@ -57,7 +57,7 @@ class WorldObject:
         self.property = property
 
 class Dungeon:
-    tile_size = [64,64]
+    tile_size = [96,96]
 
     def __init__(self):
         self.roomList = []
@@ -121,9 +121,9 @@ class Dungeon:
             if len(self.roomList) == mrooms:
                 failed = fail
         self.finalJoins()
-        self.spawn = self.getCenterTile(self.roomList[0])
+        self.spawn = self.getCenterPosition(self.roomList[0])
 
-        finalRoom = self.getCenterTile(self.roomList[-1])
+        finalRoom = self.getCenterPosition(self.roomList[-1])
         self.mapArr[finalRoom[1]//Dungeon.tile_size[1]][finalRoom[0]//Dungeon.tile_size[1]] = 6
 
         walls = [(y,x) for y in range(self.size_y) for x in range(self.size_x) if self.mapArr[y][x] == 7]
@@ -134,8 +134,10 @@ class Dungeon:
             except:
                 continue
 
-    def getCenterTile(self,room):
-        return ((room[2] * 2 + room[1])//2 * Dungeon.tile_size[0],(room[3] * 2 + room[0])//2 * Dungeon.tile_size[0])
+    def getCenterPosition(self,room):
+        x = room.center()[0] * Dungeon.tile_size[0]
+        y = room.center()[1] * Dungeon.tile_size[1]
+        return (x,y)
 
     def makeRoom(self):
         """Randomly produce room size"""
@@ -197,7 +199,7 @@ class Dungeon:
         # If there is space, add to list of rooms
         if canPlace == 1:
             temp = [ll, ww, xpos, ypos]
-            self.roomList.append(temp)
+            self.roomList.append(Dungeon.Room(self,xpos,ypos,ww,ll))
             for j in range(ll + 2):  # Then build walls
                 for k in range(ww + 2):
                     wall_orientation = 7
@@ -213,23 +215,23 @@ class Dungeon:
         while True:
             rw = random.randrange(4)
             if rw == 0:  # North wall
-                rx = random.randrange(room[1]) + room[2]
-                ry = room[3] - 1
+                rx = random.randrange(room.x1,room.x2)
+                ry = room.y1 - 1
                 rx2 = rx
                 ry2 = ry - 1
             elif rw == 1:  # East wall
-                ry = random.randrange(room[0]) + room[3]
-                rx = room[2] + room[1]
+                ry = random.randrange(room.y1,room.y2)
+                rx = room.x2
                 rx2 = rx + 1
                 ry2 = ry
             elif rw == 2:  # South wall
-                rx = random.randrange(room[1]) + room[2]
-                ry = room[3] + room[0]
+                rx = random.randrange(room.x1,room.x2)
+                ry = room.y2
                 rx2 = rx
                 ry2 = ry + 1
             elif rw == 3:  # West wall
-                ry = random.randrange(room[0]) + room[3]
-                rx = room[2] - 1
+                ry = random.randrange(room.y1,room.y2)
+                rx = room.x1 - 1
                 rx2 = rx - 1
                 ry2 = ry
             if self.mapArr[ry][rx] == 7:  # If space is a wall, exit
@@ -243,12 +245,12 @@ class Dungeon:
     def joinCorridor(self, cno, xp, yp, ed, psb):
         """Check corridor endpoint and make an exit if it links to another room"""
         cArea = self.roomList[cno]
-        if xp != cArea[2] or yp != cArea[3]:  # Find the corridor endpoint
-            endx = xp - (cArea[1] - 1)
-            endy = yp - (cArea[0] - 1)
+        if xp != cArea.x1 or yp != cArea.y1:  # Find the corridor endpoint
+            endx = xp - (cArea.w - 1)
+            endy = yp - (cArea.h - 1)
         else:
-            endx = xp + (cArea[1] - 1)
-            endy = yp + (cArea[0] - 1)
+            endx = xp + (cArea.w - 1)
+            endy = yp + (cArea.h - 1)
         checkExit = []
         if ed == 0:  # North corridor
             if endx > 1:
@@ -337,6 +339,33 @@ class Dungeon:
 
     def getWorldSize(self):
         return (self.size_x * Dungeon.tile_size[0], self.size_y * Dungeon.tile_size[1])
+
+    class Room():
+        type = 5
+        def __init__(self,world,x,y,w,h):
+            self.world = world
+            self.x1 = x
+            self.y1 = y
+            self.x2 = x + w
+            self.y2 = y + h
+            self.w = w
+            self.h = h
+
+        def center(self):
+            return ((self.x1 + self.x2)//2,(self.y1 + self.y2)//2)
+
+        def getSpawnableSpace(self):
+            mapData = self.world.mapArr
+            spawnable = False
+            x = 0
+            y = 0
+            while not spawnable:
+                x = random.randrange(self.x1,self.x2)
+                y = random.randrange(self.y1,self.y2)
+                if mapData[y][x] == 0:
+                    spawnable = True
+
+            return (x * Dungeon.tile_size[0] + 48,y * Dungeon.tile_size[0])
 
     class WorldObject():
         collidable = True

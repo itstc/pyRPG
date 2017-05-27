@@ -63,13 +63,17 @@ class EntityGroup(pg.sprite.Group):
 
     def update(self,world,dt):
         # Adds objects into fov if they are collidables
+        if self.sprites():
+            prev = self.sprites()[0]
         for spr in self.sprites():
+            if spr.type == 'mob' and spr.action['walk'] and spr.position[1] <= prev.position[1]:
+                temp = spr
+                self.remove(spr)
+                self.add(temp)
             proximity = pg.Rect(spr.position[0] - 64, spr.position[1] - 64, 128, 128)
-            spr.fov = self.getProximityObjects(spr,proximity)
-            # if sprite is a mob check for worldobjects
-            if spr.type == 'mob':
-                spr.fov += world.getCollidableTiles(proximity)
+            spr.fov = self.getProximityObjects(spr,proximity) + world.getCollidableTiles(proximity)
             spr.update(dt)
+            prev = spr
 
     def draw(self,surface,camera):
         '''

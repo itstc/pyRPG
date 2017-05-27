@@ -10,8 +10,8 @@ class Item:
         self.image = sprite.Spritesheet('items.png').getSprite(imageData[0], imageData[1])
         self.amount = 1
 
-    def drop(self,x,y):
-        return ItemSprite(self,[x,y])
+    def drop(self,pos):
+        return ItemSprite(self,pos)
 
     def __eq__(self, other):
         return self.name == other.name
@@ -25,7 +25,7 @@ class ItemSprite(pg.sprite.Sprite):
         super().__init__()
         self.image = pg.transform.scale(item.image,[32,32])
         self.size = [32,32]
-        self.position = pos
+        self.position = list(pos)
         self.rect = pg.Rect(pos,[32,32])
         self.fov = []
         self.bouncing = True

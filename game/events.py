@@ -7,7 +7,7 @@ class EventListener:
         self.game = game
         self.pressed = False
 
-    def handleEvent(self):
+    def handleEvent(self,dt):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.game.running = False
@@ -18,7 +18,7 @@ class EventListener:
             elif event.type == pg.MOUSEMOTION:
                 self.handleMouseMovement(event.pos,event.buttons)
             elif event.type == pg.KEYDOWN:
-                self.handleKeyEvent(event.key)
+                self.handleKeyEvent(event.key,dt)
                 self.pressed = True
             elif event.type == pg.KEYUP:
                 self.pressed = False
@@ -58,11 +58,11 @@ class EventListener:
             if polygons[key].collide(pos):
                 return key
 
-    def handleKeyEvent(self, key):
+    def handleKeyEvent(self, key,dt):
         if not self.game.end:
             if key in [pg.K_w,pg.K_a,pg.K_s,pg.K_d]:
                 self.game.player.action['walk'] = True
-            moveSpeed = 4
+            moveSpeed = 0.3 * dt
             if key == pg.K_w:
                 self.game.player.action.direction = 'up'
                 self.game.player.action.move(0, -moveSpeed)
@@ -85,4 +85,5 @@ class EventListener:
             if key == pg.K_ESCAPE:
                 self.game.running = False
 
-        self.game.camera.moveCamera()
+        if self.game.player.action['walk']:
+            self.game.camera.moveCamera()

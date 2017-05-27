@@ -1,9 +1,16 @@
 {
-  "0": {"class": "Consumable", "name": "Potion", "imageData": [[8, 8], [0, 0]], "attribute": 15},
-  "1": {"class": "Weapon", "name": "Bow", "imageData": [[8, 8], [1, 0]], "attribute": 5},
-  "2": {"class": "Weapon", "name": "Knife", "imageData": [[8, 8], [2, 0]], "attribute": 10},
-  "3": {"class": "Weapon", "name": "Scythe", "imageData": [[8, 8], [3, 0]], "attribute": 15},
-  "4": {"class": "Weapon", "name": "Sword", "imageData": [[8, 8], [4, 0]], "attribute": 18},
-  "5": {"class": "Weapon", "name": "Spear", "imageData": [[8, 16], [5, 0]], "attribute": 20},
-  "6": {"class": "Weapon", "name": "Golden Branch", "imageData": [[8, 8], [0, 1]], "attribute": 5}
+  "0": {"class": "Consumable", "name": "Potion", "desc":["A Consumable that heals","you 15 health."],
+        "rarity":"common", "imageData": [[8, 8], [0, 0]], "attribute": 15},
+  "1": {"class": "Weapon", "name": "Bow", "desc":["A training bow that","increases a players", "attack by 5"],
+        "rarity":"common", "imageData": [[8, 8], [1, 0]], "attribute": 5},
+  "2": {"class": "Weapon", "name": "Knife", "desc":["A regular knife that","increases a players", "attack by 10"],
+        "rarity":"common", "imageData": [[8, 8], [2, 0]], "attribute": 10},
+  "3": {"class": "Weapon", "name": "Scythe", "desc":["A sharp scythe that","increases a players", "attack by 15"],
+        "rarity":"uncommon", "imageData": [[8, 8], [3, 0]], "attribute": 15},
+  "4": {"class": "Weapon", "name": "Sword", "desc":["A golden sword that","increases a players", "attack by 18"],
+        "rarity":"uncommon", "imageData": [[8, 8], [4, 0]], "attribute": 18},
+  "5": {"class": "Weapon", "name": "Spear", "desc":["A powerful spear that","increases a players", "attack by 20"],
+        "rarity":"rare", "imageData": [[8, 16], [5, 0]], "attribute": 20},
+  "6": {"class": "Weapon", "name": "Golden Branch", "desc":["A stackable item that","increases a players", "defence by 5"],
+        "rarity":"common", "imageData": [[8, 8], [0, 1]], "attribute": 5}
 }

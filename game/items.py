@@ -5,8 +5,10 @@ from mobs import Player
 from particles import BouncyText as Text
 class Item:
     stackable = False
-    def __init__(self,name,imageData):
+    def __init__(self,name,desc,rarity,imageData):
         self.name = name
+        self.desc = desc
+        self.rarity = rarity
         self.image = sprite.Spritesheet('items.png').getSprite(imageData[0], imageData[1])
         self.amount = 1
 
@@ -54,8 +56,8 @@ class ItemSprite(pg.sprite.Sprite):
 
 class StackableItem(Item):
     stackable = True
-    def __init__(self,name,imageData):
-        super().__init__(name,imageData)
+    def __init__(self,name,desc,rarity,imageData):
+        super().__init__(name,desc,rarity,imageData)
 
 
 class UsableItem:
@@ -63,9 +65,8 @@ class UsableItem:
         pass
 
 class Consumable(StackableItem,UsableItem):
-    desc = ["A Consumable that heals","you 15 health."]
-    def __init__(self,name,imageData,attribute):
-        super().__init__(name,imageData)
+    def __init__(self,name,desc,rarity,imageData,attribute):
+        super().__init__(name,desc,rarity,imageData)
         self.attribute = attribute
 
     def use(self,player):
@@ -76,9 +77,8 @@ class Consumable(StackableItem,UsableItem):
             player.stats.hp += self.attribute
 
 class Weapon(Item,UsableItem):
-    desc = ["A stackable item that","increases a players", "defence by 5" ]
-    def __init__(self,name,imageData,attribute):
-        super().__init__(name,imageData)
+    def __init__(self,name,desc,rarity,imageData,attribute):
+        super().__init__(name,desc,rarity,imageData)
         self.attribute = attribute
 
     def use(self,player):
@@ -96,6 +96,6 @@ class ItemController():
         # Creates a item class for the item based on 'class' key in id
         item = self.data[str(id)]
         cls = ItemController.itemClass[item['class']]
-        return cls(item['name'],item['imageData'],item['attribute'])
+        return cls(item['name'],item['desc'],item['rarity'],item['imageData'],item['attribute'])
 
 

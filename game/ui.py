@@ -49,6 +49,11 @@ class GUI(StringRenderer):
         pass
 
 class InventoryGUI(GUI):
+    colors = {
+        'common': pg.Color(224,228,204),
+        'uncommon': pg.Color(102,255,0),
+        'rare': pg.Color(204,0,0)
+    }
     def __init__(self,surface,inventory):
         super().__init__(surface,[256,384])
         self.inventory = inventory
@@ -87,7 +92,7 @@ class InventoryGUI(GUI):
             panel = pg.Surface([200, 110])
             panel.fill(pg.Color('black'))
             panel.set_alpha(200)
-            self.drawString(panel,self.selectedSlot.item.name,[8,8],24)
+            self.drawString(panel,self.selectedSlot.item.name,[8,8],24,InventoryGUI.colors[self.selectedSlot.item.rarity])
             self.drawStrings(panel, self.selectedSlot.item.desc, [8, 32],18)
 
             # Display panel on screen

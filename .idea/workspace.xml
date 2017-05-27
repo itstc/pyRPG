@@ -2,13 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="058a6eac-894a-4a34-b22d-a5c00fcc5df7" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/game/res/hud.psd" afterPath="$PROJECT_DIR$/game/res/hud.psd" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/game/res/tilesheet.png" afterPath="$PROJECT_DIR$/game/res/tilesheet.png" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/game/events.py" afterPath="$PROJECT_DIR$/game/events.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/game/game.py" afterPath="$PROJECT_DIR$/game/game.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/game/data/items.json" afterPath="$PROJECT_DIR$/game/data/items.json" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/game/items.py" afterPath="$PROJECT_DIR$/game/items.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/game/sprite.py" afterPath="$PROJECT_DIR$/game/sprite.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/game/world.py" afterPath="$PROJECT_DIR$/game/world.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/game/ui.py" afterPath="$PROJECT_DIR$/game/ui.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -51,8 +50,8 @@
       <file leaf-file-name="items.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/game/items.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="272">
-              <caret line="20" column="35" lean-forward="true" selection-start-line="20" selection-start-column="35" selection-end-line="20" selection-end-column="35" />
+            <state relative-caret-position="425">
+              <caret line="89" column="0" lean-forward="true" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -70,6 +69,16 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="items.json" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/game/data/items.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="136">
+              <caret line="8" column="77" lean-forward="true" selection-start-line="8" selection-start-column="77" selection-end-line="8" selection-end-column="77" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="sprite.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/game/sprite.py">
           <provider selected="true" editor-type-id="text-editor">
@@ -82,11 +91,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="world.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="world.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/game/world.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="404">
-              <caret line="62" column="26" lean-forward="true" selection-start-line="62" selection-start-column="26" selection-end-line="62" selection-end-column="26" />
+            <state relative-caret-position="323">
+              <caret line="142" column="40" lean-forward="true" selection-start-line="141" selection-start-column="23" selection-end-line="142" selection-end-column="40" />
               <folding>
                 <element signature="e#41#60#0" expanded="true" />
               </folding>
@@ -125,17 +134,17 @@
         <option value="$PROJECT_DIR$/game/objectToJson.py" />
         <option value="$PROJECT_DIR$/game/jsonConverter/converter.py" />
         <option value="$PROJECT_DIR$/game/inventory.py" />
-        <option value="$PROJECT_DIR$/game/data/items.json" />
         <option value="$PROJECT_DIR$/game/particles.py" />
-        <option value="$PROJECT_DIR$/game/ui.py" />
         <option value="$PROJECT_DIR$/game/converter.py" />
         <option value="$PROJECT_DIR$/game/__init__.py" />
-        <option value="$PROJECT_DIR$/game/items.py" />
         <option value="$PROJECT_DIR$/game/events.py" />
         <option value="$PROJECT_DIR$/game/sprite.py" />
         <option value="$PROJECT_DIR$/game/game.py" />
         <option value="$PROJECT_DIR$/game/mobs.py" />
         <option value="$PROJECT_DIR$/game/world.py" />
+        <option value="$PROJECT_DIR$/game/ui.py" />
+        <option value="$PROJECT_DIR$/game/items.py" />
+        <option value="$PROJECT_DIR$/game/data/items.json" />
       </list>
     </option>
   </component>
@@ -444,7 +453,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19322917" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -603,24 +612,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/game/gui.py" />
     <entry file="file://$PROJECT_DIR$/game/objectToJson.py" />
-    <entry file="file://$PROJECT_DIR$/game/data/items.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" column="50" lean-forward="false" selection-start-line="7" selection-start-column="50" selection-end-line="7" selection-end-column="50" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/game/inventory.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="190">
           <caret line="22" column="0" lean-forward="false" selection-start-line="22" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/game/ui.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="55" column="23" lean-forward="false" selection-start-line="55" selection-start-column="23" selection-end-line="55" selection-end-column="23" />
         </state>
       </provider>
     </entry>
@@ -665,16 +660,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/game/sprite.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="348">
-          <caret line="83" column="0" lean-forward="true" selection-start-line="83" selection-start-column="0" selection-end-line="83" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/game/game.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-264">
@@ -693,11 +678,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/game/items.py">
+    <entry file="file://$PROJECT_DIR$/game/world.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="20" column="35" lean-forward="true" selection-start-line="20" selection-start-column="35" selection-end-line="20" selection-end-column="35" />
-          <folding />
+        <state relative-caret-position="323">
+          <caret line="142" column="40" lean-forward="true" selection-start-line="141" selection-start-column="23" selection-end-line="142" selection-end-column="40" />
+          <folding>
+            <element signature="e#41#60#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/game/sprite.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="348">
+          <caret line="83" column="0" lean-forward="true" selection-start-line="83" selection-start-column="0" selection-end-line="83" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -711,13 +708,27 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/game/world.py">
+    <entry file="file://$PROJECT_DIR$/game/ui.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="404">
-          <caret line="62" column="26" lean-forward="true" selection-start-line="62" selection-start-column="26" selection-end-line="62" selection-end-column="26" />
-          <folding>
-            <element signature="e#41#60#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="1088">
+          <caret line="65" column="32" lean-forward="true" selection-start-line="65" selection-start-column="32" selection-end-line="65" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/game/items.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="425">
+          <caret line="89" column="0" lean-forward="true" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/game/data/items.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="8" column="77" lean-forward="true" selection-start-line="8" selection-start-column="77" selection-end-line="8" selection-end-column="77" />
+          <folding />
         </state>
       </provider>
     </entry>

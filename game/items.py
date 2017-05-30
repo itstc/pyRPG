@@ -36,6 +36,7 @@ class ItemSprite(pg.sprite.Sprite):
         self.item = item
 
     def update(self,dt):
+        self.rect.topleft = self.position
         self.time += dt
         if self.time / 500 > 1:
             self.bouncing = not self.bouncing
@@ -47,7 +48,7 @@ class ItemSprite(pg.sprite.Sprite):
                 obj.inventory.addItem(self.item)
                 self.kill()
 
-    def draw(self, surface, camera, offset):
+    def draw(self, surface, camera):
         pass
 
     def bounce(self, dt, bounce):

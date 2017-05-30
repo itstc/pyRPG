@@ -11,6 +11,6 @@
         "rarity":"uncommon", "imageData": [[8, 8], [4, 0]], "attribute": 18},
   "5": {"class": "Weapon", "name": "Spear", "desc":["A powerful spear that","increases a players", "attack by 20"],
         "rarity":"rare", "imageData": [[8, 16], [5, 0]], "attribute": 20},
-  "6": {"class": "Weapon", "name": "Golden Branch", "desc":["A stackable item that","increases a players", "defence by 5"],
-        "rarity":"common", "imageData": [[8, 8], [0, 1]], "attribute": 5}
+  "6": {"class": "Consumable", "name": "Golden Branch", "desc":["A stackable item that","increases a players", "defence by 5"],
+        "rarity":"super_rare", "imageData": [[8, 8], [0, 1]], "attribute": 5}
 }

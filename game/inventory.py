@@ -11,6 +11,13 @@ class Inventory:
         elif len(self.items) < self.capacity:
             self.items.append(item)
 
+    def addItems(self,items):
+        for item in items:
+            if item.stackable and (item in self.items):
+                self.findItem(item).amount += 1
+            elif len(self.items) < self.capacity:
+                self.items.append(item)
+
     def displayInventory(self):
         print('Inventory (%i):' % len(self.items))
         for item in self.items:
@@ -28,6 +35,13 @@ class Inventory:
             if self.items[index].amount == 0:
                 self.removeItem(index)
         self.displayInventory()
+
+    def useItem(self,item):
+        if item in self.items:
+            item.use(self.holder)
+            item.amount -= 1
+            if item.amount == 0:
+                self.items.remove(item)
 
     def removeItem(self,index):
         self.items.pop(index)

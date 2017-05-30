@@ -63,17 +63,10 @@ class EntityGroup(pg.sprite.Group):
 
     def update(self,world,dt):
         # Adds objects into fov if they are collidables
-        if self.sprites():
-            prev = self.sprites()[0]
         for spr in self.sprites():
-            if spr.type == 'mob' and spr.action['walk'] and spr.position[1] <= prev.position[1]:
-                temp = spr
-                self.remove(spr)
-                self.add(temp)
-            proximity = pg.Rect(spr.position[0] - 64, spr.position[1] - 64, 128, 128)
+            proximity = pg.Rect(spr.position[0] - 32, spr.position[1], 128, 128)
             spr.fov = self.getProximityObjects(spr,proximity) + world.getCollidableTiles(proximity)
             spr.update(dt)
-            prev = spr
 
     def draw(self,surface,camera):
         '''
@@ -86,16 +79,11 @@ class EntityGroup(pg.sprite.Group):
         sprite position[x,y] - camera_position[x,y]
 
         '''
-        offset = camera.getView()
         sprites = self.sprites()
         surface_blit = surface.blit
         for spr in sprites:
-            if camera.isVisible(spr.position):
-                # Offset the player position to be based on camera
-                drawRect = (spr.position[0] - spr.size[0]//2 - offset[0], spr.position[1] - spr.size[1]//2 - offset[1])
-
-                # Draws sprite
-                self.spritedict[spr] = surface_blit(spr.image, drawRect)
-                spr.draw(surface,camera,drawRect)
+            # Draws sprite
+            self.spritedict[spr] = surface_blit(spr.image, camera.apply(spr))
+            spr.draw(surface,camera)
 
         self.lostsprites = []

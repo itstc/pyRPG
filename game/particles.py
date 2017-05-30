@@ -29,11 +29,10 @@ class BouncyText(ui.StringRenderer):
             self.host.statQueue.remove(self)
 
     def draw(self,surface,camera):
-        offset = camera.getView()
         ox = self.position[0] + 3
         if self.alive:
-            self.drawString(surface, self.value,(ox - offset[0],self.position[1] - offset[1]),self.size,self.bg)
-            self.drawString(surface,self.value,(self.position[0] - offset[0],self.position[1] - offset[1]),self.size,self.fg)
+            self.drawString(surface,self.value,camera.applyOnPosition([ox,self.position[1]]),self.size,self.bg)
+            self.drawString(surface,self.value,camera.applyOnPosition([self.position[0],self.position[1]]),self.size,self.fg)
 
 
 

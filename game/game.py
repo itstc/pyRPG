@@ -23,16 +23,16 @@ class Game:
         self.itemManager = items.ItemController('data/items.json')
 
         self.player = mobs.Player(self.map.spawn)
-        self.player.inventory.addItem(self.itemManager.getItem(0))
+        self.player.inventory.addItems([self.itemManager.getItem(0)]*10)
 
         self.entities = sprite.EntityGroup()
         self.entities.add(self.player)
 
-        for room in self.map.roomList[1:]:
-            self.entities.add(mobs.Skeleton(room.getSpawnableSpace()),self.itemManager.getItem(random.randrange(6)).drop(room.getSpawnableSpace()))
+        for room in self.map.getRooms():
+            self.entities.add(mobs.Skeleton(room.getSpawnableSpace()),self.itemManager.getItem(random.randrange(7)).drop(room.getSpawnableSpace()))
 
 
-        self.camera = Camera(surface.get_size(), self.map.getWorldSize(), self.player)
+        self.camera = Camera(self.player.position,surface.get_size(), self.map.getWorldSize())
         self.gui = ui.InventoryGUI(self.windowScreen,self.player.inventory)
 
         pg.key.set_repeat(5,5)
@@ -40,16 +40,17 @@ class Game:
     def run(self):
         clock = pg.time.Clock()
         while self.running:
-            dt = clock.tick(60)
+            dt = clock.tick(128)
 
             pg.display.set_caption('%s %i fps' % ('pyLota Alpha Build:', clock.get_fps()//1))
 
             self.render()
-            self.events.handleEvent(dt)
+            self.events.handleEvent()
             self.update(dt)
 
     def update(self,dt):
         self.entities.update(self.map,dt)
+        self.camera.update(self.player)
         self.gui.update()
 
 
@@ -81,52 +82,45 @@ class Game:
 
 
 class Camera:
-    def __init__(self, screenSize, worldSize, target):
+    def __init__(self,pos,screenSize,worldSize):
         '''
         :param screenSize: tuple
         :param worldSize: tuple
         :param target: Game object for camera to follow
         '''
+        self.rect = pg.Rect(pos,screenSize)
         self.windowSize = screenSize
-        self.world = worldSize
-        self.target = target
+        self.worldSize = worldSize
 
-        self.offset = []
-        self.moveCamera()
+    def apply(self, entity):
+        offset = (-self.rect.left,-self.rect.top)
+        return entity.rect.move(offset)
+
+    def applyOnRect(self, rect):
+        offset = (-self.rect.left,-self.rect.top)
+        return rect.move(offset)
+
+    def applyOnPosition(self,pos):
+        x = pos[0] - self.rect.left
+        y = pos[1] - self.rect.top
+        return (x,y)
+
+    def update(self, player):
+        x =  player.rect.left - self.windowSize[0]//2
+        y =  player.rect.top - self.windowSize[1]//2
+
+        x = max(0,x)
+        y = max(0,y)
+        x = min(x,self.worldSize[0])
+        y = min(y,self.worldSize[1])
+
+        self.rect.topleft = [x,y]
 
     def isVisible(self,position):
-        """
-        checks if a pygame.Rect() object is in the self.view
-        :param rect: pygame.Rect()
-        :return: bool
-        """
-        return (position[0] - self.offset[0] >= 0) and (position[1] - self.offset[1] >= 0) and \
-               (position[1] - self.offset[1] <= self.windowSize[0]) and (position[1] - self.offset[1] <= self.windowSize[1])
-
-    def getOffsetPosition(self,rect):
-        return (rect.center[0] - self.offset[0], rect.center[1] - self.offset[1])
-
-
-    def getView(self):
-        # returns the camera position
-        return (int(self.offset[0]), int(self.offset[1]))
-
-    def moveCamera(self):
-        # moves the camera by x and y
-        # -x,y are integers
-        targetPos = self.target.getPosition()
-        self.offset = [targetPos[0] - self.windowSize[0] // 2, targetPos[1] - self.windowSize[1] // 2]
-
-        # Bounds of the World
-        for coord in range(2):
-            if self.offset[coord] < 0:
-                self.offset[coord] = 0
-            elif self.offset[coord] > self.world[coord] - self.windowSize[coord]:
-                self.offset[coord] = self.world[coord] - self.windowSize[coord]
+        return self.rect.collidepoint(position)
 
     def drawRectangle(self,surface,color,rect):
-        orect = pg.Rect((rect.topleft[0] - self.offset[0], rect.topleft[1] - self.offset[1]),rect.size)
-        pg.draw.rect(surface,color,orect,1)
+        pg.draw.rect(surface,color,self.applyOnRect(rect),1)
 
 class HUD():
     sprite_size = [16,16]

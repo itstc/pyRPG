@@ -13,9 +13,8 @@ class Mob(pg.sprite.Sprite):
         self.image = pg.Surface(size)
 
         self.size = size
-        self.position = position
-        self.rect = pg.Rect(position,[size[0]//2,size[1]])
-        self.rect.center = self.position
+        self.position = list(position)
+        self.rect = pg.Rect(position[0],position[1],size[0],size[1])
 
         self.fov = []
         self.maxcd = 500
@@ -38,25 +37,31 @@ class Mob(pg.sprite.Sprite):
 
     def getLegBox(self):
         # Returns a pygame.Rect object of the legs of sprite
-        legBox = pg.Rect(self.position[0]-self.size[0]//4, self.position[1],self.size[0]//2, self.size[1]//2)
+        legBox = pg.Rect(self.rect.centerx-self.size[0]//4, self.rect.centery,self.size[0]//2, self.size[1]//2)
         return legBox
 
-    def draw(self,surface,camera, offset):
+    def drawHealthBar(self,surface,camera):
+        bar_width = self.size[0]
+        red_bar = pg.Rect(self.rect.left, self.rect.top - 16, bar_width, 8)
+        green_bar = pg.Rect(self.rect.left, self.rect.top - 16, int(bar_width * (self.stats.hp / self.stats.maxHP)), 8)
+
+        pg.draw.rect(surface, pg.Color('red'),camera.applyOnRect(red_bar))
+        pg.draw.rect(surface, pg.Color('green'),camera.applyOnRect(green_bar))
+
+    def draw(self,surface,camera):
         self.action.draw()
 
         # Draw Health Bar
-        pg.draw.rect(surface, pg.Color('red'), pg.Rect(offset[0], offset[1] - 16, self.size[0], 8))
-        pg.draw.rect(surface, pg.Color('green'),pg.Rect(offset[0], offset[1] - 16, int(self.size[0] * (self.stats.hp / self.stats.maxHP)), 8))
+        self.drawHealthBar(surface,camera)
 
         # Draws collision box
-        # camera.drawRectangle(surface, pg.Color('cyan'), self.rect)
-        # camera.drawRectangle(surface, pg.Color('purple'), self.getLegBox())
+        camera.drawRectangle(surface, pg.Color('purple'), self.getLegBox())
 
         self.stats.draw(surface,camera)
 
     def update(self,dt):
         # Update collision box position
-        self.rect.center = self.position
+        self.rect.topleft = self.position
         if self.action['attack']:
             self.cooldown -= dt
             if self.cooldown < 0:
@@ -73,10 +78,10 @@ class Mob(pg.sprite.Sprite):
     def isColliding(self, x, y):
         # Takes offset x,y and sees if sprite is colliding with any objects in fov
         offset = self.getLegBox()
-        offset.center = [offset.center[0] + x, offset.center[1] + y]
+        offset.topleft = (offset.topleft[0] + x,offset.topleft[1] + y)
         collide = False
-        for i in self.fov:
-            if offset.colliderect(i.rect) and i.collidable:
+        for obj in self.fov:
+            if offset.colliderect(obj.rect) and obj.collidable:
                 collide = True
         return collide
 
@@ -105,7 +110,8 @@ class Mob(pg.sprite.Sprite):
         def move(self, x, y):
             # Moves sprite if not colliding
             if not self.mob.isColliding(x, y):
-                self.mob.position = [self.mob.position[0] + x, self.mob.position[1] + y]
+                self.mob.position[0] += x
+                self.mob.position[1] += y
 
         def update(self,dt):
             if self.actions['walk']:
@@ -123,6 +129,7 @@ class Mob(pg.sprite.Sprite):
     class Stats:
         # Handle all of mob stats here
         def __init__(self,health,ad):
+            self.movement_speed = 0
             self.maxHP = health
             self.hp = health
             self.ad = ad
@@ -137,12 +144,13 @@ class Mob(pg.sprite.Sprite):
             self.hp -= value
 
         def update(self,dt):
+            self.movement_speed = 0.3 * dt
             for item in self.statQueue:
                 item.update(dt)
 
         def draw(self,surface,camera):
-            for item in self.statQueue:
-                item.draw(surface,camera)
+            for i in self.statQueue:
+                i.draw(surface,camera)
 class Goblin(Mob):
     name = 'Goblin'
     def __init__(self,pos):
@@ -228,18 +236,22 @@ class Player(Mob):
     def update(self,dt):
         super().update(dt)
 
+    def draw(self,surface,camera):
+        super().draw(surface,camera)
+        for obj in self.fov:
+            camera.drawRectangle(surface,pg.Color('green'),obj.rect)
+
     def getPosition(self):
         return self.position
 
     def getSize(self):
         return self.size
 
-    def move(self,x,y):
-        if not self.isColliding(x,y):
-            self.position = (self.position[0] + x, self.position[1] + y)
-
     def attack(self):
         self.action['attack'] = True
         for obj in self.fov:
             if self.getAttackRange(self.action.direction).colliderect(obj) and isinstance(obj,Mob):
                 self.stats.damage(obj)
+
+
+

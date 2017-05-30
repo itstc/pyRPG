@@ -67,7 +67,7 @@ class Dungeon:
         self.tiles = {
             0: pg.transform.scale(sheet.getSprite([16, 16], [3, 0]), Dungeon.tile_size),
             1: pg.Surface(Dungeon.tile_size),
-            2: pg.transform.scale(sheet.getSprite([16, 16], [2, 0]), Dungeon.tile_size),
+            2: pg.transform.scale(sheet.getSprite([16, 16], [7, 0]), Dungeon.tile_size),
             3: pg.transform.scale(sheet.getSprite([16, 16], [5, 0]), Dungeon.tile_size),
             4: pg.transform.scale(sheet.getSprite([16, 16], [5, 0]), Dungeon.tile_size),
             5: pg.transform.scale(sheet.getSprite([16, 16], [1, 0]), Dungeon.tile_size),
@@ -139,6 +139,9 @@ class Dungeon:
         y = room.center()[1] * Dungeon.tile_size[1]
         return (x,y)
 
+    def getRooms(self):
+        return [room for room in self.roomList if isinstance(room,Dungeon.Room)]
+
     def makeRoom(self):
         """Randomly produce room size"""
         rtype = 5
@@ -199,7 +202,12 @@ class Dungeon:
         # If there is space, add to list of rooms
         if canPlace == 1:
             temp = [ll, ww, xpos, ypos]
-            self.roomList.append(Dungeon.Room(self,xpos,ypos,ww,ll))
+
+            if rty == 5:
+                self.roomList.append(Dungeon.Room(self,xpos,ypos,ww,ll))
+            else:
+                self.roomList.append(Dungeon.Hallway(self, xpos, ypos, ww, ll))
+
             for j in range(ll + 2):  # Then build walls
                 for k in range(ww + 2):
                     wall_orientation = 7
@@ -303,12 +311,13 @@ class Dungeon:
             self.joinCorridor(x[0], x[1], x[2], x[3], 10)
 
     def render(self,surface,camera):
-        offset = camera.getView()
-        renderDistance = [surface.get_width(),surface.get_height()]
+
+        start = camera.rect.topleft
+        end = camera.rect.bottomright
 
         # amount of tiles to render on x and y
-        render_x = [offset[0] // Dungeon.tile_size[0], math.ceil((offset[0] + renderDistance[0]) / Dungeon.tile_size[0])]
-        render_y = [offset[1] // Dungeon.tile_size[1], math.ceil((offset[1] + renderDistance[1]) / Dungeon.tile_size[1])]
+        render_x = [start[0] // Dungeon.tile_size[0], math.ceil(end[0] / Dungeon.tile_size[0])]
+        render_y = [start[1] // Dungeon.tile_size[1], math.ceil(end[1] / Dungeon.tile_size[0])]
 
         for y in range(render_y[0],render_y[1]):
             for x in range(render_x[0],render_x[1]):
@@ -318,20 +327,24 @@ class Dungeon:
                     if tile_id == 1: image.fill(pg.Color(51,51,51))
                 except:
                     continue
-                px = x * Dungeon.tile_size[0] - offset[0]
-                py = y * Dungeon.tile_size[1] - offset[1]
+                px = x * Dungeon.tile_size[0] - start[0]
+                py = y * Dungeon.tile_size[1] - start[1]
                 surface.blit(image,(px,py))
+
+    def drawRoomOutline(self,surface,camera):
+        for room in self.getRooms():
+            rect = pg.Rect(room.x1*Dungeon.tile_size[0],room.y1*Dungeon.tile_size[1],room.w*Dungeon.tile_size[0],room.h*Dungeon.tile_size[1])
+            camera.drawRectangle(surface,pg.Color('purple'),rect)
 
     def getCollidableTiles(self, rect):
         collidables = []
         start_pos = rect.topleft
         end_pos =  rect.bottomright
-
         render_x = [start_pos[0]//Dungeon.tile_size[0], end_pos[0]//Dungeon.tile_size[0] + 1]
         render_y = [start_pos[1]//Dungeon.tile_size[1], end_pos[1]//Dungeon.tile_size[1] + 1]
 
-        for y in range(render_y[0], render_y[1]):
-            for x in range(render_x[0], render_x[1]):
+        for y in range(max(0,render_y[0]-1), min(render_y[1] + 1,self.size_y)):
+            for x in range(max(0,render_x[0]-1), min(render_x[1] + 1,self.size_x)):
                 if self.mapArr[y][x] == 2 or self.mapArr[y][x] == 7:
                     # Append a WorldObject to return
                     collidables.append(Dungeon.WorldObject((x*Dungeon.tile_size[0], y*Dungeon.tile_size[1]),Dungeon.tile_size))
@@ -341,7 +354,6 @@ class Dungeon:
         return (self.size_x * Dungeon.tile_size[0], self.size_y * Dungeon.tile_size[1])
 
     class Room():
-        type = 5
         def __init__(self,world,x,y,w,h):
             self.world = world
             self.x1 = x
@@ -362,10 +374,23 @@ class Dungeon:
             while not spawnable:
                 x = random.randrange(self.x1,self.x2)
                 y = random.randrange(self.y1,self.y2)
-                if mapData[y][x] == 0:
+                if mapData[y-1][x] == 0 and mapData[y+1][x] == 0 and mapData[y][x-1] == 0 and mapData[y][x+1] == 0:
                     spawnable = True
 
-            return (x * Dungeon.tile_size[0] + 48,y * Dungeon.tile_size[0])
+            return (x * Dungeon.tile_size[0],y * Dungeon.tile_size[1])
+
+    class Hallway():
+        def __init__(self,world,x,y,w,h):
+            self.world = world
+            self.x1 = x
+            self.y1 = y
+            self.x2 = x + w
+            self.y2 = y + h
+            self.w = w
+            self.h = h
+
+        def center(self):
+            return ((self.x1 + self.x2)//2,(self.y1 + self.y2)//2)
 
     class WorldObject():
         collidable = True

@@ -1,15 +1,16 @@
 import pygame as pg
-import random,json
+import random,json,settings
 import sprite
 from mobs import Player
 from particles import BouncyText as Text
+
 class Item:
     stackable = False
     def __init__(self,name,desc,rarity,imageData):
         self.name = name
         self.desc = desc
         self.rarity = rarity
-        self.image = sprite.Spritesheet('items.png').getSprite(imageData[0], imageData[1])
+        self.image = sprite.Spritesheet(settings.ITEMSHEET).getSprite(imageData[0], imageData[1])
         self.amount = 1
 
     def drop(self,pos):
@@ -98,5 +99,9 @@ class ItemController():
         item = self.data[str(id)]
         cls = ItemController.itemClass[item['class']]
         return cls(item['name'],item['desc'],item['rarity'],item['imageData'],item['attribute'])
+
+    def getItems(self):
+        return [self.getItem(id) for id in range(7)]
+
 
 

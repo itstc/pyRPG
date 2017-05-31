@@ -1,7 +1,6 @@
-#TODO: convert tmx file to world object
-
 import pygame as pg
 import math, random
+import settings
 from pytmx.util_pygame import load_pygame
 
 from sprite import Spritesheet as spritesheet
@@ -59,11 +58,13 @@ class WorldObject:
 class Dungeon:
     tile_size = [96,96]
 
-    def __init__(self):
+    def __init__(self,game):
+        self.level = 0
+        self.game = game
         self.roomList = []
         self.cList = []
 
-        sheet = spritesheet('tilesheet.png')
+        sheet = spritesheet(settings.TILESHEET)
         self.tiles = {
             0: pg.transform.scale(sheet.getSprite([16, 16], [3, 0]), Dungeon.tile_size),
             1: pg.Surface(Dungeon.tile_size),
@@ -79,6 +80,9 @@ class Dungeon:
         """Generate random layout of rooms, corridors and other features"""
         # makeMap can be modified to accept arguments for values of failed, and percentile of features.
         # Create first room
+        self.level += 1
+        self.roomList = []
+        self.cList = []
         self.size_x = xsize
         self.size_y = ysize
         # initialize map to all walls
@@ -129,7 +133,7 @@ class Dungeon:
         walls = [(y,x) for y in range(self.size_y) for x in range(self.size_x) if self.mapArr[y][x] == 7]
         for wall in walls:
             try:
-                if self.mapArr[wall[0]+1][wall[1]] == 0:
+                if self.mapArr[wall[0]+1][wall[1]] == 0 or self.mapArr[wall[0]+1][wall[1]] == 6:
                     self.mapArr[wall[0]][wall[1]] = 2
             except:
                 continue
@@ -137,7 +141,7 @@ class Dungeon:
     def getCenterPosition(self,room):
         x = room.center()[0] * Dungeon.tile_size[0]
         y = room.center()[1] * Dungeon.tile_size[1]
-        return (x,y)
+        return [x,y]
 
     def getRooms(self):
         return [room for room in self.roomList if isinstance(room,Dungeon.Room)]
@@ -348,6 +352,8 @@ class Dungeon:
                 if self.mapArr[y][x] == 2 or self.mapArr[y][x] == 7:
                     # Append a WorldObject to return
                     collidables.append(Dungeon.WorldObject((x*Dungeon.tile_size[0], y*Dungeon.tile_size[1]),Dungeon.tile_size))
+                elif self.mapArr[y][x] == 6:
+                    collidables.append(Dungeon.ExitTile(self.game,(x * Dungeon.tile_size[0], y * Dungeon.tile_size[1]), Dungeon.tile_size))
         return collidables
 
     def getWorldSize(self):
@@ -393,10 +399,19 @@ class Dungeon:
             return ((self.x1 + self.x2)//2,(self.y1 + self.y2)//2)
 
     class WorldObject():
+        type = 'wall'
         collidable = True
         def __init__(self,pos,size):
             self.rect = pg.Rect(pos, size)
 
     class ExitTile(WorldObject):
+        type = 'world'
         collidable = True
+
+        def __init__(self,game,pos,size):
+            super().__init__(pos,size)
+            self.game = game
+
+        def onCollide(self):
+            self.game.generateLevel()
 

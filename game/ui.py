@@ -1,5 +1,6 @@
 import pygame as pg
 import sprite
+import random
 
 class StringRenderer():
 
@@ -130,11 +131,10 @@ class InventoryGUI(GUI):
                 elif isinstance(self.state,HoveringState) and not self.selectedSlot.isHovering(event.pos):
                     self.state = None
                 # If no state check if mouse is over a slot with an item
+                elif not self.state and self.isHoveringSlot(event.pos) and self.selectedSlot.item:
+                        self.state = HoveringState(self.selectedSlot)
                 elif 1 in event.buttons:
                     self.moveInterface(event.pos)
-                elif not self.state:
-                    if self.isHoveringSlot(event.pos) and self.selectedSlot.item:
-                        self.state = HoveringState(self.selectedSlot)
 
 
     def handleMouseDownEvent(self,pos):
@@ -196,7 +196,7 @@ class OptionState(StringRenderer):
         self.rect = pg.Rect(slot.rect.center,[100,60])
         self.options = [
             UseButton(self.rect.topleft,[100,30],'Use',ui),
-            Button([self.rect.left, self.rect.top + 30], [100, 30],'Drop')
+            Button([self.rect.left, self.rect.top + 30], [100, 30],'Destroy')
         ]
         self.selected = self.options[0]
 

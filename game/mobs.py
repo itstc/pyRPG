@@ -1,5 +1,5 @@
 import pygame as pg
-import sprite,particles
+import sprite,particles,settings
 from inventory import Inventory
 
 
@@ -21,7 +21,7 @@ class Mob(pg.sprite.Sprite):
         self.cooldown = self.maxcd
 
         self.action = Mob.Actions(self,images)
-        self.stats = Mob.Stats(health,ad)
+        self.stats = Mob.Stats(self,health,ad)
 
     def getAttackRange(self,direction):
         tlPos = self.rect.topleft
@@ -82,6 +82,8 @@ class Mob(pg.sprite.Sprite):
         collide = False
         for obj in self.fov:
             if offset.colliderect(obj.rect) and obj.collidable:
+                if isinstance(self,Player) and obj.type == 'world':
+                    obj.onCollide()
                 collide = True
         return collide
 
@@ -120,6 +122,7 @@ class Mob(pg.sprite.Sprite):
                 self.current = 'attack_%s' % self.direction
             else:
                 self.current = 'idle_%s' % self.direction
+                self.mob.stats.current_speed = 0
 
             self.images[self.current].update(dt)
 
@@ -128,8 +131,11 @@ class Mob(pg.sprite.Sprite):
 
     class Stats:
         # Handle all of mob stats here
-        def __init__(self,health,ad):
+        MAX_SPEED = 0.4
+        def __init__(self,mob,health,ad):
             self.movement_speed = 0
+            self.current_speed = 0
+            self.mob = mob
             self.maxHP = health
             self.hp = health
             self.ad = ad
@@ -144,7 +150,14 @@ class Mob(pg.sprite.Sprite):
             self.hp -= value
 
         def update(self,dt):
-            self.movement_speed = 0.3 * dt
+            if self.mob.action['walk']:
+                self.current_speed += 0.003 * dt
+                self.current_speed = min(self.current_speed,self.MAX_SPEED)
+            else:
+                self.current_speed -= 0.003 * dt
+                self.current_speed = max(0,self.current_speed)
+
+            self.movement_speed = self.current_speed * dt
             for item in self.statQueue:
                 item.update(dt)
 
@@ -155,7 +168,7 @@ class Goblin(Mob):
     name = 'Goblin'
     def __init__(self,pos):
         size = (64,64)
-        sheet = sprite.Spritesheet('mobsheet.png')
+        sheet = sprite.Spritesheet(settings.MOBSHEET)
         states = {
             'idle_up': sprite.AnimatedSprite(sheet, [(1, 1)], [16, 16], size, 800),
             'idle_left': sprite.AnimatedSprite(sheet, [(0,0),(1,0)], [16, 16], size, 800),
@@ -186,7 +199,7 @@ class Skeleton(Mob):
     name = 'Skeleton'
     def __init__(self,pos):
         size = (64,128)
-        sheet = sprite.Spritesheet('mobsheet.png')
+        sheet = sprite.Spritesheet(settings.MOBSHEET)
         states = {
             'idle_up': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 800),
             'idle_left': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 800),
@@ -214,7 +227,7 @@ class Player(Mob):
     # TODO: Create a player and place it on the map
     def __init__(self,pos):
         size = (64,96)
-        sheet = sprite.Spritesheet('playersheet.png')
+        sheet = sprite.Spritesheet(settings.PLAYERSHEET)
         states = {
             'idle_up': sprite.AnimatedSprite(sheet, [(1, 0)], [16, 24], size, 200),
             'idle_left': sprite.AnimatedSprite(sheet, [(0, 1)], [16, 24], size, 200),
@@ -238,8 +251,6 @@ class Player(Mob):
 
     def draw(self,surface,camera):
         super().draw(surface,camera)
-        for obj in self.fov:
-            camera.drawRectangle(surface,pg.Color('green'),obj.rect)
 
     def getPosition(self):
         return self.position

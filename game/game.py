@@ -1,6 +1,6 @@
 import pygame as pg
 import random
-import mobs,items,sprite,ui,world
+import mobs,items,sprite,ui,world,controller
 from events import EventListener
 
 
@@ -18,19 +18,16 @@ class Game:
         self.running = True
         self.events = EventListener(self)
         self.hud = HUD(surface)
-        self.map = world.Dungeon()
+        self.map = world.Dungeon(self)
         self.map.makeMap(32,32,50,20,30)
         self.itemManager = items.ItemController('data/items.json')
 
         self.player = mobs.Player(self.map.spawn)
         self.player.inventory.addItems([self.itemManager.getItem(0)]*10)
 
-        self.entities = sprite.EntityGroup()
-        self.entities.add(self.player)
-
-        for room in self.map.getRooms():
-            self.entities.add(mobs.Skeleton(room.getSpawnableSpace()),self.itemManager.getItem(random.randrange(7)).drop(room.getSpawnableSpace()))
-
+        self.entityManager = controller.EntityController(self.player)
+        self.entityManager.spawnMobs([mobs.Goblin,mobs.Skeleton],self.map)
+        self.entityManager.spawnItems(self.itemManager.getItems(),self.map)
 
         self.camera = Camera(self.player.position,surface.get_size(), self.map.getWorldSize())
         self.gui = ui.InventoryGUI(self.windowScreen,self.player.inventory)
@@ -49,7 +46,7 @@ class Game:
             self.update(dt)
 
     def update(self,dt):
-        self.entities.update(self.map,dt)
+        self.entityManager.update(self.map,dt)
         self.camera.update(self.player)
         self.gui.update()
 
@@ -60,12 +57,14 @@ class Game:
 
         # Draw components here
         self.map.render(self.windowScreen,self.camera)
-        self.entities.draw(self.windowScreen,self.camera)
+        self.entityManager.draw(self.windowScreen,self.camera)
 
         self.gui.draw()
 
+        self.hud.drawString([8,8],'Dungeon Level %i' % self.map.level,16)
+
         # End Game
-        if not self.entities.has(self.player):
+        if not self.entityManager.entities.has(self.player):
             self.end = True
             panel = pg.Surface([400,100])
             panel.fill(pg.Color(135,27,51))
@@ -79,6 +78,14 @@ class Game:
 
     def getCurrentMap(self):
         return self.map
+
+    def generateLevel(self):
+        self.map.makeMap(32, 32, 50, 20, 30)
+        self.player.position = self.map.spawn
+        self.entityManager.entities.empty()
+        self.entityManager.entities.add(self.player)
+        self.entityManager.spawnMobs([mobs.Goblin,mobs.Skeleton],self.map)
+        self.entityManager.spawnItems(self.itemManager.getItems(), self.map)
 
 
 class Camera:
@@ -122,16 +129,16 @@ class Camera:
     def drawRectangle(self,surface,color,rect):
         pg.draw.rect(surface,color,self.applyOnRect(rect),1)
 
-class HUD():
+class HUD(ui.StringRenderer):
     sprite_size = [16,16]
     def __init__(self,surface):
         self.surface = surface
         self.spritesheet = sprite.Spritesheet('hud.png')
-        self.font = pg.font.Font(pg.font.get_default_font(),16)
 
-    def drawString(self, position, string, color = pg.Color('white')):
-        text = self.font.render(string,1,color)
-        self.surface.blit(text,position)
+    def drawString(self, position, string, font_size = 16, color = pg.Color('white')):
+        size = self.getStringSize(string,font_size)
+        text = pg.font.Font('res/gamefont.ttf', font_size).render(string,1,color)
+        self.surface.blit(pg.transform.scale(text,(size[0]*2,size[1]*2)),position)
 
     def drawImage(self,image,position,scale = [64,64]):
         # Prints a surface on screen

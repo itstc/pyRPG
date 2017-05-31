@@ -55,6 +55,7 @@ class AnimatedSprite:
 class EntityGroup(pg.sprite.Group):
     def __init__(self):
         super().__init__()
+        self.renderables = []
 
     def getProximityObjects(self,target,proximity):
         # Returns a list of proximity objects EXCEPT the target object
@@ -63,7 +64,7 @@ class EntityGroup(pg.sprite.Group):
 
     def update(self,world,dt):
         # Adds objects into fov if they are collidables
-        for spr in self.sprites():
+        for spr in self.renderables:
             proximity = pg.Rect(spr.position[0] - 32, spr.position[1], 128, 128)
             spr.fov = self.getProximityObjects(spr,proximity) + world.getCollidableTiles(proximity)
             spr.update(dt)
@@ -79,9 +80,13 @@ class EntityGroup(pg.sprite.Group):
         sprite position[x,y] - camera_position[x,y]
 
         '''
+
         sprites = self.sprites()
         surface_blit = surface.blit
-        for spr in sprites:
+
+        self.renderables = [spr for spr in sprites if camera.isVisible(spr.position)]
+
+        for spr in self.renderables:
             # Draws sprite
             self.spritedict[spr] = surface_blit(spr.image, camera.apply(spr))
             spr.draw(surface,camera)

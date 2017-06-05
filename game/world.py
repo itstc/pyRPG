@@ -6,7 +6,7 @@ from pytmx.util_pygame import load_pygame
 from sprite import Spritesheet as spritesheet
 
 class World:
-    size = [64,64]
+    size = [96,96]
     def __init__(self,surface,file):
         self.surface = surface
         self.mapData = load_pygame(file)
@@ -61,19 +61,17 @@ class Dungeon:
     def __init__(self,game):
         self.level = 0
         self.game = game
-        self.roomList = []
-        self.cList = []
 
         sheet = spritesheet(settings.TILESHEET)
         self.tiles = {
-            0: pg.transform.scale(sheet.getSprite([16, 16], [3, 0]), Dungeon.tile_size),
+            0: pg.transform.scale(sheet.getSprite([16, 16], [0, 0]), Dungeon.tile_size),
             1: pg.Surface(Dungeon.tile_size),
-            2: pg.transform.scale(sheet.getSprite([16, 16], [7, 0]), Dungeon.tile_size),
+            2: pg.transform.scale(sheet.getSprite([16, 16], [0, 2]), Dungeon.tile_size),
             3: pg.transform.scale(sheet.getSprite([16, 16], [5, 0]), Dungeon.tile_size),
             4: pg.transform.scale(sheet.getSprite([16, 16], [5, 0]), Dungeon.tile_size),
             5: pg.transform.scale(sheet.getSprite([16, 16], [1, 0]), Dungeon.tile_size),
             6: pg.transform.scale(sheet.getSprite([16, 16], [5, 0]), Dungeon.tile_size),
-            7: pg.transform.scale(sheet.getSprite([16, 16], [4, 0]), Dungeon.tile_size)
+            7: pg.transform.scale(sheet.getSprite([16, 16], [0, 1]), Dungeon.tile_size)
                       }
 
     def makeMap(self, xsize, ysize, fail, b1, mrooms):
@@ -124,11 +122,8 @@ class Dungeon:
                     self.joinCorridor(len(self.roomList) - 1, ex2, ey2, t, 50)
             if len(self.roomList) == mrooms:
                 failed = fail
-        self.finalJoins()
-        self.spawn = self.getCenterPosition(self.roomList[0])
 
-        finalRoom = self.getCenterPosition(self.roomList[-1])
-        self.mapArr[finalRoom[1]//Dungeon.tile_size[1]][finalRoom[0]//Dungeon.tile_size[1]] = 6
+        self.finalJoins()
 
         walls = [(y,x) for y in range(self.size_y) for x in range(self.size_x) if self.mapArr[y][x] == 7]
         for wall in walls:
@@ -137,6 +132,12 @@ class Dungeon:
                     self.mapArr[wall[0]][wall[1]] = 2
             except:
                 continue
+
+        self.spawn = self.getCenterPosition(self.roomList[0])
+
+        finalRoom = self.getCenterPosition(self.roomList[-1])
+        # Exit Tile
+        self.mapArr[finalRoom[1]//Dungeon.tile_size[1]][finalRoom[0]//Dungeon.tile_size[1]] = 6
 
     def getCenterPosition(self,room):
         x = room.center()[0] * Dungeon.tile_size[0]
@@ -207,11 +208,6 @@ class Dungeon:
         if canPlace == 1:
             temp = [ll, ww, xpos, ypos]
 
-            if rty == 5:
-                self.roomList.append(Dungeon.Room(self,xpos,ypos,ww,ll))
-            else:
-                self.roomList.append(Dungeon.Hallway(self, xpos, ypos, ww, ll))
-
             for j in range(ll + 2):  # Then build walls
                 for k in range(ww + 2):
                     wall_orientation = 7
@@ -219,6 +215,12 @@ class Dungeon:
             for j in range(ll):  # Then build floor
                 for k in range(ww):
                     self.mapArr[ypos + j][xpos + k] = 0
+
+            if rty == 5:
+                self.roomList.append(Dungeon.Room(self, xpos, ypos, ww, ll))
+            else:
+                self.roomList.append(Dungeon.Hallway(self, xpos, ypos, ww, ll))
+
         return canPlace  # Return whether placed is true/false
 
     def makeExit(self, rn):
@@ -383,7 +385,7 @@ class Dungeon:
                 if mapData[y-1][x] == 0 and mapData[y+1][x] == 0 and mapData[y][x-1] == 0 and mapData[y][x+1] == 0:
                     spawnable = True
 
-            return (x * Dungeon.tile_size[0],y * Dungeon.tile_size[1])
+            return [x * Dungeon.tile_size[0],y * Dungeon.tile_size[1]]
 
     class Hallway():
         def __init__(self,world,x,y,w,h):

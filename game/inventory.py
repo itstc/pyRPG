@@ -39,6 +39,7 @@ class Inventory:
     def useItem(self,item):
         if item in self.items:
             item.use(self.holder)
+            # if item is stackable remove by amount else remove the item completely
             if item.stackable:
                 item.amount -= 1
                 if item.amount == 0:
@@ -46,8 +47,13 @@ class Inventory:
             else:
                 self.items.remove(item)
 
+        self.displayInventory()
+
     def removeItem(self,index):
         self.items.pop(index)
+
+    def removeItem(self,item):
+        self.items.remove(item)
 
     def getItemData(self,index):
         try:

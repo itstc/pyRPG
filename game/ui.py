@@ -58,6 +58,7 @@ class InventoryGUI(GUI):
     }
     def __init__(self,surface,inventory):
         super().__init__(surface,[256,384])
+        self.pressed = False
         self.inventory = inventory
         self.grid = []
         start = [16,64]
@@ -68,27 +69,28 @@ class InventoryGUI(GUI):
         self.selectedSlot = None
         self.state = None
 
+        self.updateSlots()
+
     def useItem(self):
         self.inventory.useItem(self.selectedSlot.item)
+        self.selectedSlot.item = None
+        self.selectedSlot = None
 
-    def update(self):
         self.updateSlots()
-        for item in self.inventory.items:
-                self.findEmptySlot().item = item
+
+    def destroyItem(self):
+        self.inventory.removeItem(self.selectedSlot.item)
+        self.selectedSlot.item = None
+        self.selectedSlot = None
+
+        self.updateSlots()
 
     def updateSlots(self):
         for slot in self.grid:
-            slot.update()
             slot.item = None
-
-    def findEmptySlot(self):
-        found = self.grid[0]
-        for slot in self.grid:
-            if not slot.item:
-                found = slot
-                break
-
-        return found
+        for i,item in enumerate(self.inventory.items):
+            self.grid[i].item = item
+            self.grid[i].update()
 
     def drawFeatures(self):
         for tile in self.grid:
@@ -123,6 +125,9 @@ class InventoryGUI(GUI):
     def handleEvents(self,event):
         if event.type == pg.MOUSEBUTTONDOWN:
             self.handleMouseDownEvent(event.pos)
+            self.pressed = True
+        elif event.type == pg.MOUSEBUTTONUP:
+            self.pressed = False
         elif event.type == pg.MOUSEMOTION:
             if self.active:
                 # If hovering state is not hovered over
@@ -133,18 +138,22 @@ class InventoryGUI(GUI):
                 # If no state check if mouse is over a slot with an item
                 elif not self.state and self.isHoveringSlot(event.pos) and self.selectedSlot.item:
                         self.state = HoveringState(self.selectedSlot)
-                elif 1 in event.buttons:
+                elif 1 in event.buttons and not self.state:
                     self.moveInterface(event.pos)
 
 
     def handleMouseDownEvent(self,pos):
-        if isinstance(self.state,OptionState) and self.state.isHovering(pos):
-            self.state.selected.use()
-            self.state = None
-        elif self.state and not self.selectedSlot.isHovering(pos):
-            self.state = None
-        elif self.selectedSlot and self.selectedSlot.item and self.selectedSlot.isHovering(pos):
-            self.state = OptionState(self.selectedSlot,self)
+        if not self.pressed:
+            if isinstance(self.state,OptionState) and self.state.isHovering(pos):
+                # If state is OptionState and mouse is hovering
+                self.state.selected.use()
+                self.state = None
+            elif self.state and not self.selectedSlot.isHovering(pos):
+                # If there is a state but mouse is not hovering over slot
+                self.state = None
+            elif self.selectedSlot and self.selectedSlot.item and self.selectedSlot.isHovering(pos):
+                # If selected slot has an item and is being hovered over
+                self.state = OptionState(self.selectedSlot,self)
 
 
     class Tile(StringRenderer):
@@ -196,18 +205,21 @@ class OptionState(StringRenderer):
         self.rect = pg.Rect(slot.rect.center,[100,60])
         self.options = [
             UseButton(self.rect.topleft,[100,30],'Use',ui),
-            Button([self.rect.left, self.rect.top + 30], [100, 30],'Destroy')
+            DestroyButton([self.rect.left, self.rect.top + 30], [100, 30],'Destroy',ui)
         ]
-        self.selected = self.options[0]
+        self.selected = None
 
     def check(self,pos):
+        # Checks if button is hovered over
         for option in self.options:
-            option.check(pos)
+            if option.check(pos):
+                self.selected = option
 
     def isHovering(self,pos):
         return self.rect.collidepoint(pos)
 
     def draw(self,surface):
+        # draw buttons and the option panel
         panel = pg.Surface([200, 110])
         panel.fill(pg.Color('black'))
         panel.set_alpha(200)
@@ -219,8 +231,8 @@ class Button(StringRenderer):
     def __init__(self,pos,size,string):
         self.color = pg.Color('black')
         self.rect = pg.Rect(pos,size)
-        self.ui = pg.Surface(size)
-        self.ui.set_alpha(200)
+        self.panel = pg.Surface(size)
+        self.panel.set_alpha(200)
         self.string = string
 
         self.hover = False
@@ -229,28 +241,38 @@ class Button(StringRenderer):
     def check(self,pos):
         if self.rect.collidepoint(pos):
             self.color = pg.Color('gray')
+            return True
         else:
             self.color = pg.Color('black')
+            return False
 
     def getCenterPosition(self):
         return (self.rect.width//2,self.rect.height//2)
 
     def draw(self,surface):
-        self.ui.fill(self.color)
+        self.panel.fill(self.color)
         # Draw String on Button
         button_center = self.getCenterPosition()
         string_size = self.getStringSize(self.string)
         string_center = [button_center[0] - string_size[0]//2,
                          button_center[1] - string_size[1]//2]
-        self.drawString(self.ui,self.string,string_center)
+        self.drawString(self.panel,self.string,string_center)
 
         # Draw Button on gui location
-        surface.blit(self.ui,self.rect.topleft)
+        surface.blit(self.panel,self.rect.topleft)
 
 class UseButton(Button):
-    def __init__(self,pos,size,string,inventory):
+    def __init__(self,pos,size,string,ui):
         super().__init__(pos,size,string)
-        self.inventory = inventory
+        self.ui = ui
 
     def use(self):
-        self.inventory.useItem()
+        self.ui.useItem()
+
+class DestroyButton(Button):
+    def __init__(self,pos,size,string,ui):
+        super().__init__(pos,size,string)
+        self.ui = ui
+
+    def use(self):
+        self.ui.destroyItem()

@@ -11,6 +11,7 @@ class Item:
         self.desc = desc
         self.rarity = rarity
         self.image = sprite.Spritesheet(settings.ITEMSHEET).getSprite(imageData[0], imageData[1])
+        self.image_size = imageData[0]
         self.amount = 1
 
     def drop(self,pos):
@@ -26,8 +27,8 @@ class ItemSprite(pg.sprite.Sprite):
     collidable = False
     def __init__(self,item,pos):
         super().__init__()
-        self.image = pg.transform.scale(item.image,[32,32])
-        self.size = [32,32]
+        self.size = [item.image_size[0]*4,item.image_size[1]*4]
+        self.image = pg.transform.scale(item.image,self.size)
         self.position = list(pos)
         self.rect = pg.Rect(pos,[32,32])
         self.fov = []

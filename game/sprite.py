@@ -1,5 +1,6 @@
 import pygame as pg
 import os
+import mobs
 
 class Spritesheet:
     def __init__(self,path):
@@ -84,7 +85,7 @@ class EntityGroup(pg.sprite.Group):
         sprites = self.sprites()
         surface_blit = surface.blit
 
-        self.renderables = [spr for spr in sprites if camera.isVisible(spr.position)]
+        self.renderables = [spr for spr in sprites if camera.isVisible(spr.position) or isinstance(spr,mobs.Player)]
 
         for spr in self.renderables:
             # Draws sprite

@@ -26,9 +26,10 @@ class Mob(pg.sprite.Sprite):
     def getAttackRange(self,direction):
         tlPos = self.rect.topleft
         range = {
-            'up': pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1] - self.size[1] // 4, self.size[0] // 2 * 3,
+            'up': pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1] , self.size[0] // 2 * 3,
                            self.size[1] // 4),
-            'left': pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1], self.size[0] // 2, self.size[1]),
+            'left': pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1] - self.size[1] // 4,
+                            self.size[0], self.size[1] + self.size[1] // 2),
             'down': pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1] + self.size[1], self.size[0] // 2 * 3,
                             self.size[1] // 4),
             'right': pg.Rect(tlPos[0] + self.size[0] // 2, tlPos[1], self.size[0] // 2, self.size[1])
@@ -43,19 +44,20 @@ class Mob(pg.sprite.Sprite):
     def drawHealthBar(self,surface,camera):
         bar_width = self.size[0]
         red_bar = pg.Rect(self.rect.left, self.rect.top - 16, bar_width, 8)
-        green_bar = pg.Rect(self.rect.left, self.rect.top - 16, int(bar_width * (self.stats.hp / self.stats.maxHP)), 8)
+        green_bar = pg.Rect(self.rect.left, self.rect.top - 16, max(0,int(bar_width * (self.stats.hp / self.stats.maxHP))), 8)
 
         pg.draw.rect(surface, pg.Color('red'),camera.applyOnRect(red_bar))
         pg.draw.rect(surface, pg.Color('green'),camera.applyOnRect(green_bar))
 
     def draw(self,surface,camera):
-        self.action.draw()
+        self.action.draw(surface,camera)
 
         # Draw Health Bar
         self.drawHealthBar(surface,camera)
 
         # Draws collision box
-        camera.drawRectangle(surface, pg.Color('purple'), self.getLegBox())
+        #camera.drawRectangle(surface, pg.Color('purple'), self.getLegBox())
+        #camera.drawRectangle(surface,pg.Color('purple'),self.getAttackRange('left'))
 
         self.stats.draw(surface,camera)
 
@@ -65,6 +67,9 @@ class Mob(pg.sprite.Sprite):
         if self.action['attack']:
             self.cooldown -= dt
             if self.cooldown < 0:
+                for obj in self.fov:
+                    if self.getAttackRange(self.action.direction).colliderect(obj) and isinstance(obj, Mob):
+                        self.stats.damage(obj)
                 self.action['attack'] = False
                 self.cooldown = self.maxcd
         else: self.cooldown = self.maxcd
@@ -72,8 +77,8 @@ class Mob(pg.sprite.Sprite):
         if self.stats.hp <= 0:
             self.kill()
 
-        self.action.update(dt)
         self.stats.update(dt)
+        self.action.update(dt)
 
     def isColliding(self, x, y):
         # Takes offset x,y and sees if sprite is colliding with any objects in fov
@@ -81,7 +86,10 @@ class Mob(pg.sprite.Sprite):
         offset.topleft = (offset.topleft[0] + x,offset.topleft[1] + y)
         collide = False
         for obj in self.fov:
-            if offset.colliderect(obj.rect) and obj.collidable:
+            collideBox = obj.rect
+            if obj.type == 'mob':
+                collideBox = obj.getLegBox()
+            if offset.colliderect(collideBox) and obj.collidable:
                 if isinstance(self,Player) and obj.type == 'world':
                     obj.onCollide()
                 collide = True
@@ -91,13 +99,27 @@ class Mob(pg.sprite.Sprite):
         # Handles all the mob actions here
         def __init__(self,mob,images):
             self.mob = mob
-            self.current = 'idle_down'
+            self.current = 'idle_right'
             self.actions = {
                 'attack':False,
                 'walk': False,
             }
             self.direction = 'left'
+            self.moveDirections = {
+                'up': False,
+                'left': False,
+                'down': False,
+                'right': False
+            }
             self.images = images
+            self.weaponLocation = {
+                'left':[(-44, 0),
+                        (-44, 0),
+                        (-12, 0)],
+                'right':[(-20, 0),
+                         (-20, 0),
+                         (-48, 0)]
+            }
 
         def __getitem__(self, item):
             return self.actions[item]
@@ -107,11 +129,14 @@ class Mob(pg.sprite.Sprite):
 
         def attack(self,target):
             self.actions['attack'] = True
-            self.mob.stats.damage(target)
 
         def move(self, x, y):
+            if x != 0 and y != 0:
+                self.move(x,0)
+                self.move(0,y)
+                return
             # Moves sprite if not colliding
-            if not self.mob.isColliding(x, y):
+            if not self.mob.isColliding(x+4, y+4):
                 self.mob.position[0] += x
                 self.mob.position[1] += y
 
@@ -120,21 +145,34 @@ class Mob(pg.sprite.Sprite):
                 self.current = 'walk_%s' % self.direction
             elif self.actions['attack']:
                 self.current = 'attack_%s' % self.direction
+                if isinstance(self.mob,Player):
+                    self.images['slash_%s' % self.direction].update(dt)
             else:
                 self.current = 'idle_%s' % self.direction
                 self.mob.stats.current_speed = 0
 
             self.images[self.current].update(dt)
 
-        def draw(self):
+        def draw(self,surface,camera):
             self.mob.image = self.images[self.current].currentFrame()
+            if isinstance(self.mob,Player) and self.actions['attack']:
+                weapon = self.images['slash_%s' % self.direction]
+                surface.blit(weapon.currentFrame(),
+                             camera.applyOnPosition(self.getWeaponLocation(weapon.frame)))
+
+        def getWeaponLocation(self,frame):
+            offset = self.weaponLocation[self.direction][frame]
+            rect = self.mob.rect.topleft
+            if self.direction == 'right':
+                rect = self.mob.rect.topright
+            return (rect[0] + offset[0], rect[1] + offset[1])
 
     class Stats:
         # Handle all of mob stats here
         MAX_SPEED = 0.4
         def __init__(self,mob,health,ad):
             self.movement_speed = 0
-            self.current_speed = 0
+            self.velocity = 0
             self.mob = mob
             self.maxHP = health
             self.hp = health
@@ -150,14 +188,6 @@ class Mob(pg.sprite.Sprite):
             self.hp -= value
 
         def update(self,dt):
-            if self.mob.action['walk']:
-                self.current_speed += 0.003 * dt
-                self.current_speed = min(self.current_speed,self.MAX_SPEED)
-            else:
-                self.current_speed -= 0.003 * dt
-                self.current_speed = max(0,self.current_speed)
-
-            self.movement_speed = self.current_speed * dt
             for item in self.statQueue:
                 item.update(dt)
 
@@ -226,25 +256,26 @@ class Skeleton(Mob):
 class Player(Mob):
     # TODO: Create a player and place it on the map
     def __init__(self,pos):
+        # Initialize Images for player
         size = (64,96)
         sheet = sprite.Spritesheet(settings.PLAYERSHEET)
+        attack = sprite.Spritesheet(settings.ATTACKSHEET)
         states = {
-            'idle_up': sprite.AnimatedSprite(sheet, [(1, 0)], [16, 24], size, 200),
-            'idle_left': sprite.AnimatedSprite(sheet, [(0, 1)], [16, 24], size, 200),
-            'idle_down': sprite.AnimatedSprite(sheet, [(0, 0)], [16, 24], size, 200),
-            'idle_right': sprite.AnimatedSprite(sheet, [(1, 1)], [16, 24], size, 200),
-            'walk_up':sprite.AnimatedSprite(sheet, [(1, 0), (6, 0), (7, 0)], [16, 24],size,200),
-            'walk_left':sprite.AnimatedSprite(sheet, [(0, 1), (4, 1), (5, 1)], [16, 24],size,200),
-            'walk_down':sprite.AnimatedSprite(sheet, [(0, 0), (4, 0), (5, 0)], [16, 24],size,200),
-            'walk_right':sprite.AnimatedSprite(sheet, [(1, 1), (6, 1), (7, 1)], [16, 24],size,200),
-            'attack_up':sprite.AnimatedSprite(sheet, [(10, 0), (11, 0)], [16, 24],size,200),
-            'attack_left':sprite.AnimatedSprite(sheet, [(8, 1), (9, 1)], [16, 24],size,200),
-            'attack_down':sprite.AnimatedSprite(sheet, [(8, 0), (9, 0)], [16, 24],size,200),
-            'attack_right':sprite.AnimatedSprite(sheet, [(10, 1), (11, 1)], [16, 24],size,200)
+            # Animated Sprite will be called by syntax: action_direction
+            'idle_left': sprite.AnimatedSprite(sheet, [(0, 0)], [16,24], size, 200),
+            'idle_right': sprite.AnimatedSprite(sheet, [(1, 0)], [16,24], size, 200),
+            'walk_left':sprite.AnimatedSprite(sheet, [(0, 0), (4, 0), (5, 0)], [16,24],size,200),
+            'walk_right':sprite.AnimatedSprite(sheet, [(1, 0), (6, 0), (7, 0)], [16,24],size,200),
+            'attack_left':sprite.AnimatedSprite(sheet, [(0,0)], [16,24],size,200),
+            'attack_right':sprite.AnimatedSprite(sheet, [(1,0)], [16,24],size,200),
+            'slash_left':sprite.AnimatedSprite(attack, [(3,0), (4,0), (5,0)], [16,16],[64,64],200),
+            'slash_right': sprite.AnimatedSprite(attack, [(0,0), (1,0), (2,0)], [16,16],[64,64],200)
                        }
 
         super().__init__(states, size, pos, 100, 9)
-        self.inventory = Inventory(self,10)
+        self.inventory = Inventory(self,12)
+        self.input = input
+        self.action = Player.PlayerActions(self,states)
 
     def update(self,dt):
         super().update(dt)
@@ -260,9 +291,34 @@ class Player(Mob):
 
     def attack(self):
         self.action['attack'] = True
-        for obj in self.fov:
-            if self.getAttackRange(self.action.direction).colliderect(obj) and isinstance(obj,Mob):
-                self.stats.damage(obj)
+        self.action.images['slash_%s' % self.action.direction].reset()
 
+
+    class PlayerActions(Mob.Actions):
+        def __init__(self,mob,images):
+            super().__init__(mob,images)
+
+        def keyMove(self, dt):
+            ax = 0
+            ay = 0
+            ac = 0.02
+
+            if self.moveDirections['up']:
+                ay -= ac
+            if self.moveDirections['left']:
+                ax -= ac
+            if self.moveDirections['down']:
+                ay += ac
+            if self.moveDirections['right']:
+                ax += ac
+
+            moveX = ax * dt**2
+            moveY = ay * dt**2
+            if moveX != 0 or moveY != 0:
+                self.move(moveX,moveY)
+
+        def update(self,dt):
+            super().update(dt)
+            self.keyMove(dt)
 
 

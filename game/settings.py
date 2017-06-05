@@ -6,7 +6,8 @@ WINDOW_SIZE = (1280,720)
 
 # Assets
 TILESHEET = 'tilesheet.png'
-PLAYERSHEET = 'playersheet.png'
+PLAYERSHEET = 'player.png'
+ATTACKSHEET = 'attack.png'
 MOBSHEET = 'mobsheet.png'
 ITEMSHEET = 'items.png'
 UISHEET = 'ui.png'

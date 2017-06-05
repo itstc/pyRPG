@@ -24,15 +24,19 @@ class EventListener:
         playerPos = self.game.camera.applyOnPosition(self.game.player.rect.center)
         polygons = {
             # 0:top, 1:left, 2:down, 3:right
-            'up': Polygon([(0, 0), playerPos, (self.game.windowSize[0], 0)]),
-            'left': Polygon([(0, 0), playerPos, (0, self.game.windowSize[1])]),
-            'down': Polygon([(0, self.game.windowSize[1]), playerPos, self.game.windowSize]),
-            'right': Polygon([(self.game.windowSize[0], 0), playerPos, self.game.windowSize])
+            #'up': Polygon([(0, 0), playerPos, (self.game.windowSize[0], 0)]),
+            'left': Polygon([(0, 0), (playerPos[0],0),
+                             (playerPos[0], self.game.windowSize[1]),(0, self.game.windowSize[1])]),
+            #'down': Polygon([(0, self.game.windowSize[1]), playerPos, self.game.windowSize]),
+            'right': Polygon([(self.game.windowSize[0], 0), (playerPos[0],0),
+                              (playerPos[0],self.game.windowSize[1]),self.game.windowSize])
         }
 
         for key in polygons.keys():
             if polygons[key].collide(pos):
                 return key
+
+        return self.game.player.action.direction
 
     def handleEvents(self,event):
         if event.type == pg.MOUSEBUTTONDOWN:
@@ -40,34 +44,49 @@ class EventListener:
                 self.game.gui.active = True
             else:
                 self.game.gui.active = False
-                self.game.player.action.direction = self.getMouseDirection(event.pos)
                 if not self.game.player.action['attack']:
                     self.game.player.attack()
+        elif event.type == pg.MOUSEMOTION:
+            self.game.player.action.direction = self.getMouseDirection(event.pos)
         elif event.type == pg.KEYDOWN:
-            self.handleKeyEvent(event.key)
+            self.handleKeyDown(event.key)
             self.pressed = True
         elif event.type == pg.KEYUP:
+            self.handleKeyUp(event.key)
             self.pressed = False
             self.game.player.action['walk'] = False
 
-    def handleKeyEvent(self, key):
+    def handleKeyDown(self, key):
         # Handle which key is pressed
-        if key in [pg.K_w, pg.K_a, pg.K_s, pg.K_d]:
+        if (key in (pg.K_w,pg.K_a,pg.K_s,pg.K_d)):
             self.game.player.action['walk'] = True
+
         if key == pg.K_w:
-            self.game.player.action.direction = 'up'
-            self.game.player.action.move(0, -self.game.player.stats.movement_speed)
-        elif key == pg.K_a:
+            self.game.player.action.moveDirections['up'] = True
+        if key == pg.K_a:
             self.game.player.action.direction = 'left'
-            self.game.player.action.move(-self.game.player.stats.movement_speed, 0)
-        elif key == pg.K_s:
-            self.game.player.action.direction = 'down'
-            self.game.player.action.move(0, self.game.player.stats.movement_speed)
-        elif key == pg.K_d:
+            self.game.player.action.moveDirections['left'] = True
+        if key == pg.K_s:
+            self.game.player.action.moveDirections['down'] = True
+        if key == pg.K_d:
             self.game.player.action.direction = 'right'
-            self.game.player.action.move(self.game.player.stats.movement_speed, 0)
+            self.game.player.action.moveDirections['right'] = True
+
         # Key Handling related to Game
-        elif key == pg.K_i and not self.pressed:
+        if key == pg.K_i and not self.pressed:
             self.game.gui.toggle()
-        elif key == pg.K_ESCAPE and not self.pressed:
+        if key == pg.K_SPACE and not self.pressed:
+            self.game.generateLevel()
+        if key == pg.K_ESCAPE and not self.pressed:
             self.game.running = False
+
+    def handleKeyUp(self, key):
+
+        if key == pg.K_w:
+            self.game.player.action.moveDirections['up'] = False
+        if key == pg.K_a:
+            self.game.player.action.moveDirections['left'] = False
+        if key == pg.K_s:
+            self.game.player.action.moveDirections['down'] = False
+        if key == pg.K_d:
+            self.game.player.action.moveDirections['right'] = False

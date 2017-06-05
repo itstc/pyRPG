@@ -29,26 +29,30 @@ class Game:
         self.entityManager.spawnMobs([mobs.Goblin,mobs.Skeleton],self.map)
         self.entityManager.spawnItems(self.itemManager.getItems(),self.map)
 
-        self.camera = Camera(self.player.position,surface.get_size(), self.map.getWorldSize())
+        self.camera = Camera(self.player.position,surface.get_size(), self.map)
         self.gui = ui.InventoryGUI(self.windowScreen,self.player.inventory)
 
         pg.key.set_repeat(5,5)
 
     def run(self):
         clock = pg.time.Clock()
+        prev = 1
         while self.running:
-            dt = clock.tick(128)
-
+            time = clock.tick(128)
+            dt = (time / prev) * 12
             pg.display.set_caption('%s %i fps' % ('pyLota Alpha Build:', clock.get_fps()//1))
 
             self.render()
             self.events.handleEvent()
             self.update(dt)
+            prev = time
 
     def update(self,dt):
         self.entityManager.update(self.map,dt)
         self.camera.update(self.player)
-        self.gui.update()
+
+        if self.gui.showing:
+            self.gui.updateSlots()
 
 
     def render(self):
@@ -80,16 +84,20 @@ class Game:
         return self.map
 
     def generateLevel(self):
-        self.map.makeMap(32, 32, 50, 20, 30)
-        self.player.position = self.map.spawn
-        self.entityManager.entities.empty()
-        self.entityManager.entities.add(self.player)
-        self.entityManager.spawnMobs([mobs.Goblin,mobs.Skeleton],self.map)
-        self.entityManager.spawnItems(self.itemManager.getItems(), self.map)
+        complete = False
+        while not complete:
+            self.map.makeMap(32, 32, 50, 20, 30)
+            self.player.position = self.map.spawn
+            print(self.map.spawn)
+            self.entityManager.entities.empty()
+            self.entityManager.spawnMobs([mobs.Goblin,mobs.Skeleton],self.map)
+            self.entityManager.spawnItems(self.itemManager.getItems(), self.map)
+            self.entityManager.entities.add(self.player)
+            complete = True
 
 
 class Camera:
-    def __init__(self,pos,screenSize,worldSize):
+    def __init__(self,pos,screenSize,world):
         '''
         :param screenSize: tuple
         :param worldSize: tuple
@@ -97,7 +105,7 @@ class Camera:
         '''
         self.rect = pg.Rect(pos,screenSize)
         self.windowSize = screenSize
-        self.worldSize = worldSize
+        self.world = world
 
     def apply(self, entity):
         offset = (-self.rect.left,-self.rect.top)
@@ -118,8 +126,8 @@ class Camera:
 
         x = max(0,x)
         y = max(0,y)
-        x = min(x,self.worldSize[0])
-        y = min(y,self.worldSize[1])
+        x = min(x,self.world.size_x * self.world.tile_size[1])
+        y = min(y,self.world.size_y * self.world.tile_size[1])
 
         self.rect.topleft = [x,y]
 

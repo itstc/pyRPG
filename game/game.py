@@ -22,7 +22,7 @@ class Game:
         self.map.makeMap(32,32,50,20,30)
         self.itemManager = items.ItemController('data/items.json')
 
-        self.player = mobs.Player(self.map.spawn)
+        self.player = mobs.Player((self.map.spawnx,self.map.spawny))
         self.player.inventory.addItems([self.itemManager.getItem(0)]*10)
 
         self.entityManager = controller.EntityController(self.player)
@@ -63,6 +63,7 @@ class Game:
         self.map.render(self.windowScreen,self.camera)
         self.entityManager.draw(self.windowScreen,self.camera)
 
+        self.camera.drawRectangle(self.windowScreen,pg.Color('pink'),self.map.getTile(self.map.getSpawn()))
         self.gui.draw()
 
         self.hud.drawString([8,8],'Dungeon Level %i' % self.map.level,16)
@@ -84,17 +85,15 @@ class Game:
         return self.map
 
     def generateLevel(self):
+        self.events.clear()
         complete = False
         while not complete:
             self.map.makeMap(32, 32, 50, 20, 30)
-            self.player.position = self.map.spawn
-            print(self.map.spawn)
-            self.entityManager.entities.empty()
+            self.player.setPosition(self.map.getSpawn())
+            self.entityManager = controller.EntityController(self.player)
             self.entityManager.spawnMobs([mobs.Goblin,mobs.Skeleton],self.map)
             self.entityManager.spawnItems(self.itemManager.getItems(), self.map)
-            self.entityManager.entities.add(self.player)
             complete = True
-
 
 class Camera:
     def __init__(self,pos,screenSize,world):

@@ -133,16 +133,26 @@ class Dungeon:
             except:
                 continue
 
-        self.spawn = self.getCenterPosition(self.roomList[0])
+        spawn = self.getCenterPosition(self.roomList[0])
+        self.spawnx = spawn[0]
+        self.spawny = spawn[1]
 
         finalRoom = self.getCenterPosition(self.roomList[-1])
         # Exit Tile
         self.mapArr[finalRoom[1]//Dungeon.tile_size[1]][finalRoom[0]//Dungeon.tile_size[1]] = 6
 
+    def getSpawn(self):
+        return (self.spawnx,self.spawny)
+
     def getCenterPosition(self,room):
         x = room.center()[0] * Dungeon.tile_size[0]
         y = room.center()[1] * Dungeon.tile_size[1]
         return [x,y]
+
+    def getTile(self, position):
+        mapX = round(position[0] / 96)
+        mapY = round(position[1] / 96)
+        return pg.Rect(mapX * 96, mapY * 96, 96, 96)
 
     def getRooms(self):
         return [room for room in self.roomList if isinstance(room,Dungeon.Room)]
@@ -415,5 +425,6 @@ class Dungeon:
             self.game = game
 
         def onCollide(self):
+            pg.time.wait(500)
             self.game.generateLevel()
 

@@ -90,3 +90,7 @@ class EventListener:
             self.game.player.action.moveDirections['down'] = False
         if key == pg.K_d:
             self.game.player.action.moveDirections['right'] = False
+
+    def clear(self):
+        for direction in ['up','left','down','right']:
+            self.game.player.action.moveDirections[direction] = False

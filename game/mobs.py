@@ -23,6 +23,9 @@ class Mob(pg.sprite.Sprite):
         self.action = Mob.Actions(self,images)
         self.stats = Mob.Stats(self,health,ad)
 
+    def setPosition(self,pos):
+        self.position = list(pos)
+
     def getAttackRange(self,direction):
         tlPos = self.rect.topleft
         range = {
@@ -91,6 +94,7 @@ class Mob(pg.sprite.Sprite):
                 collideBox = obj.getLegBox()
             if offset.colliderect(collideBox) and obj.collidable:
                 if isinstance(self,Player) and obj.type == 'world':
+                    self.position = [0,0]
                     obj.onCollide()
                 collide = True
         return collide
@@ -135,8 +139,9 @@ class Mob(pg.sprite.Sprite):
                 self.move(x,0)
                 self.move(0,y)
                 return
+
             # Moves sprite if not colliding
-            if not self.mob.isColliding(x+4, y+4):
+            if not self.mob.isColliding(x, y):
                 self.mob.position[0] += x
                 self.mob.position[1] += y
 
@@ -312,8 +317,8 @@ class Player(Mob):
             if self.moveDirections['right']:
                 ax += ac
 
-            moveX = ax * dt**2
-            moveY = ay * dt**2
+            moveX = int(ax * dt**2)
+            moveY = int(ay * dt**2)
             if moveX != 0 or moveY != 0:
                 self.move(moveX,moveY)
 

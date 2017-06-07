@@ -58,18 +58,14 @@ class EventListener:
 
     def handleKeyDown(self, key):
         # Handle which key is pressed
-        if (key in (pg.K_w,pg.K_a,pg.K_s,pg.K_d)):
-            self.game.player.action['walk'] = True
 
         if key == pg.K_w:
             self.game.player.action.moveDirections['up'] = True
         if key == pg.K_a:
-            self.game.player.action.direction = 'left'
             self.game.player.action.moveDirections['left'] = True
         if key == pg.K_s:
             self.game.player.action.moveDirections['down'] = True
         if key == pg.K_d:
-            self.game.player.action.direction = 'right'
             self.game.player.action.moveDirections['right'] = True
 
         # Key Handling related to Game

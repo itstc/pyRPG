@@ -150,8 +150,6 @@ class Mob(pg.sprite.Sprite):
                 self.current = 'walk_%s' % self.direction
             elif self.actions['attack']:
                 self.current = 'attack_%s' % self.direction
-                if isinstance(self.mob,Player):
-                    self.images['slash_%s' % self.direction].update(dt)
             else:
                 self.current = 'idle_%s' % self.direction
                 self.mob.stats.current_speed = 0
@@ -160,10 +158,6 @@ class Mob(pg.sprite.Sprite):
 
         def draw(self,surface,camera):
             self.mob.image = self.images[self.current].currentFrame()
-            if isinstance(self.mob,Player) and self.actions['attack']:
-                weapon = self.images['slash_%s' % self.direction]
-                surface.blit(weapon.currentFrame(),
-                             camera.applyOnPosition(self.getWeaponLocation(weapon.frame)))
 
         def getWeaponLocation(self,frame):
             offset = self.weaponLocation[self.direction][frame]
@@ -262,22 +256,20 @@ class Player(Mob):
     # TODO: Create a player and place it on the map
     def __init__(self,pos):
         # Initialize Images for player
-        size = (64,96)
+        size = (64,64)
         sheet = sprite.Spritesheet(settings.PLAYERSHEET)
         attack = sprite.Spritesheet(settings.ATTACKSHEET)
         states = {
             # Animated Sprite will be called by syntax: action_direction
-            'idle_left': sprite.AnimatedSprite(sheet, [(0, 0)], [16,24], size, 200),
-            'idle_right': sprite.AnimatedSprite(sheet, [(1, 0)], [16,24], size, 200),
-            'walk_left':sprite.AnimatedSprite(sheet, [(0, 0), (4, 0), (5, 0)], [16,24],size,200),
-            'walk_right':sprite.AnimatedSprite(sheet, [(1, 0), (6, 0), (7, 0)], [16,24],size,200),
-            'attack_left':sprite.AnimatedSprite(sheet, [(0,0)], [16,24],size,200),
-            'attack_right':sprite.AnimatedSprite(sheet, [(1,0)], [16,24],size,200),
-            'slash_left':sprite.AnimatedSprite(attack, [(3,0), (4,0), (5,0)], [16,16],[64,64],200),
-            'slash_right': sprite.AnimatedSprite(attack, [(0,0), (1,0), (2,0)], [16,16],[64,64],200)
+            'idle_left': sprite.AnimatedSprite(sheet, [(0, 0)], [16,16], size, 200),
+            'idle_right': sprite.AnimatedSprite(sheet, [(0, 1)], [16,16], size, 200),
+            'walk_left':sprite.AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0), (3, 0)], [16,16],size,200),
+            'walk_right':sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1), (3, 1)], [16,16],size,200),
+            'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0), (6, 0), (6, 0)], [16,16],size,125),
+            'attack_right':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1), (6, 1), (6, 1)], [16,16],size,125)
                        }
 
-        super().__init__(states, size, pos, 100, 9)
+        super().__init__(states, size, pos, 100, 1000)
         self.inventory = Inventory(self,12)
         self.input = input
         self.action = Player.PlayerActions(self,states)
@@ -296,7 +288,7 @@ class Player(Mob):
 
     def attack(self):
         self.action['attack'] = True
-        self.action.images['slash_%s' % self.action.direction].reset()
+        self.action.images['attack_%s' % self.action.direction].reset()
 
 
     class PlayerActions(Mob.Actions):
@@ -320,6 +312,7 @@ class Player(Mob):
             moveX = int(ax * dt**2)
             moveY = int(ay * dt**2)
             if moveX != 0 or moveY != 0:
+                self.actions['walk'] = True
                 self.move(moveX,moveY)
 
         def update(self,dt):

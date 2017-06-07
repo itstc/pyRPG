@@ -56,7 +56,7 @@ class WorldObject:
         self.property = property
 
 class Dungeon:
-    tile_size = [96,96]
+    tile_size = [64,64]
 
     def __init__(self,game):
         self.level = 0
@@ -137,7 +137,7 @@ class Dungeon:
         self.spawnx = spawn[0]
         self.spawny = spawn[1]
 
-        finalRoom = self.getCenterPosition(self.roomList[-1])
+        finalRoom = self.getCenterPosition(self.getRooms()[-1])
         # Exit Tile
         self.mapArr[finalRoom[1]//Dungeon.tile_size[1]][finalRoom[0]//Dungeon.tile_size[1]] = 6
 
@@ -340,7 +340,7 @@ class Dungeon:
                 try:
                     tile_id = self.mapArr[y][x]
                     image = self.tiles[tile_id]
-                    if tile_id == 1: image.fill(pg.Color(51,51,51))
+                    if tile_id == 1: image.fill(pg.Color(118,176,69))
                 except:
                     continue
                 px = x * Dungeon.tile_size[0] - start[0]

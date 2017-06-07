@@ -30,7 +30,7 @@ class ItemSprite(pg.sprite.Sprite):
         self.size = [item.image_size[0]*4,item.image_size[1]*4]
         self.image = pg.transform.scale(item.image,self.size)
         self.position = list(pos)
-        self.rect = pg.Rect(pos,[32,32])
+        self.rect = pg.Rect(pos,self.size)
         self.fov = []
         self.bouncing = True
         self.time = 0
@@ -73,7 +73,7 @@ class Consumable(StackableItem,UsableItem):
         self.attribute = attribute
 
     def use(self,player):
-        player.stats.statQueue.append(Text(player.stats,self.attribute,[player.rect.centerx,player.rect.top],32,pg.Color(76, 243, 94),pg.Color(101, 199, 2)))
+        player.stats.statQueue.append(Text(player.stats,self.attribute,[player.rect.centerx,player.rect.top],2,pg.Color(76, 243, 94),pg.Color(101, 199, 2)))
         if player.stats.hp + self.attribute > player.stats.maxHP:
             player.stats.hp = player.stats.maxHP
         else:

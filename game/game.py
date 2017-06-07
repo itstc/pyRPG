@@ -63,7 +63,6 @@ class Game:
         self.map.render(self.windowScreen,self.camera)
         self.entityManager.draw(self.windowScreen,self.camera)
 
-        self.camera.drawRectangle(self.windowScreen,pg.Color('pink'),self.map.getTile(self.map.getSpawn()))
         self.gui.draw()
 
         self.hud.drawString([8,8],'Dungeon Level %i' % self.map.level,16)

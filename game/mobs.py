@@ -95,11 +95,10 @@ class Mob(pg.sprite.Sprite):
             collideBox = obj.rect
             if obj.type == 'mob':
                 collideBox = obj.getLegBox()
+
             if offset.colliderect(collideBox) and obj.collidable:
-                if isinstance(self,Player) and obj.type == 'world':
-                    self.position = [0,0]
-                    obj.onCollide()
                 collide = True
+
         return collide
 
     class Actions:
@@ -128,6 +127,8 @@ class Mob(pg.sprite.Sprite):
                          (-48, 0)]
             }
 
+            self.colliding = False
+
         def __getitem__(self, item):
             return self.actions[item]
 
@@ -145,8 +146,12 @@ class Mob(pg.sprite.Sprite):
 
             # Moves sprite if not colliding
             if not self.mob.isColliding(x, y):
+                self.actions['walk'] = True
+                self.colliding = False
                 self.mob.position[0] += x
                 self.mob.position[1] += y
+            else:
+                self.colliding = True
 
         def update(self,dt):
             if self.actions['walk']:
@@ -194,64 +199,6 @@ class Mob(pg.sprite.Sprite):
         def draw(self,surface,camera):
             for i in self.statQueue:
                 i.draw(surface,camera)
-class Goblin(Mob):
-    name = 'Goblin'
-    def __init__(self,pos):
-        size = (64,64)
-        sheet = sprite.Spritesheet(settings.MOBSHEET)
-        states = {
-            'idle_up': sprite.AnimatedSprite(sheet, [(1, 1)], [16, 16], size, 800),
-            'idle_left': sprite.AnimatedSprite(sheet, [(0,0),(1,0)], [16, 16], size, 800),
-            'idle_down': sprite.AnimatedSprite(sheet, [(0, 1)], [16, 16], size, 800),
-            'idle_right': sprite.AnimatedSprite(sheet, [(2, 0),(3,0)], [16, 16], size, 800),
-            'walk_up':sprite.AnimatedSprite(sheet, [(1, 1)], [16, 16],size,200),
-            'walk_left':sprite.AnimatedSprite(sheet, [(0, 0)], [16, 16],size,200),
-            'walk_down':sprite.AnimatedSprite(sheet, [(0, 1)], [16, 16],size,200),
-            'walk_right':sprite.AnimatedSprite(sheet, [(1, 0)], [16, 16],size,200),
-            'attack_up':sprite.AnimatedSprite(sheet, [(6, 1), (7, 1)], [16, 16],size,500),
-            'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0)], [16, 16],size,500),
-            'attack_down':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1)], [16, 16],size,500),
-            'attack_right':sprite.AnimatedSprite(sheet, [(6, 0), (7, 0)], [16, 16],size,500)
-        }
-        super().__init__(states,size,pos,25,8)
-        self.maxcd = 1500
-        self.cooldown = 1500
-
-    def update(self,dt):
-        super().update(dt)
-        for obj in self.fov:
-            if isinstance(obj,Player) and self.getAttackRange(self.action.direction).colliderect(obj):
-                if not self.action['attack']:
-                    self.action.attack(obj)
-
-
-class Skeleton(Mob):
-    name = 'Skeleton'
-    def __init__(self,pos):
-        size = (64,128)
-        sheet = sprite.Spritesheet(settings.MOBSHEET)
-        states = {
-            'idle_up': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 800),
-            'idle_left': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 800),
-            'idle_down': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 800),
-            'idle_right': sprite.AnimatedSprite(sheet, [(2,1), (3,1)], [16, 32], size, 800),
-            'attack_up': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 1000),
-            'attack_left': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 1000),
-            'attack_down': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 1000),
-            'attack_right': sprite.AnimatedSprite(sheet, [(2,1), (3,1)], [16, 32], size, 1000)
-
-        }
-        super().__init__(states,size,pos,30,10)
-        self.maxcd = 1500
-        self.cooldown = 1500
-
-    def update(self,dt):
-        super().update(dt)
-        for obj in self.fov:
-            if isinstance(obj,Player) and self.getAttackRange(self.action.direction).colliderect(obj):
-                if not self.action['attack']:
-                    self.action.attack(obj)
-
 
 class Player(Mob):
     # TODO: Create a player and place it on the map
@@ -274,9 +221,12 @@ class Player(Mob):
         self.inventory = Inventory(self,12)
         self.input = input
         self.action = Player.PlayerActions(self,states)
+        self.exit = None
 
     def update(self,dt):
         super().update(dt)
+
+        self.exit = [obj for obj in self.fov if obj.type == 'world' and self.rect.colliderect(obj.rect)]
 
     def draw(self,surface,camera):
         super().draw(surface,camera)
@@ -313,7 +263,6 @@ class Player(Mob):
             moveX = int(ax * dt**2)
             moveY = int(ay * dt**2)
             if moveX != 0 or moveY != 0:
-                self.actions['walk'] = True
                 self.move(moveX,moveY)
 
         def update(self,dt):

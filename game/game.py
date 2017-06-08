@@ -1,6 +1,6 @@
 import pygame as pg
 import random
-import settings, mobs, items, sprite, ui, world, controller, particles
+import settings, mobs, items, sprite, ui, world, controller, particles, ai
 from events import EventListener
 
 
@@ -26,7 +26,7 @@ class Game:
         self.player.inventory.addItems([self.itemManager.getItem(0)]*10)
 
         self.entityManager = controller.EntityController(self.player)
-        self.entityManager.spawnMobs([mobs.Goblin,mobs.Skeleton],self.map)
+        self.entityManager.spawnMobs([ai.Goblin,ai.Skeleton],self.map)
         self.entityManager.spawnItems(self.itemManager.getItems(),self.map)
 
         self.camera = Camera(self.player.position,surface.get_size(), self.map)
@@ -94,7 +94,7 @@ class Game:
             self.map.makeMap(32, 32, 50, 20, 30)
             self.player.setPosition(self.map.getSpawn())
             self.entityManager = controller.EntityController(self.player)
-            self.entityManager.spawnMobs([mobs.Goblin,mobs.Skeleton],self.map)
+            self.entityManager.spawnMobs([ai.Goblin,ai.Skeleton],self.map)
             self.entityManager.spawnItems(self.itemManager.getItems(), self.map)
             complete = True
 

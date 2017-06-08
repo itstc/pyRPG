@@ -71,6 +71,9 @@ class EventListener:
         # Key Handling related to Game
         if key == pg.K_i and not self.pressed:
             self.game.gui.toggle()
+        if key == pg.K_e and not self.pressed:
+            if self.game.player.exit:
+                self.game.player.exit[0].onCollide()
         if key == pg.K_SPACE and not self.pressed:
             self.game.generateLevel()
         if key == pg.K_ESCAPE and not self.pressed:

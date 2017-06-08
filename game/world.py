@@ -418,7 +418,7 @@ class Dungeon:
 
     class ExitTile(WorldObject):
         type = 'world'
-        collidable = True
+        collidable = False
 
         def __init__(self,game,pos,size):
             super().__init__(pos,size)

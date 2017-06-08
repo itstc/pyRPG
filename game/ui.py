@@ -4,6 +4,10 @@ import random
 
 class StringRenderer():
 
+    def getStringAsSurface(self, string, scale = 1, color = pg.Color('white')):
+        size = self.getStringSize(string, 16 * scale)
+        return pg.transform.scale(pg.font.Font('res/gamefont.ttf', 16).render(str(string),1,color), size)
+
     def drawString(self,surface, string, position,size = 16,color = pg.Color(224,228,204)):
         text = pg.font.Font('res/gamefont.ttf', size).render(str(string),1,color)
         surface.blit(text,position)
@@ -140,6 +144,7 @@ class InventoryGUI(GUI):
                         self.state = HoveringState(self.selectedSlot)
                 elif 1 in event.buttons and not self.state:
                     self.moveInterface(event.pos)
+                    self.pressed = True
 
 
     def handleMouseDownEvent(self,pos):

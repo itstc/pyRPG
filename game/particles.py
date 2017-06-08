@@ -35,6 +35,22 @@ class BouncyText(ui.StringRenderer):
             self.drawString(surface,self.value,camera.applyOnPosition([self.position[0],self.position[1]]),16 * self.scale,self.fg)
 
 
+class FadingText(ui.StringRenderer):
+    def __init__(self, string, position, scale = 1, time = 1500, fg = pg.Color(250,250,250), bg = pg.Color(32,32,32)):
+        self.time = time
+        self.string_size = self.getStringSize(string, 16 * scale)
+        self.bg_display = self.getStringAsSurface(string, scale, bg)
+        self.fg_display = self.getStringAsSurface(string, scale, fg)
+        self.size = self.bg_display.get_size()
+        self.pos = (position[0] - self.size[0] // 2, position[1] - self.size[1] // 2)
+
+    def update(self,dt):
+        self.time -= dt
+    def render(self, surface):
+        surface.blit(self.bg_display,self.pos)
+        surface.blit(self.fg_display, (self.pos[0], self.pos[1] - 2))
+
+
 
 
 

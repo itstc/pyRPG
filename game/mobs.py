@@ -17,7 +17,7 @@ class Mob(pg.sprite.Sprite):
         self.rect = pg.Rect(position[0],position[1],size[0],size[1])
 
         self.fov = []
-        self.maxcd = 500
+        self.maxcd = 1000
         self.cooldown = self.maxcd
 
         self.action = Mob.Actions(self,images)
@@ -51,6 +51,9 @@ class Mob(pg.sprite.Sprite):
 
         pg.draw.rect(surface, pg.Color('red'),camera.applyOnRect(red_bar))
         pg.draw.rect(surface, pg.Color('green'),camera.applyOnRect(green_bar))
+
+    def getHealthRatio(self):
+        return self.stats.hp/self.stats.maxHP
 
     def draw(self,surface,camera):
         self.action.draw(surface,camera)
@@ -170,8 +173,6 @@ class Mob(pg.sprite.Sprite):
         # Handle all of mob stats here
         MAX_SPEED = 0.4
         def __init__(self,mob,health,ad):
-            self.movement_speed = 0
-            self.velocity = 0
             self.mob = mob
             self.maxHP = health
             self.hp = health
@@ -213,8 +214,8 @@ class Goblin(Mob):
             'attack_right':sprite.AnimatedSprite(sheet, [(6, 0), (7, 0)], [16, 16],size,500)
         }
         super().__init__(states,size,pos,25,8)
-        self.maxcd = 1000
-        self.cooldown = 1000
+        self.maxcd = 1500
+        self.cooldown = 1500
 
     def update(self,dt):
         super().update(dt)
@@ -241,8 +242,8 @@ class Skeleton(Mob):
 
         }
         super().__init__(states,size,pos,30,10)
-        self.maxcd = 1000
-        self.cooldown = 1000
+        self.maxcd = 1500
+        self.cooldown = 1500
 
     def update(self,dt):
         super().update(dt)
@@ -265,8 +266,8 @@ class Player(Mob):
             'idle_right': sprite.AnimatedSprite(sheet, [(0, 1)], [16,16], size, 200),
             'walk_left':sprite.AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0), (3, 0)], [16,16],size,200),
             'walk_right':sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1), (3, 1)], [16,16],size,200),
-            'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0), (6, 0), (6, 0)], [16,16],size,125),
-            'attack_right':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1), (6, 1), (6, 1)], [16,16],size,125)
+            'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0), (6, 0), (6, 0)], [16,16],size,250),
+            'attack_right':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1), (6, 1), (6, 1)], [16,16],size,250)
                        }
 
         super().__init__(states, size, pos, 100, 1000)

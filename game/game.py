@@ -1,6 +1,6 @@
 import pygame as pg
 import random
-import mobs,items,sprite,ui,world,controller
+import settings, mobs, items, sprite, ui, world, controller, particles
 from events import EventListener
 
 
@@ -54,6 +54,8 @@ class Game:
         if self.gui.showing:
             self.gui.updateSlots()
 
+        self.hud.update(dt)
+
 
     def render(self):
         # Clear Screen
@@ -63,9 +65,11 @@ class Game:
         self.map.render(self.windowScreen,self.camera)
         self.entityManager.draw(self.windowScreen,self.camera)
 
-        self.gui.draw()
+        # Draw HUD
+        self.hud.render(self.player)
 
-        self.hud.drawString([8,8],'Dungeon Level %i' % self.map.level,16)
+        # Draw GUI
+        self.gui.draw()
 
         # End Game
         if not self.entityManager.entities.has(self.player):
@@ -93,6 +97,8 @@ class Game:
             self.entityManager.spawnMobs([mobs.Goblin,mobs.Skeleton],self.map)
             self.entityManager.spawnItems(self.itemManager.getItems(), self.map)
             complete = True
+
+        self.hud.drawQueue.append(particles.FadingText('Dungeon Level %i' % self.map.level, (self.windowSize[0]//2, self.windowSize[1]//12), 4))
 
 class Camera:
     def __init__(self,pos,screenSize,world):
@@ -139,12 +145,42 @@ class HUD(ui.StringRenderer):
     sprite_size = [16,16]
     def __init__(self,surface):
         self.surface = surface
-        self.spritesheet = sprite.Spritesheet('hud.png')
+        self.hud = pg.Surface((96,64),pg.SRCALPHA,32)
+        pg.Surface.convert_alpha(self.hud)
+        self.spritesheet = sprite.Spritesheet(settings.UISHEET)
 
-    def drawString(self, position, string, font_size = 16, color = pg.Color('white')):
-        size = self.getStringSize(string,font_size)
-        text = pg.font.Font('res/gamefont.ttf', font_size).render(string,1,color)
-        self.surface.blit(pg.transform.scale(text,(size[0]*2,size[1]*2)),position)
+        self.drawQueue = []
+
+    def update(self,dt):
+        for item in self.drawQueue:
+            item.update(dt)
+
+            if item.time <= 0:
+                self.drawQueue.remove(item)
+
+    def render(self, player):
+
+        self.drawHUDImage((16,16),(2,2), (4,8), 1)
+
+        pg.draw.rect(self.hud, pg.Color(151, 0, 0), pg.Rect(24, 6, 48, 4))
+        pg.draw.rect(self.hud, pg.Color(0, 255, 0), pg.Rect(24, 6, int(48 * player.getHealthRatio()), 4))
+        pg.draw.rect(self.hud, pg.Color(0, 150, 200), pg.Rect(24, 22, 48, 4))
+
+        hp_hud = self.drawHUDImage([48, 16], [1, 0], [24, 0], 1)
+        xp_hud = self.drawHUDImage([48, 16], [1, 1], [24, 16], 1)
+
+        self.surface.blit(pg.transform.scale(self.hud,(288,192)),(8,8))
+
+        for item in self.drawQueue:
+            item.render(self.surface)
+
+
+
+
+    def drawString(self, position, string, scale = 1, color = pg.Color('white')):
+        size = self.getStringSize(string,int(16*scale))
+        text = pg.font.Font('res/gamefont.ttf', 16).render(string,1,color)
+        self.surface.blit(pg.transform.scale(text,(size[0],size[1])),(position[0] - size[0]//2, position[1]))
 
     def drawImage(self,image,position,scale = [64,64]):
         # Prints a surface on screen
@@ -152,10 +188,12 @@ class HUD(ui.StringRenderer):
             pg.draw.rect(self.surface,pg.Color('cyan'),self.surface.blit(pg.transform.scale(image,scale),position),1)
         else:
             pg.draw.rect(self.surface, pg.Color('cyan'), pg.Rect(position,scale),1)
-    def drawHUDImage(self,imagePosition,position,scale = [64,64]):
+
+    def drawHUDImage(self,imageSize,imagePosition,position,scale = 1):
         # Draws an image from the hud spritesheet
-        image = pg.transform.scale(self.spritesheet.getSprite(HUD.sprite_size,imagePosition[0],imagePosition[1]),scale)
-        pg.draw.rect(self.surface,pg.Color('black'),self.surface.blit(image,position),1)
+        size = [imageSize[0] * scale, imageSize[1] * scale]
+        image = pg.transform.scale(self.spritesheet.getSprite(imageSize,imagePosition),size)
+        return self.hud.blit(image,position)
 
 
 

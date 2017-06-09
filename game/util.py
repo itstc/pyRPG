@@ -16,7 +16,3 @@ class Polygon:
             j = i
 
         return c
-
-
-
-

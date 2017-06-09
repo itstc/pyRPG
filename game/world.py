@@ -1,78 +1,23 @@
 import pygame as pg
 import math, random
-import settings
+import settings, tile
 from pytmx.util_pygame import load_pygame
 
 from sprite import Spritesheet as spritesheet
 
-class World:
-    size = [96,96]
-    def __init__(self,surface,file):
-        self.surface = surface
-        self.mapData = load_pygame(file)
-        self.scale = pg.transform.scale
-
-    def render(self,camera):
-        # Gets the tiles based on camera location and blits to game.surface
-        offset = camera.getView()
-        renderDistance = [self.surface.get_width(),self.surface.get_height()]
-        for y in range(offset[1]//World.size[1] ,math.ceil((offset[1] + renderDistance[1]) / World.size[1])):
-            for x in range(offset[0]//World.size[0], math.ceil((offset[0] + renderDistance[0]) / World.size[0])):
-                try:
-                    image = self.mapData.get_tile_image(x,y,0)
-                    image = self.scale(image,World.size)
-
-                except:
-                    continue
-                px = x * World.size[0]  - offset[0]
-                py = y * World.size[1] - offset[1]
-                self.surface.blit(image,(px,py))
-
-
-    def getCollidableTiles(self, rect):
-        collidables = []
-        start = rect.topleft
-        end = rect.bottomright
-        for y in range(start[1] // World.size[1], end[1] // World.size[1] + 1):
-            for x in range(start[0] // World.size[0], end[0] // World.size[0] + 1):
-                try:
-                    tile = self.mapData.get_tile_properties(x,y,0)
-                    if tile['collidable'] == 'true':
-                        collidables.append(WorldObject(pg.Rect((x * World.size[0], y * World.size[1]),World.size),'collidable'))
-                except:
-                    continue
-        return collidables
-
-    def getData(self):
-        return self.mapData
-
-    def getWorldSize(self):
-        return (self.mapData.width * World.size[0], self.mapData.height * World.size[1])
-
-class WorldObject:
-    collidable = True
-    def __init__(self,rect,property):
-        self.rect = rect
-        self.property = property
-
 class Dungeon:
     tile_size = [64,64]
+
+    VOID = 0
+    FLOOR = 1
+    WALL = 2
+    EXIT = 3
 
     def __init__(self,game):
         self.level = 0
         self.game = game
 
         sheet = spritesheet(settings.TILESHEET)
-        self.tiles = {
-            0: pg.transform.scale(sheet.getSprite([16, 16], [0, 0]), Dungeon.tile_size),
-            1: pg.Surface(Dungeon.tile_size),
-            2: pg.transform.scale(sheet.getSprite([16, 16], [0, 2]), Dungeon.tile_size),
-            3: pg.transform.scale(sheet.getSprite([16, 16], [5, 0]), Dungeon.tile_size),
-            4: pg.transform.scale(sheet.getSprite([16, 16], [5, 0]), Dungeon.tile_size),
-            5: pg.transform.scale(sheet.getSprite([16, 16], [1, 0]), Dungeon.tile_size),
-            6: pg.transform.scale(sheet.getSprite([16, 16], [5, 0]), Dungeon.tile_size),
-            7: pg.transform.scale(sheet.getSprite([16, 16], [0, 1]), Dungeon.tile_size)
-                      }
 
     def makeMap(self, xsize, ysize, fail, b1, mrooms):
         """Generate random layout of rooms, corridors and other features"""
@@ -88,7 +33,7 @@ class Dungeon:
         for y in range(ysize):
             tmp = []
             for x in range(xsize):
-                tmp.append(1)
+                tmp.append(tile.Void())
             self.mapArr.append(tmp)
 
         w, l, t = self.makeRoom()
@@ -109,7 +54,7 @@ class Dungeon:
             if roomDone == 0:  # If placement failed increase possibility map is full
                 failed += 1
             elif roomDone == 2:  # Possiblilty of linking rooms
-                if self.mapArr[ey2][ex2] == 0:
+                if self.mapArr[ey2][ex2] == Dungeon.FLOOR:
                     if random.randrange(100) < 7:
                         self.makePortal(ex, ey)
                     failed += 1
@@ -125,21 +70,24 @@ class Dungeon:
 
         self.finalJoins()
 
-        walls = [(y,x) for y in range(self.size_y) for x in range(self.size_x) if self.mapArr[y][x] == 7]
-        for wall in walls:
-            try:
-                if self.mapArr[wall[0]+1][wall[1]] == 0 or self.mapArr[wall[0]+1][wall[1]] == 6:
-                    self.mapArr[wall[0]][wall[1]] = 2
-            except:
-                continue
-
         spawn = self.getCenterPosition(self.roomList[0])
         self.spawnx = spawn[0]
         self.spawny = spawn[1]
 
         finalRoom = self.getCenterPosition(self.getRooms()[-1])
+        fy = finalRoom[1]//Dungeon.tile_size[1]
+        fx = finalRoom[0]//Dungeon.tile_size[1]
         # Exit Tile
-        self.mapArr[finalRoom[1]//Dungeon.tile_size[1]][finalRoom[0]//Dungeon.tile_size[1]] = 6
+        self.mapArr[fy][fx] = tile.ExitTile(self.game, fx, fy)
+
+        walls = [(y,x) for y in range(self.size_y) for x in range(self.size_x) if self.mapArr[y][x] == Dungeon.WALL]
+        for wall in walls:
+            try:
+                if self.mapArr[wall[0]+1][wall[1]] == Dungeon.FLOOR:
+                    self.mapArr[wall[0]][wall[1]].setImage(0,3)
+            except:
+                continue
+
 
     def getSpawn(self):
         return (self.spawnx,self.spawny)
@@ -212,7 +160,7 @@ class Dungeon:
         else:
             for j in range(ll):
                 for k in range(ww):
-                    if self.mapArr[(ypos) + j][(xpos) + k] != 1:
+                    if self.mapArr[(ypos) + j][(xpos) + k] != Dungeon.VOID:
                         canPlace = 2
         # If there is space, add to list of rooms
         if canPlace == 1:
@@ -220,11 +168,10 @@ class Dungeon:
 
             for j in range(ll + 2):  # Then build walls
                 for k in range(ww + 2):
-                    wall_orientation = 7
-                    self.mapArr[(ypos - 1) + j][(xpos - 1) + k] = wall_orientation
+                    self.mapArr[(ypos - 1) + j][(xpos - 1) + k] = tile.Wall((xpos - 1) + k, (ypos - 1) + j)
             for j in range(ll):  # Then build floor
                 for k in range(ww):
-                    self.mapArr[ypos + j][xpos + k] = 0
+                    self.mapArr[ypos + j][xpos + k] = tile.Grass()
 
             if rty == 5:
                 self.roomList.append(Dungeon.Room(self, xpos, ypos, ww, ll))
@@ -258,13 +205,13 @@ class Dungeon:
                 rx = room.x1 - 1
                 rx2 = rx - 1
                 ry2 = ry
-            if self.mapArr[ry][rx] == 7:  # If space is a wall, exit
+            if self.mapArr[ry][rx] == Dungeon.WALL:  # If space is a wall, exit
                 break
         return rx, ry, rx2, ry2, rw
 
     def makePortal(self, px, py):
         """Create doors in walls"""
-        self.mapArr[py][px] = 0
+        self.mapArr[py][px] = tile.Grass()
 
     def joinCorridor(self, cno, xp, yp, ed, psb):
         """Check corridor endpoint and make an exit if it links to another room"""
@@ -317,7 +264,7 @@ class Dungeon:
                 coords = [endx, endy + 2, endx, endy + 1]
                 checkExit.append(coords)
         for xxx, yyy, xxx1, yyy1 in checkExit:  # Loop through possible exits
-            if self.mapArr[yyy][xxx] == 0:  # If joins to a room
+            if self.mapArr[yyy][xxx] == Dungeon.FLOOR:  # If joins to a room
                 if random.randrange(100) < psb:  # Possibility of linking rooms
                     self.makePortal(xxx1, yyy1)
 
@@ -327,25 +274,18 @@ class Dungeon:
             self.joinCorridor(x[0], x[1], x[2], x[3], 10)
 
     def render(self,surface,camera):
-
         start = camera.rect.topleft
         end = camera.rect.bottomright
 
         # amount of tiles to render on x and y
         render_x = [start[0] // Dungeon.tile_size[0], math.ceil(end[0] / Dungeon.tile_size[0])]
-        render_y = [start[1] // Dungeon.tile_size[1], math.ceil(end[1] / Dungeon.tile_size[0])]
+        render_y = [start[1] // Dungeon.tile_size[1], math.ceil(end[1] / Dungeon.tile_size[1])]
 
-        for y in range(render_y[0],render_y[1]):
-            for x in range(render_x[0],render_x[1]):
-                try:
-                    tile_id = self.mapArr[y][x]
-                    image = self.tiles[tile_id]
-                    if tile_id == 1: image.fill(pg.Color(118,176,69))
-                except:
-                    continue
+        for y in range(max(0,render_y[0]), min(render_y[1],self.size_y)):
+            for x in range(max(0,render_x[0]), min(render_x[1],self.size_x)):
                 px = x * Dungeon.tile_size[0] - start[0]
                 py = y * Dungeon.tile_size[1] - start[1]
-                surface.blit(image,(px,py))
+                surface.blit(self.mapArr[y][x].image, (px, py))
 
     def drawRoomOutline(self,surface,camera):
         for room in self.getRooms():
@@ -356,16 +296,14 @@ class Dungeon:
         collidables = []
         start_pos = rect.topleft
         end_pos =  rect.bottomright
-        render_x = [start_pos[0]//Dungeon.tile_size[0], end_pos[0]//Dungeon.tile_size[0] + 1]
-        render_y = [start_pos[1]//Dungeon.tile_size[1], end_pos[1]//Dungeon.tile_size[1] + 1]
+        render_x = [start_pos[0]//Dungeon.tile_size[0], end_pos[0]//Dungeon.tile_size[0]]
+        render_y = [start_pos[1]//Dungeon.tile_size[1], end_pos[1]//Dungeon.tile_size[1]]
 
-        for y in range(max(0,render_y[0]-1), min(render_y[1] + 1,self.size_y)):
-            for x in range(max(0,render_x[0]-1), min(render_x[1] + 1,self.size_x)):
-                if self.mapArr[y][x] == 2 or self.mapArr[y][x] == 7:
-                    # Append a WorldObject to return
-                    collidables.append(Dungeon.WorldObject((x*Dungeon.tile_size[0], y*Dungeon.tile_size[1]),Dungeon.tile_size))
-                elif self.mapArr[y][x] == 6:
-                    collidables.append(Dungeon.ExitTile(self.game,(x * Dungeon.tile_size[0], y * Dungeon.tile_size[1]), Dungeon.tile_size))
+        for y in range(max(0,render_y[0] - 1), min(render_y[1] + 1,self.size_y)):
+            for x in range(max(0,render_x[0] - 1), min(render_x[1] + 1,self.size_x)):
+                if self.mapArr[y][x] == Dungeon.WALL or self.mapArr[y][x] == Dungeon.EXIT:
+                    collidables.append(self.mapArr[y][x])
+
         return collidables
 
     def getWorldSize(self):
@@ -392,7 +330,7 @@ class Dungeon:
             while not spawnable:
                 x = random.randrange(self.x1,self.x2)
                 y = random.randrange(self.y1,self.y2)
-                if mapData[y-1][x] == 0 and mapData[y+1][x] == 0 and mapData[y][x-1] == 0 and mapData[y][x+1] == 0:
+                if mapData[y-1][x] == Dungeon.FLOOR and mapData[y+1][x] == Dungeon.FLOOR and mapData[y][x-1] == Dungeon.FLOOR and mapData[y][x+1] == Dungeon.FLOOR:
                     spawnable = True
 
             return [x * Dungeon.tile_size[0],y * Dungeon.tile_size[1]]
@@ -409,22 +347,4 @@ class Dungeon:
 
         def center(self):
             return ((self.x1 + self.x2)//2,(self.y1 + self.y2)//2)
-
-    class WorldObject():
-        type = 'wall'
-        collidable = True
-        def __init__(self,pos,size):
-            self.rect = pg.Rect(pos, size)
-
-    class ExitTile(WorldObject):
-        type = 'world'
-        collidable = False
-
-        def __init__(self,game,pos,size):
-            super().__init__(pos,size)
-            self.game = game
-
-        def onCollide(self):
-            pg.time.wait(500)
-            self.game.generateLevel()
 

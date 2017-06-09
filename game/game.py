@@ -98,7 +98,7 @@ class Game:
             self.entityManager.spawnItems(self.itemManager.getItems(), self.map)
             complete = True
 
-        self.hud.drawQueue.append(particles.FadingText('Dungeon Level %i' % self.map.level, (self.windowSize[0]//2, self.windowSize[1]//12), 4))
+        # self.hud.drawQueue.append(particles.FadingText('Dungeon Level %i' % self.map.level, (self.windowSize[0] // 2, self.windowSize[1] // 12), 4))
 
 class Camera:
     def __init__(self,pos,screenSize,world):

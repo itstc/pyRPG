@@ -67,12 +67,12 @@ class Goblin(AI):
         size = (64,64)
         sheet = sprite.Spritesheet(settings.MOBSHEET)
         states = {
-            'idle_left': sprite.AnimatedSprite(sheet, [(0,0),(1,0)], [16, 16], size, 800),
-            'idle_right': sprite.AnimatedSprite(sheet, [(2, 0),(3,0)], [16, 16], size, 800),
-            'walk_left':sprite.AnimatedSprite(sheet, [(0, 0)], [16, 16],size,200),
-            'walk_right':sprite.AnimatedSprite(sheet, [(1, 0)], [16, 16],size,200),
-            'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0)], [16, 16],size,500),
-            'attack_right':sprite.AnimatedSprite(sheet, [(6, 0), (7, 0)], [16, 16],size,500)
+            'idle_left': sprite.AnimatedSprite(sheet, [(0, 0)], [16, 16], size, 800),
+            'idle_right': sprite.AnimatedSprite(sheet, [(0, 1)], [16, 16], size, 800),
+            'walk_left':sprite.AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0), (3, 0)], [16, 16],size,250),
+            'walk_right':sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1), (3, 1)], [16, 16],size,250),
+            'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0), (6, 0)], [16, 16],size,500),
+            'attack_right':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1), (6, 1)], [16, 16],size,500)
         }
         super().__init__(states,size,pos,25,8)
         self.maxcd = 1500

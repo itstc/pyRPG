@@ -46,6 +46,7 @@ class FadingText(ui.StringRenderer):
 
     def update(self,dt):
         self.time -= dt
+
     def render(self, surface):
         surface.blit(self.bg_display,self.pos)
         surface.blit(self.fg_display, (self.pos[0], self.pos[1] - 2))

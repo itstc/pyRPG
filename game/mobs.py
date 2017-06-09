@@ -17,7 +17,7 @@ class Mob(pg.sprite.Sprite):
         self.rect = pg.Rect(position[0],position[1],size[0],size[1])
 
         self.fov = []
-        self.maxcd = 1000
+        self.maxcd = 500
         self.cooldown = self.maxcd
 
         self.action = Mob.Actions(self,images)
@@ -80,12 +80,11 @@ class Mob(pg.sprite.Sprite):
                 self.cooldown = self.maxcd
         else: self.cooldown = self.maxcd
 
-        if self.stats.hp <= 0:
-            self.kill()
-
         self.stats.update(dt)
         self.action.update(dt)
 
+        if self.stats.hp <= 0:
+            self.kill()
     def isColliding(self, x, y):
         # Takes offset x,y and sees if sprite is colliding with any objects in fov
         offset = self.getLegBox()
@@ -213,8 +212,8 @@ class Player(Mob):
             'idle_right': sprite.AnimatedSprite(sheet, [(0, 1)], [16,16], size, 200),
             'walk_left':sprite.AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0), (3, 0)], [16,16],size,200),
             'walk_right':sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1), (3, 1)], [16,16],size,200),
-            'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0), (6, 0), (6, 0)], [16,16],size,250),
-            'attack_right':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1), (6, 1), (6, 1)], [16,16],size,250)
+            'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0), (6, 0), (6, 0)], [16,16],size,125),
+            'attack_right':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1), (6, 1), (6, 1)], [16,16],size,125)
                        }
 
         super().__init__(states, size, pos, 100, 1000)
@@ -230,6 +229,9 @@ class Player(Mob):
 
     def draw(self,surface,camera):
         super().draw(surface,camera)
+
+        for i in self.fov:
+            camera.drawRectangle(surface,pg.Color('red'),i.rect)
 
     def getPosition(self):
         return self.position

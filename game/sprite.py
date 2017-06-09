@@ -85,7 +85,8 @@ class EntityGroup(pg.sprite.Group):
         sprites = self.sprites()
         surface_blit = surface.blit
 
-        self.renderables = [spr for spr in sprites if camera.isVisible(spr.position) or isinstance(spr,mobs.Player)]
+        # Sorts renderables by y position in ascending order
+        self.renderables = sorted([spr for spr in sprites if camera.isVisible(spr.position) or isinstance(spr,mobs.Player)], key = lambda spr: spr.position[1])
 
         for spr in self.renderables:
             # Draws sprite

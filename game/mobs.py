@@ -1,5 +1,5 @@
 import pygame as pg
-import sprite,particles,settings
+import sprite,particles,settings,projectiles,math
 from inventory import Inventory
 
 
@@ -8,7 +8,8 @@ class Mob(pg.sprite.Sprite):
     sprite_size = [16,16]
     collidable = True
     type = 'mob'
-    def __init__(self,images,size,position,health,ad):
+
+    def __init__(self,group,images,size,position,health,ad):
         super().__init__()
         self.image = pg.Surface(size)
 
@@ -22,6 +23,8 @@ class Mob(pg.sprite.Sprite):
 
         self.action = Mob.Actions(self,images)
         self.stats = Mob.Stats(self,health,ad)
+
+        self.group = group
 
     def setPosition(self,pos):
         self.position = list(pos)
@@ -184,12 +187,14 @@ class Mob(pg.sprite.Sprite):
             self.defence = 12
             self.statQueue = []
 
+
         def damage(self,target):
             target.stats.hurt(self.ad)
             self.statQueue.append(particles.BouncyText(self,self.ad,[target.rect.centerx,target.rect.top - 16]))
 
         def hurt(self,value):
             self.hp -= value
+            self.statQueue.append(particles.BouncyText(self, value, [self.mob.rect.centerx, self.mob.rect.top - 16]))
 
         def update(self,dt):
             for item in self.statQueue:
@@ -201,11 +206,10 @@ class Mob(pg.sprite.Sprite):
 
 class Player(Mob):
     # TODO: Create a player and place it on the map
-    def __init__(self,pos):
+    def __init__(self, group, pos):
         # Initialize Images for player
         size = (64,64)
         sheet = sprite.Spritesheet(settings.PLAYERSHEET)
-        attack = sprite.Spritesheet(settings.ATTACKSHEET)
         states = {
             # Animated Sprite will be called by syntax: action_direction
             'idle_left': sprite.AnimatedSprite(sheet, [(0, 0)], [16,16], size, 200),
@@ -216,11 +220,13 @@ class Player(Mob):
             'attack_right':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1), (6, 1), (6, 1)], [16,16],size,125)
                        }
 
-        super().__init__(states, size, pos, 100, 1000)
+        super().__init__(group, states, size, pos, 100, 1000)
         self.inventory = Inventory(self,12)
         self.input = input
         self.action = Player.PlayerActions(self,states)
         self.exit = None
+
+        self.camera_pos = (0,0)
 
     def update(self,dt):
         super().update(dt)
@@ -230,8 +236,8 @@ class Player(Mob):
     def draw(self,surface,camera):
         super().draw(surface,camera)
 
-        for i in self.fov:
-            camera.drawRectangle(surface,pg.Color('red'),i.rect)
+        self.camera_pos = camera.applyOnPosition(self.rect.center)
+
 
     def getPosition(self):
         return self.position
@@ -242,6 +248,13 @@ class Player(Mob):
     def attack(self):
         self.action['attack'] = True
         self.action.images['attack_%s' % self.action.direction].reset()
+
+    def fire(self, pos):
+        dx = pos[0] - self.camera_pos[0]
+        dy = pos[1] - self.camera_pos[1]
+        angle = math.atan2(dy, dx)
+        self.group.add(projectiles.Arrow(self, angle, self.rect.center))
+
 
 
     class PlayerActions(Mob.Actions):

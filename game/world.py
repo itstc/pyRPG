@@ -3,21 +3,20 @@ import math, random
 import settings, tile
 from pytmx.util_pygame import load_pygame
 
-from sprite import Spritesheet as spritesheet
-
 class Dungeon:
     tile_size = [64,64]
 
     VOID = 0
     FLOOR = 1
-    WALL = 2
-    EXIT = 3
+    FLOOR_1 = 2
+    WALL = 3
+    WALL_1 = 4
+    EXIT = 5
 
     def __init__(self,game):
         self.level = 0
         self.game = game
-
-        sheet = spritesheet(settings.TILESHEET)
+        self.tileset = tile.TileManager()
 
     def makeMap(self, xsize, ysize, fail, b1, mrooms):
         """Generate random layout of rooms, corridors and other features"""
@@ -28,12 +27,14 @@ class Dungeon:
         self.cList = []
         self.size_x = xsize
         self.size_y = ysize
+
         # initialize map to all walls
         self.mapArr = []
+
         for y in range(ysize):
             tmp = []
             for x in range(xsize):
-                tmp.append(tile.Void())
+                tmp.append(Dungeon.VOID)
             self.mapArr.append(tmp)
 
         w, l, t = self.makeRoom()
@@ -78,13 +79,13 @@ class Dungeon:
         fy = finalRoom[1]//Dungeon.tile_size[1]
         fx = finalRoom[0]//Dungeon.tile_size[1]
         # Exit Tile
-        self.mapArr[fy][fx] = tile.ExitTile(self.game, fx, fy)
+        self.mapArr[fy][fx] = Dungeon.EXIT
 
         walls = [(y,x) for y in range(self.size_y) for x in range(self.size_x) if self.mapArr[y][x] == Dungeon.WALL]
         for wall in walls:
             try:
-                if self.mapArr[wall[0]+1][wall[1]] == Dungeon.FLOOR:
-                    self.mapArr[wall[0]][wall[1]].setImage(0,3)
+                if self.mapArr[wall[0]+1][wall[1]] in (Dungeon.FLOOR, Dungeon.FLOOR_1):
+                    self.mapArr[wall[0]][wall[1]] = Dungeon.WALL_1
             except:
                 continue
 
@@ -168,10 +169,17 @@ class Dungeon:
 
             for j in range(ll + 2):  # Then build walls
                 for k in range(ww + 2):
-                    self.mapArr[(ypos - 1) + j][(xpos - 1) + k] = tile.Wall((xpos - 1) + k, (ypos - 1) + j)
+                    wx = (xpos - 1) + k
+                    wy = (ypos - 1) + j
+                    self.mapArr[wy][wx] = Dungeon.WALL
             for j in range(ll):  # Then build floor
                 for k in range(ww):
-                    self.mapArr[ypos + j][xpos + k] = tile.Grass()
+                    if random.randrange(10) > 0:
+                        tf = Dungeon.FLOOR
+                    else:
+                        tf = Dungeon.FLOOR_1
+
+                    self.mapArr[ypos + j][xpos + k] = tf
 
             if rty == 5:
                 self.roomList.append(Dungeon.Room(self, xpos, ypos, ww, ll))
@@ -211,7 +219,7 @@ class Dungeon:
 
     def makePortal(self, px, py):
         """Create doors in walls"""
-        self.mapArr[py][px] = tile.Grass()
+        self.mapArr[py][px] = Dungeon.FLOOR
 
     def joinCorridor(self, cno, xp, yp, ed, psb):
         """Check corridor endpoint and make an exit if it links to another room"""
@@ -281,11 +289,11 @@ class Dungeon:
         render_x = [start[0] // Dungeon.tile_size[0], math.ceil(end[0] / Dungeon.tile_size[0])]
         render_y = [start[1] // Dungeon.tile_size[1], math.ceil(end[1] / Dungeon.tile_size[1])]
 
-        for y in range(max(0,render_y[0]), min(render_y[1],self.size_y)):
-            for x in range(max(0,render_x[0]), min(render_x[1],self.size_x)):
+        for y in range(max(0,render_y[0]), min(render_y[1], self.size_y)):
+            for x in range(max(0,render_x[0]), min(render_x[1], self.size_x)):
                 px = x * Dungeon.tile_size[0] - start[0]
                 py = y * Dungeon.tile_size[1] - start[1]
-                surface.blit(self.mapArr[y][x].image, (px, py))
+                surface.blit(self.tileset[self.mapArr[y][x]], (px,py))
 
     def drawRoomOutline(self,surface,camera):
         for room in self.getRooms():
@@ -300,14 +308,40 @@ class Dungeon:
         render_y = [start_pos[1]//Dungeon.tile_size[1], end_pos[1]//Dungeon.tile_size[1]]
 
         for y in range(max(0,render_y[0] - 1), min(render_y[1] + 1,self.size_y)):
-            for x in range(max(0,render_x[0] - 1), min(render_x[1] + 1,self.size_x)):
-                if self.mapArr[y][x] == Dungeon.WALL or self.mapArr[y][x] == Dungeon.EXIT:
-                    collidables.append(self.mapArr[y][x])
+            for x in range(max(0,render_x[0] -  1), min(render_x[1] + 1,self.size_x)):
+                if self.mapArr[y][x] in [Dungeon.WALL, Dungeon.WALL_1, Dungeon.EXIT]:
+                    if self.mapArr[y][x] == Dungeon.EXIT:
+                        obj = Dungeon.ExitObject(self.game, x, y)
+                    else:
+                        obj = Dungeon.WorldObject(x, y)
+
+                    collidables.append(obj)
 
         return collidables
 
     def getWorldSize(self):
         return (self.size_x * Dungeon.tile_size[0], self.size_y * Dungeon.tile_size[1])
+
+    class WorldObject():
+
+        type = 'wall'
+        collidable = True
+
+        def __init__(self, x, y):
+            self.rect = pg.Rect((x * settings.TILE_SIZE[0], y * settings.TILE_SIZE[1]), settings.TILE_SIZE)
+
+    class ExitObject(WorldObject):
+
+        type = 'world'
+        collidable = False
+
+        def __init__(self, game, x, y):
+            super().__init__(x, y)
+            self.game = game
+
+        def onCollide(self):
+
+            self.game.generateLevel()
 
     class Room():
         def __init__(self,world,x,y,w,h):
@@ -330,7 +364,8 @@ class Dungeon:
             while not spawnable:
                 x = random.randrange(self.x1,self.x2)
                 y = random.randrange(self.y1,self.y2)
-                if mapData[y-1][x] == Dungeon.FLOOR and mapData[y+1][x] == Dungeon.FLOOR and mapData[y][x-1] == Dungeon.FLOOR and mapData[y][x+1] == Dungeon.FLOOR:
+                floor_tiles = (Dungeon.FLOOR, Dungeon.FLOOR_1)
+                if mapData[y-1][x] in floor_tiles and mapData[y+1][x] in floor_tiles and mapData[y][x-1] in floor_tiles and mapData[y][x+1] in floor_tiles:
                     spawnable = True
 
             return [x * Dungeon.tile_size[0],y * Dungeon.tile_size[1]]

@@ -60,7 +60,7 @@ class EntityGroup(pg.sprite.Group):
 
     def getProximityObjects(self,target,proximity):
         # Returns a list of proximity objects EXCEPT the target object
-        sprites = self.sprites()
+        sprites = self.renderables
         return [spr for spr in sprites if proximity.colliderect(spr.rect) and spr != target]
 
     def update(self,world,dt):
@@ -69,6 +69,7 @@ class EntityGroup(pg.sprite.Group):
             proximity = pg.Rect(spr.position[0] - 32, spr.position[1], 128, 128)
             spr.fov = self.getProximityObjects(spr,proximity) + world.getCollidableTiles(proximity)
             spr.update(dt)
+
 
     def draw(self,surface,camera):
         '''
@@ -86,7 +87,7 @@ class EntityGroup(pg.sprite.Group):
         surface_blit = surface.blit
 
         # Sorts renderables by y position in ascending order
-        self.renderables = sorted([spr for spr in sprites if camera.isVisible(spr.position) or isinstance(spr,mobs.Player)], key = lambda spr: spr.position[1])
+        self.renderables = sorted([spr for spr in sprites if camera.isVisible(spr.position) or isinstance(spr,mobs.Player)], key = lambda spr: spr.rect.bottom)
 
         for spr in self.renderables:
             # Draws sprite

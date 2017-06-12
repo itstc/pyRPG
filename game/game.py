@@ -14,23 +14,26 @@ class Game:
         self.windowScreen = surface
         self.windowSize = surface.get_size()
 
-        self.end = False
+        self.disable = False
         self.running = True
         self.events = EventListener(self)
         self.hud = HUD(surface)
         self.map = world.Dungeon(self)
+
         self.map.makeMap(32,32,50,20,30)
         self.itemManager = items.ItemController('data/items.json')
 
-        self.player = mobs.Player((self.map.spawnx,self.map.spawny))
+        self.entityManager = controller.EntityController()
+
+        self.player = mobs.Player(self.entityManager.entities, (self.map.spawnx,self.map.spawny))
         self.player.inventory.addItems([self.itemManager.getItem(0)]*10)
 
-        self.entityManager = controller.EntityController(self.player)
         self.entityManager.spawnMobs([ai.Goblin,ai.Skeleton],self.map)
         self.entityManager.spawnItems(self.itemManager.getItems(),self.map)
+        self.entityManager.entities.add(self.player)
 
         self.camera = Camera(self.player.position,surface.get_size(), self.map)
-        self.gui = ui.InventoryGUI(self.windowScreen,self.player.inventory)
+        self.gui = ui.InventoryGUI(self.windowScreen,self.player.inventory, (settings.WINDOW_SIZE[0] // 2,settings.WINDOW_SIZE[1] // 2))
 
         pg.key.set_repeat(5,5)
 
@@ -42,9 +45,11 @@ class Game:
             dt = (time / prev) * 12
             pg.display.set_caption('%s %i fps' % ('pyLota Alpha Build:', clock.get_fps()//1))
 
-            self.render()
-            self.events.handleEvent()
-            self.update(dt)
+            if not self.disable:
+                self.render()
+                self.events.handleEvent()
+                self.update(dt)
+
             prev = time
 
     def update(self,dt):
@@ -88,17 +93,22 @@ class Game:
         return self.map
 
     def generateLevel(self):
-        self.events.clear()
-        complete = False
-        while not complete:
-            self.map.makeMap(32, 32, 50, 20, 30)
-            self.player.setPosition(self.map.getSpawn())
-            self.entityManager = controller.EntityController(self.player)
-            self.entityManager.spawnMobs([ai.Goblin,ai.Skeleton],self.map)
-            self.entityManager.spawnItems(self.itemManager.getItems(), self.map)
-            complete = True
 
-        # self.hud.drawQueue.append(particles.FadingText('Dungeon Level %i' % self.map.level, (self.windowSize[0] // 2, self.windowSize[1] // 12), 4))
+        self.disable = True
+        self.entityManager.entities.empty()
+        self.events.clear()
+
+        self.map.makeMap(32, 32, 50, 20, 30)
+        self.entityManager.spawnMobs([ai.Goblin,ai.Skeleton],self.map)
+        self.entityManager.spawnItems(self.itemManager.getItems(), self.map)
+
+
+        pg.time.wait(500)
+        self.hud.drawQueue.append(particles.FadingText('Dungeon Level %i' % self.map.level, (self.windowSize[0] // 2, self.windowSize[1] // 12), 4))
+        self.disable = False
+
+        self.player.setPosition(self.map.getSpawn())
+        self.entityManager.entities.add(self.player)
 
 class Camera:
     def __init__(self,pos,screenSize,world):
@@ -147,7 +157,12 @@ class HUD(ui.StringRenderer):
         self.surface = surface
         self.hud = pg.Surface((96,64),pg.SRCALPHA,32)
         pg.Surface.convert_alpha(self.hud)
+
         self.spritesheet = sprite.Spritesheet(settings.UISHEET)
+        self.drawHUDImage((16, 16), (2, 2), (0, 6), 1)
+
+        hp_hud = self.drawHUDImage([48, 16], [1, 0], [24, 0], 1)
+        xp_hud = self.drawHUDImage([48, 16], [1, 1], [24, 16], 1)
 
         self.drawQueue = []
 
@@ -160,16 +175,11 @@ class HUD(ui.StringRenderer):
 
     def render(self, player):
 
-        self.drawHUDImage((16,16),(2,2), (4,8), 1)
+        pg.draw.rect(self.surface, pg.Color(151, 0, 0), pg.Rect(64, 28, 96, 8))
+        pg.draw.rect(self.surface, pg.Color(0, 255, 0), pg.Rect(64, 28, int(96 * player.getHealthRatio()), 8))
+        pg.draw.rect(self.surface, pg.Color(0, 150, 200), pg.Rect(64, 60, 96, 8))
 
-        pg.draw.rect(self.hud, pg.Color(151, 0, 0), pg.Rect(24, 6, 48, 4))
-        pg.draw.rect(self.hud, pg.Color(0, 255, 0), pg.Rect(24, 6, int(48 * player.getHealthRatio()), 4))
-        pg.draw.rect(self.hud, pg.Color(0, 150, 200), pg.Rect(24, 22, 48, 4))
-
-        hp_hud = self.drawHUDImage([48, 16], [1, 0], [24, 0], 1)
-        xp_hud = self.drawHUDImage([48, 16], [1, 1], [24, 16], 1)
-
-        self.surface.blit(pg.transform.scale(self.hud,(288,192)),(8,8))
+        self.surface.blit(pg.transform.scale(self.hud,(192, 128)),(16, 16))
 
         for item in self.drawQueue:
             item.render(self.surface)
@@ -177,7 +187,7 @@ class HUD(ui.StringRenderer):
 
 
 
-    def drawString(self, position, string, scale = 1, color = pg.Color('white')):
+    def drawStringToSurface(self,string, position, scale = 1, color = pg.Color('white')):
         size = self.getStringSize(string,int(16*scale))
         text = pg.font.Font('res/gamefont.ttf', 16).render(string,1,color)
         self.surface.blit(pg.transform.scale(text,(size[0],size[1])),(position[0] - size[0]//2, position[1]))

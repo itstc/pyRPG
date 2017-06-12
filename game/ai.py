@@ -2,8 +2,8 @@ import mobs, sprite, settings, random
 
 class AI(mobs.Mob):
 
-    def __init__(self, images, size, position, health, ad):
-        super().__init__(images, size, position, health, ad)
+    def __init__(self, group, images, size, position, health, ad):
+        super().__init__(group, images, size, position, health, ad)
 
         self.ai_states = {
             'Wander': Wander().execute
@@ -14,6 +14,11 @@ class AI(mobs.Mob):
         super().update(dt)
 
         self.current_ai_state(dt, self.action)
+
+        for obj in self.fov:
+            if isinstance(obj,mobs.Player) and self.getAttackRange(self.action.direction).colliderect(obj):
+                if not self.action['attack']:
+                    self.action.attack(obj)
 
 
 
@@ -63,7 +68,7 @@ class Wander(AI_State):
 
 class Goblin(AI):
     name = 'Goblin'
-    def __init__(self,pos):
+    def __init__(self,group, pos):
         size = (64,64)
         sheet = sprite.Spritesheet(settings.MOBSHEET)
         states = {
@@ -74,21 +79,18 @@ class Goblin(AI):
             'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0), (6, 0)], [16, 16],size,500),
             'attack_right':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1), (6, 1)], [16, 16],size,500)
         }
-        super().__init__(states,size,pos,25,8)
+
+        super().__init__(group, states, size, pos, 25, 8)
         self.maxcd = 1500
         self.cooldown = 1500
 
     def update(self,dt):
         super().update(dt)
-        for obj in self.fov:
-            if isinstance(obj,mobs.Player) and self.getAttackRange(self.action.direction).colliderect(obj):
-                if not self.action['attack']:
-                    self.action.attack(obj)
 
 
 class Skeleton(AI):
     name = 'Skeleton'
-    def __init__(self,pos):
+    def __init__(self, group, pos):
         size = (64,128)
         sheet = sprite.Spritesheet(settings.MOBSHEET)
         states = {
@@ -98,17 +100,13 @@ class Skeleton(AI):
             'walk_right': sprite.AnimatedSprite(sheet, [(2, 1), (3, 1)], [16, 32], size, 800),
             'attack_left': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 1000),
             'attack_right': sprite.AnimatedSprite(sheet, [(2,1), (3,1)], [16, 32], size, 1000)
-
         }
-        super().__init__(states,size,pos,30,10)
+
+        super().__init__(group, states, size, pos, 30, 10)
         self.maxcd = 1500
         self.cooldown = 1500
 
     def update(self,dt):
         super().update(dt)
-        for obj in self.fov:
-            if isinstance(obj,mobs.Player) and self.getAttackRange(self.action.direction).colliderect(obj):
-                if not self.action['attack']:
-                    self.action.attack(obj)
 
 

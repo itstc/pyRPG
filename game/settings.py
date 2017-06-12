@@ -12,3 +12,5 @@ MOBSHEET = 'mobsheet.png'
 ITEMSHEET = 'items.png'
 UISHEET = 'ui.png'
 HUDSHEET = 'hud.png'
+
+TILE_SIZE = (64,64)

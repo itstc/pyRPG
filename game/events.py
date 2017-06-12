@@ -1,5 +1,6 @@
 import pygame as pg
 from util import Polygon
+import math
 
 class EventListener:
 
@@ -46,8 +47,11 @@ class EventListener:
                 self.game.gui.active = False
                 if not self.game.player.action['attack']:
                     self.game.player.attack()
+                    self.game.player.fire(event.pos)
+
         elif event.type == pg.MOUSEMOTION:
             self.game.player.action.direction = self.getMouseDirection(event.pos)
+
         elif event.type == pg.KEYDOWN:
             self.handleKeyDown(event.key)
             self.pressed = True

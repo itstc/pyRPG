@@ -40,6 +40,7 @@ class ItemSprite(pg.sprite.Sprite):
     def update(self,dt):
         self.rect.topleft = self.position
         self.time += dt
+
         if self.time / 500 > 1:
             self.bouncing = not self.bouncing
             self.bounce(dt,self.bouncing)

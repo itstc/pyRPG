@@ -3,20 +3,21 @@ import random
 from sprite import EntityGroup
 
 class EntityController:
-    def __init__(self,player):
+    def __init__(self):
         self.entities = EntityGroup()
-        self.entities.add(player)
 
     def spawnMobs(self,mobs,world):
         count = 0
         while count < 5 * world.level:
             # Get a random room and a random mob in a spawnable space in the room
             room = random.choice(world.getRooms())
-            new_mob = random.choice(mobs)(room.getSpawnableSpace())
+            new_mob = random.choice(mobs)(self.entities, room.getSpawnableSpace())
 
             # Spawn the mob if there are no other mobs on the tile
             if not pg.sprite.spritecollideany(new_mob,self.entities):
                 self.entities.add(new_mob)
+            else:
+                new_mob.kill()
 
             count += 1
 

@@ -1,14 +1,14 @@
 import pygame as pg
-import sprite
+import sprite, settings
 import random
 
 class StringRenderer():
 
     def getStringAsSurface(self, string, scale = 1, color = pg.Color('white')):
-        size = self.getStringSize(string, 16 * scale)
+        size = self.getStringSize(string, int(16 * scale))
         return pg.transform.scale(pg.font.Font('res/gamefont.ttf', 16).render(str(string),1,color), size)
 
-    def drawString(self,surface, string, position,size = 16,color = pg.Color(224,228,204)):
+    def drawString(self,surface, string, position, size = 16,color = pg.Color(224,228,204)):
         text = pg.font.Font('res/gamefont.ttf', size).render(str(string),1,color)
         surface.blit(text,position)
 
@@ -29,7 +29,7 @@ class StringRenderer():
 
 class GUI(StringRenderer):
     black = pg.Color(0,0,0,200)
-    def __init__(self,surface,size,pos = [0,0]):
+    def __init__(self,surface,size,pos = [0, 0]):
         super().__init__()
         self.surface = surface
         self.showing = False
@@ -37,7 +37,9 @@ class GUI(StringRenderer):
         self.spritesheet = sprite.AlphaSpritesheet('ui.png')
         self.interface = pg.transform.scale(self.spritesheet.getSprite([32,48],[0,0]),size)
         self.interface.set_alpha(200)
-        self.rect = pg.Rect(pos,size)
+
+        adjusted_pos = (pos[0] - size[0] // 2, pos[1] - size[1] // 2)
+        self.rect = pg.Rect(adjusted_pos,size)
 
     def update(self):
         pass
@@ -60,11 +62,14 @@ class InventoryGUI(GUI):
         'rare': pg.Color(204,0,0),
         'super_rare': pg.Color(236,208,120)
     }
-    def __init__(self,surface,inventory):
-        super().__init__(surface,[256,384])
+    def __init__(self,surface,inventory, pos):
+        super().__init__(surface,[256,384], pos)
         self.pressed = False
         self.inventory = inventory
         self.grid = []
+
+        self.drawString(self.interface, 'Inventory', (16,16), 32)
+
         start = [16,64]
         for y in range(4):
             for x in range(3):
@@ -142,9 +147,6 @@ class InventoryGUI(GUI):
                 # If no state check if mouse is over a slot with an item
                 elif not self.state and self.isHoveringSlot(event.pos) and self.selectedSlot.item:
                         self.state = HoveringState(self.selectedSlot)
-                elif 1 in event.buttons and not self.state:
-                    self.moveInterface(event.pos)
-                    self.pressed = True
 
 
     def handleMouseDownEvent(self,pos):

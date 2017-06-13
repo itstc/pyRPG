@@ -1,6 +1,7 @@
 import pygame as pg
 from util import Polygon
 import math
+import ui
 
 class EventListener:
 
@@ -46,8 +47,8 @@ class EventListener:
             else:
                 self.game.gui.active = False
                 if not self.game.player.action['attack']:
-                    self.game.player.attack()
-                    self.game.player.fire(event.pos)
+                    self.game.player.action.attack()
+                    self.game.player.action.fire(event.pos)
 
         elif event.type == pg.MOUSEMOTION:
             self.game.player.action.direction = self.getMouseDirection(event.pos)
@@ -63,6 +64,9 @@ class EventListener:
     def handleKeyDown(self, key):
         # Handle which key is pressed
 
+        if self.game.gui.type != 'main_ui' and self.game.gui.showing and not self.pressed:
+            self.game.gui.toggle()
+
         if key == pg.K_w:
             self.game.player.action.moveDirections['up'] = True
         if key == pg.K_a:
@@ -74,10 +78,11 @@ class EventListener:
 
         # Key Handling related to Game
         if key == pg.K_i and not self.pressed:
+            self.game.gui = self.game.ui_manager['inventory']
             self.game.gui.toggle()
         if key == pg.K_e and not self.pressed:
-            if self.game.player.exit:
-                self.game.player.exit[0].onCollide()
+            if self.game.player.interactable:
+                self.game.player.interactable[0].interact()
         if key == pg.K_SPACE and not self.pressed:
             self.game.generateLevel()
         if key == pg.K_ESCAPE and not self.pressed:

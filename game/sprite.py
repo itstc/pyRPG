@@ -66,7 +66,7 @@ class EntityGroup(pg.sprite.Group):
     def update(self,world,dt):
         # Adds objects into fov if they are collidables
         for spr in self.renderables:
-            proximity = pg.Rect(spr.position[0] - 32, spr.position[1], 128, 128)
+            proximity = pg.Rect(spr.rect.x - 32, spr.rect.y, 128, 128)
             spr.fov = self.getProximityObjects(spr,proximity) + world.getCollidableTiles(proximity)
             spr.update(dt)
 
@@ -87,7 +87,7 @@ class EntityGroup(pg.sprite.Group):
         surface_blit = surface.blit
 
         # Sorts renderables by y position in ascending order
-        self.renderables = sorted([spr for spr in sprites if camera.isVisible(spr.position) or isinstance(spr,mobs.Player)], key = lambda spr: spr.rect.bottom)
+        self.renderables = sorted([spr for spr in sprites if camera.isVisible(spr.rect.center) or isinstance(spr,mobs.Player)], key = lambda spr: spr.rect.bottom)
 
         for spr in self.renderables:
             # Draws sprite

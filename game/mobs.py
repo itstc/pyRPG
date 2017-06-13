@@ -88,6 +88,7 @@ class Mob(pg.sprite.Sprite):
 
         if self.stats.hp <= 0:
             self.kill()
+
     def isColliding(self, x, y):
         # Takes offset x,y and sees if sprite is colliding with any objects in fov
         offset = self.getLegBox()
@@ -190,14 +191,14 @@ class Mob(pg.sprite.Sprite):
 
         def damage(self,target):
             target.stats.hurt(self.ad)
-            self.statQueue.append(particles.BouncyText(self,self.ad,[target.rect.centerx,target.rect.top - 16]))
+            self.statQueue.append(particles.BouncyText(self,self.ad,[target.rect.centerx,target.rect.top - 18 * len(self.statQueue)]))
 
         def hurt(self,value):
             self.hp -= value
-            self.statQueue.append(particles.BouncyText(self, value, [self.mob.rect.centerx, self.mob.rect.top - 16]))
+            self.statQueue.append(particles.BouncyText(self, value, [self.mob.rect.centerx, self.mob.rect.top - 18 * len(self.statQueue)]))
 
         def update(self,dt):
-            for item in self.statQueue:
+            for (i,item) in enumerate(self.statQueue):
                 item.update(dt)
 
         def draw(self,surface,camera):
@@ -224,14 +225,14 @@ class Player(Mob):
         self.inventory = Inventory(self,12)
         self.input = input
         self.action = Player.PlayerActions(self,states)
-        self.exit = None
+        self.interactable = None
 
         self.camera_pos = (0,0)
 
     def update(self,dt):
         super().update(dt)
 
-        self.exit = [obj for obj in self.fov if obj.type == 'world' and self.rect.colliderect(obj.rect)]
+        self.interactable = [obj for obj in self.fov if obj.type == 'world' and self.rect.colliderect(obj.rect)]
 
     def draw(self,surface,camera):
         super().draw(surface,camera)
@@ -244,18 +245,6 @@ class Player(Mob):
 
     def getSize(self):
         return self.size
-
-    def attack(self):
-        self.action['attack'] = True
-        self.action.images['attack_%s' % self.action.direction].reset()
-
-    def fire(self, pos):
-        dx = pos[0] - self.camera_pos[0]
-        dy = pos[1] - self.camera_pos[1]
-        angle = math.atan2(dy, dx)
-        self.group.add(projectiles.Arrow(self, angle, self.rect.center))
-
-
 
     class PlayerActions(Mob.Actions):
         def __init__(self,mob,images):
@@ -284,4 +273,12 @@ class Player(Mob):
             super().update(dt)
             self.keyMove(dt)
 
+        def attack(self):
+            self.actions['attack'] = True
+            self.images['attack_%s' % self.direction].reset()
 
+        def fire(self, pos):
+            dx = pos[0] - self.mob.camera_pos[0]
+            dy = pos[1] - self.mob.camera_pos[1]
+            angle = math.atan2(dy, dx)
+            self.mob.group.add(projectiles.Arrow(self.mob, angle, self.mob.rect.center))

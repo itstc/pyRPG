@@ -20,7 +20,7 @@ class Game:
         self.hud = HUD(surface)
         self.map = world.Dungeon(self)
 
-        self.map.makeMap(32,32,50,20,30)
+        self.map.makeMap(32,32,20,20,0)
         self.itemManager = items.ItemController('data/items.json')
 
         self.entityManager = controller.EntityController()
@@ -28,12 +28,16 @@ class Game:
         self.player = mobs.Player(self.entityManager.entities, (self.map.spawnx,self.map.spawny))
         self.player.inventory.addItems([self.itemManager.getItem(0)]*10)
 
-        self.entityManager.spawnMobs([ai.Goblin,ai.Skeleton],self.map)
+        self.entityManager.spawnMobs([ai.Goblin, ai.Skeleton],self.map)
         self.entityManager.spawnItems(self.itemManager.getItems(),self.map)
         self.entityManager.entities.add(self.player)
 
         self.camera = Camera(self.player.position,surface.get_size(), self.map)
-        self.gui = ui.InventoryGUI(self.windowScreen,self.player.inventory, (settings.WINDOW_SIZE[0] // 2,settings.WINDOW_SIZE[1] // 2))
+
+        self.ui_manager = {
+        'inventory': ui.InventoryGUI(self.windowScreen,self.player.inventory, (settings.WINDOW_SIZE[0] // 2,settings.WINDOW_SIZE[1] // 2))}
+
+        self.gui = self.ui_manager['inventory']
 
         pg.key.set_repeat(5,5)
 
@@ -74,7 +78,8 @@ class Game:
         self.hud.render(self.player)
 
         # Draw GUI
-        self.gui.draw()
+        if self.gui.showing:
+            self.gui.draw()
 
         # End Game
         if not self.entityManager.entities.has(self.player):
@@ -99,8 +104,9 @@ class Game:
         self.events.clear()
 
         self.map.makeMap(32, 32, 50, 20, 30)
-        self.entityManager.spawnMobs([ai.Goblin,ai.Skeleton],self.map)
+        self.entityManager.spawnMobs([ai.Goblin, ai.Skeleton],self.map)
         self.entityManager.spawnItems(self.itemManager.getItems(), self.map)
+        self.entityManager.spawnChest(self, self.itemManager, self.map)
 
 
         pg.time.wait(500)
@@ -140,8 +146,8 @@ class Camera:
 
         x = max(0,x)
         y = max(0,y)
-        x = min(x,self.world.size_x * self.world.tile_size[1])
-        y = min(y,self.world.size_y * self.world.tile_size[1])
+        x = min(x,self.world.size_x * settings.TILE_SIZE[0])
+        y = min(y,self.world.size_y * settings.TILE_SIZE[1])
 
         self.rect.topleft = [x,y]
 

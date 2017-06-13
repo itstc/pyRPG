@@ -24,7 +24,7 @@ class BouncyText(ui.StringRenderer):
             if self.lifeTime <= 0:
                 self.alive = False
 
-            self.position[1] -= 0.05*dt
+            self.position[1] -= 0.02 * dt**2
         else:
             self.host.statQueue.remove(self)
 

@@ -4,7 +4,6 @@ import settings, tile
 from pytmx.util_pygame import load_pygame
 
 class Dungeon:
-    tile_size = [64,64]
 
     VOID = 0
     FLOOR = 1
@@ -76,8 +75,8 @@ class Dungeon:
         self.spawny = spawn[1]
 
         finalRoom = self.getCenterPosition(self.getRooms()[-1])
-        fy = finalRoom[1]//Dungeon.tile_size[1]
-        fx = finalRoom[0]//Dungeon.tile_size[1]
+        fy = finalRoom[1]//settings.TILE_SIZE[1]
+        fx = finalRoom[0]//settings.TILE_SIZE[0]
         # Exit Tile
         self.mapArr[fy][fx] = Dungeon.EXIT
 
@@ -94,8 +93,8 @@ class Dungeon:
         return (self.spawnx,self.spawny)
 
     def getCenterPosition(self,room):
-        x = room.center()[0] * Dungeon.tile_size[0]
-        y = room.center()[1] * Dungeon.tile_size[1]
+        x = room.center()[0] * settings.TILE_SIZE[0]
+        y = room.center()[1] * settings.TILE_SIZE[1]
         return [x,y]
 
     def getTile(self, position):
@@ -286,26 +285,26 @@ class Dungeon:
         end = camera.rect.bottomright
 
         # amount of tiles to render on x and y
-        render_x = [start[0] // Dungeon.tile_size[0], math.ceil(end[0] / Dungeon.tile_size[0])]
-        render_y = [start[1] // Dungeon.tile_size[1], math.ceil(end[1] / Dungeon.tile_size[1])]
+        render_x = [start[0] // settings.TILE_SIZE[0], math.ceil(end[0] / settings.TILE_SIZE[0])]
+        render_y = [start[1] // settings.TILE_SIZE[1], math.ceil(end[1] / settings.TILE_SIZE[1])]
 
         for y in range(max(0,render_y[0]), min(render_y[1], self.size_y)):
             for x in range(max(0,render_x[0]), min(render_x[1], self.size_x)):
-                px = x * Dungeon.tile_size[0] - start[0]
-                py = y * Dungeon.tile_size[1] - start[1]
+                px = x * settings.TILE_SIZE[0] - start[0]
+                py = y * settings.TILE_SIZE[1] - start[1]
                 surface.blit(self.tileset[self.mapArr[y][x]], (px,py))
 
     def drawRoomOutline(self,surface,camera):
         for room in self.getRooms():
-            rect = pg.Rect(room.x1*Dungeon.tile_size[0],room.y1*Dungeon.tile_size[1],room.w*Dungeon.tile_size[0],room.h*Dungeon.tile_size[1])
+            rect = pg.Rect(room.x1*settings.TILE_SIZE[0],room.y1*settings.TILE_SIZE[1],room.w*settings.TILE_SIZE[0],room.h*settings.TILE_SIZE[1])
             camera.drawRectangle(surface,pg.Color('purple'),rect)
 
     def getCollidableTiles(self, rect):
         collidables = []
         start_pos = rect.topleft
         end_pos =  rect.bottomright
-        render_x = [start_pos[0]//Dungeon.tile_size[0], end_pos[0]//Dungeon.tile_size[0]]
-        render_y = [start_pos[1]//Dungeon.tile_size[1], end_pos[1]//Dungeon.tile_size[1]]
+        render_x = [start_pos[0]//settings.TILE_SIZE[0], end_pos[0]//settings.TILE_SIZE[0]]
+        render_y = [start_pos[1]//settings.TILE_SIZE[1], end_pos[1]//settings.TILE_SIZE[1]]
 
         for y in range(max(0,render_y[0] - 1), min(render_y[1] + 1,self.size_y)):
             for x in range(max(0,render_x[0] -  1), min(render_x[1] + 1,self.size_x)):
@@ -320,7 +319,7 @@ class Dungeon:
         return collidables
 
     def getWorldSize(self):
-        return (self.size_x * Dungeon.tile_size[0], self.size_y * Dungeon.tile_size[1])
+        return (self.size_x * settings.TILE_SIZE[0], self.size_y * settings.TILE_SIZE[1])
 
     class WorldObject():
 
@@ -339,8 +338,7 @@ class Dungeon:
             super().__init__(x, y)
             self.game = game
 
-        def onCollide(self):
-
+        def interact(self):
             self.game.generateLevel()
 
     class Room():
@@ -348,8 +346,8 @@ class Dungeon:
             self.world = world
             self.x1 = x
             self.y1 = y
-            self.x2 = x + w
-            self.y2 = y + h
+            self.x2 = x + w - 1
+            self.y2 = y + h - 1
             self.w = w
             self.h = h
 
@@ -368,7 +366,20 @@ class Dungeon:
                 if mapData[y-1][x] in floor_tiles and mapData[y+1][x] in floor_tiles and mapData[y][x-1] in floor_tiles and mapData[y][x+1] in floor_tiles:
                     spawnable = True
 
-            return [x * Dungeon.tile_size[0],y * Dungeon.tile_size[1]]
+            return [x * settings.TILE_SIZE[0],y * settings.TILE_SIZE[1]]
+
+        def getSurroundingTiles(self, x, y):
+            mapData = self.world.mapArr
+            return (mapData[y - 1][x], mapData[y + 1][x], mapData[y][x - 1], mapData[y][x + 1])
+
+        def getCorner(self):
+            return (self.x1 * settings.TILE_SIZE[0], self.y1 * settings.TILE_SIZE[1])
+
+        def getCornerTile(self):
+            return random.choice([(self.x1,self.y1), (self.x2, self.y1), (self.x1, self.y2), (self.x2, self.y2)])
+
+        def getCornerTiles(self):
+            return [(self.x1,self.y1), (self.x2, self.y1), (self.x1, self.y2), (self.x2, self.y2)]
 
     class Hallway():
         def __init__(self,world,x,y,w,h):

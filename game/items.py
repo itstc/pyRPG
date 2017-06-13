@@ -23,11 +23,14 @@ class Item:
 
 
 class ItemSprite(pg.sprite.Sprite):
+
     type = 'item'
     collidable = False
+
+
     def __init__(self,item,pos):
         super().__init__()
-        self.size = [item.image_size[0]*4,item.image_size[1]*4]
+        self.size = [item.image_size[0] * (32//item.image_size[0]), item.image_size[1] * (32//item.image_size[1])]
         self.image = pg.transform.scale(item.image,self.size)
         self.position = list(pos)
         self.rect = pg.Rect(pos,self.size)
@@ -103,7 +106,7 @@ class ItemController():
         return cls(item['name'],item['desc'],item['rarity'],item['imageData'],item['attribute'])
 
     def getItems(self):
-        return [self.getItem(id) for id in range(7)]
+        return [self.getItem(id) for id in range(8)]
 
 
 

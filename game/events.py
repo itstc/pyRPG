@@ -48,7 +48,7 @@ class EventListener:
                 self.game.gui.active = False
                 if not self.game.player.action['attack']:
                     self.game.player.action.attack()
-                    self.game.player.action.fire(event.pos)
+                    #self.game.player.action.fire(event.pos)
 
         elif event.type == pg.MOUSEMOTION:
             self.game.player.action.direction = self.getMouseDirection(event.pos)

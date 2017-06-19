@@ -11,8 +11,8 @@ class TileManager():
             0: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (0, 2)), settings.TILE_SIZE),
             1: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (0, 0)), settings.TILE_SIZE),
             2: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (0, 1)), settings.TILE_SIZE),
-            3: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (0, 2)), settings.TILE_SIZE),
-            4: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (0, 3)), settings.TILE_SIZE),
+            3: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (0, 3)), settings.TILE_SIZE),
+            4: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (1, 0)), settings.TILE_SIZE),
             5: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (5, 0)), settings.TILE_SIZE)
         }
 

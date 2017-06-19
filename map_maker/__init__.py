@@ -43,11 +43,11 @@ class Game(StringRenderer):
             0: pygame.transform.scale(sheet.getSprite((16, 16), (0, 0)), Game.TILE_SIZE),
             1: pygame.transform.scale(sheet.getSprite((16, 16), (1, 0)), Game.TILE_SIZE),
             2: pygame.transform.scale(sheet.getSprite((16, 16), (0, 3)), Game.TILE_SIZE),
-            3: pygame.transform.scale(sheet.getSprite((16, 16), (5, 0)), Game.TILE_SIZE)
+            3: pygame.transform.scale(sheet.getSprite((16, 16), (5, 0)), Game.TILE_SIZE),
+            4: pygame.transform.scale(sheet.getSprite((16, 16), (1, 1)), Game.TILE_SIZE)
         }
 
-        self.map = Map()
-        self.map.generateMap(32,32)
+        self.map = Forest()
 
     def run(self):
         clock = pygame.time.Clock()
@@ -72,202 +72,204 @@ class Game(StringRenderer):
             elif event.type == pygame.KEYDOWN and not self.pressed:
                 self.pressed = True
                 if event.key == pygame.K_SPACE:
-                    self.map.generateMap(32,32)
+                    self.map = Forest()
 
             elif event.type == pygame.KEYUP:
                 self.pressed = False
 
     def update(self, dt):
-        self.map.update(dt)
+        pass
 
     def render(self):
         for y in range(self.map.size_y):
             for x in range(self.map.size_x):
                 self.screen.blit(self.tileset[self.map.mapArr[y][x]], (x * Game.TILE_SIZE[0], y * Game.TILE_SIZE[1]))
 
-        self.drawString(self.screen, 'Generation: %i' % self.map.generation, (0,0), 32)
-
-        for points in self.map.checkpoints:
-            pygame.draw.rect(self.screen, pygame.Color('green'), pygame.Rect(tuple(map(lambda i: i * Game.TILE_SIZE[0], points)),Game.TILE_SIZE))
+        for room in self.map.roomList:
+            pygame.draw.rect(self.screen, pygame.Color('red'), pygame.Rect(room.x1 * Game.TILE_SIZE[0],
+                                                                           room.y1 * Game.TILE_SIZE[1],
+                                                                           room.w * Game.TILE_SIZE[0],
+                                                                           room.h * Game.TILE_SIZE[1]), 1)
 
         pygame.display.update()
 
+class World:
 
-class Map():
-
-    TIME_PER_UPDATE = 60
     GRASS = 0
     WATER = 1
     WALL = 2
     EXIT = 3
+    FLOOD_WATER = 4
 
-    def __init__(self):
+    def __init__(self, width, height):
+
+        self.size_x = width
+        self.size_y = height
 
         self.mapArr = []
-        self.time = 60
-
-    def generateMap(self, size_x, size_y):
-
-        self.size_x = size_x
-        self.size_y = size_y
-
         self.roomList = []
 
-        self.mapArr = [[self.randomizeTile() for x in range(size_x)] for y in range(size_y)]
-        self.generation = 0
 
-        # Create water streams using Cellular Automata
-        while self.generation != 10:
-            self.createGeneration()
+    def setTile(self, x, y, tile):
+        self.mapArr[y][x] = tile
 
-        # Create checkpoints and connect them with Lloyd's Algorithm
-        self.checkpoints = []
+    def randomizeTiles(self, chance, base, new):
 
-        for i in range(3):
-            self.checkpoints.append((random.randrange(0, self.size_x), random.randrange(0, self.size_y)))
+        if random.randrange(100) < chance:
+            return new
+        return base
 
-        self.spreadPoints(3)
+    def getNeighbourData(self, x, y):
+        # Returns a list of tile data around the position
+        tiles = []
+        y_range = (max(0, y - 1), min(y + 1, self.size_y - 1))
+        x_range = (max(0, x - 1), min(x + 1, self.size_x - 1))
 
-        for i in range(len(self.checkpoints)):
-            self.mapArr[self.checkpoints[i][1]][self.checkpoints[i][0]] = Map.GRASS
-            for tile in self.getMetaTiles(self.checkpoints[i]):
-                self.mapArr[tile[1]][tile[0]] = Map.GRASS
+        for yy in range(y_range[0], y_range[1] + 1):
+            for xx in range(x_range[0], x_range[1] + 1):
+                if xx == x and yy == y:
+                    continue
+                else:
+                    tiles.append(self.mapArr[yy][xx])
 
-            maxIndex = min(i + 1, len(self.checkpoints) - 1)
-            self.carvePath(self.checkpoints[i],self.checkpoints[maxIndex])
+        return tiles
 
-        for points in self.checkpoints:
-            room = Map.Room(points[0], points[1], 3 + random.randrange(2), 3 + random.randrange(2))
-            self.roomList.append(room)
+    def getNeighbourPosition(self, x, y):
+        # Returns a list of tile positions around the tile[x,y]
 
-            for y in range(room.y1, room.y2):
-                for x in range(room.x1, room.x2):
-                    self.mapArr[y][x] = Map.GRASS
+        y_range = (max(0, y - 1), min(y + 1, self.size_y - 1))
+        x_range = (max(0, x - 1), min(x + 1, self.size_x - 1))
 
-        rp = self.roomList[-1].center()
-        self.mapArr[rp[1]][rp[0]] = Map.EXIT
+        return [(x_range[0], y), (x_range[1], y),
+                (x, y_range[0]), (x, y_range[1])]
 
-    def update(self, dt):
-        self.time -= dt
-
-        if self.time <= 0:
-            self.time = Map.TIME_PER_UPDATE
-
-    def randomizeTile(self):
-        if random.randrange(10) > 3:
-            return Map.WALL
-        return Map.WATER
-
-
-    def carvePath(self, start, end):
+    def carvePath(self, start, end, tile):
         current = start
-        while (current[0] != end[0]) or (current[1] != end[1]):
-            angle = math.atan2((end[1] - current[1]),(end[0] - current[0]))
+
+        while current[0] != end[0] or current[1] != end[1]:
+            angle = math.atan2((end[1] - current[1]), (end[0] - current[0]))
             new_x = current[0] + round(1 * math.cos(angle))
             new_y = current[1] + round(1 * math.sin(angle))
-            self.mapArr[new_y][new_x] = Map.GRASS
-            self.mapArr[new_y][max(0, new_x-1)] = Map.GRASS
-            self.mapArr[new_y][min(new_x + 1, self.size_x)] = Map.GRASS
+
+            self.setTile(new_x, new_y, Forest.GRASS)
+            self.setTile(new_x - 1, new_y, Forest.GRASS)
+            self.setTile(new_x, new_y - 1, Forest.GRASS)
+
             current = (new_x, new_y)
 
+    def floodFill(self, position, target, new):
+        if self.mapArr[position[1]][position[0]] != target:
+            return
 
-    def fillBorders(self, areas, targetState, newState):
-        for wall in areas:
+        self.setTile(position[0], position[1], new)
+        self.floodFill((position[0],min(position[1] + 1, self.size_y - 1)), target, new)
+        self.floodFill((position[0], max(0, position[1] - 1)), target, new)
+        self.floodFill((min(position[0] + 1, self.size_x - 1), position[1]), target, new)
+        self.floodFill((max(0, position[0] - 1), position[1]), target, new)
+
+    def borderFill(self, position, target, new):
+        for pos in self.getNeighbourPosition(position[0], position[1]):
+            if self.mapArr[pos[1]][pos[0]] == target:
+                self.setTile(position[0], position[1], new)
+
+    def drawCircle(self, x, y, radius, tile):
+        for yy in range(-radius, radius + 1):
+            for xx in range(-radius, radius + 1):
+                if xx**2 + yy**2 <= radius**2:
+                    self.setTile(x + xx, y + yy, tile)
 
 
-            for tile in self.getMetaTiles((wall[1],wall[0])):
-                if self.mapArr[tile[1]][tile[0]] == targetState:
-                    self.mapArr[tile[1]][tile[0]] = newState
+    def cellGeneration(self, dead, live):
+        # Goes through every tile on the map and uses the neighbours to determine the tile data
 
-
-    def getMetaTiles(self, position):
-        return [(min(position[0] + 1, self.size_y - 1), max(0, position[1] - 1)),
-                     (min(position[0] + 1, self.size_y - 1), position[1]),
-                     (min(position[0] + 1, self.size_y - 1), min(position[1] + 1, self.size_x - 1)),
-                     (position[0], max(0, position[1] - 1)),
-                     (position[0], min(position[1] + 1, self.size_x - 1)),
-                     (max(0, position[0] - 1), min(position[1] + 1, self.size_x - 1)),
-                     (max(0, position[0] - 1), position[1]),
-                     (max(0, position[0] - 1), max(0, position[1] - 1))
-                     ]
-
-    def spreadPoints(self, iterations):
-        for iteration in range(5):
-
-            regions = [[i] for i in self.checkpoints]
-
-            for cell in [(x,y) for x in range(self.size_x) for y in range(self.size_y)]:
-
-                nearestDistanceSquared = 100000
-
-                for i in range(len(self.checkpoints)):
-                    offset = (self.checkpoints[i][0] - cell[0]) ** 2 + (self.checkpoints[i][1] - cell[1]) ** 2
-                    if offset < nearestDistanceSquared:
-                        nearestDistanceSquared = offset
-                        nearest = i
-
-                regions[nearest].append(cell)
-
-                new_checkpoint = []
-
-                for area in regions:
-                    x = 0
-                    y = 0
-
-                    for points in area:
-                        x += points[0]
-                        y += points[1]
-
-                    new_checkpoint.append((round(x/len(area)), round(y/len(area))))
-
-            self.checkpoints = new_checkpoint
-
-    def createGeneration(self):
-        self.generation += 1
         for y in range(self.size_y):
             for x in range(self.size_x):
-                n = self.countRule(self.mapArr[max(0, y - 1)][x])
-                s = self.countRule(self.mapArr[min(self.size_y - 1, y + 1)][x])
-                w = self.countRule(self.mapArr[y][max(0, x - 1)])
-                e = self.countRule(self.mapArr[y][min(self.size_x - 1, x + 1)])
+                if self.mapArr[y][x] in (dead, live):
+                    count = 0
+                    for neighbour in self.getNeighbourData(x, y):
+                        if neighbour == live:
+                            count += 1
 
-                count = n + s + w + e
+                    self.setTile(x, y, self.cellRule(self.mapArr[y][x], count, dead, live))
 
-                self.mapArr[y][x] = self.cellRule(self.mapArr[y][x], count)
+    def cellRule(self, tile, count, dead, live):
 
-    def countRule(self, id):
-        if id == 1:
-            return 1
-        return 0
+        if tile == live and count >= 4:
+            return live
 
-    def cellRule(self, current, count):
-        live_cell = 1
-        dead_cell = 2
+        if tile == dead and count >= 5:
+            return live
 
-        if current == live_cell and count < 1: return dead_cell
-        elif current == live_cell and count in (2,3): return live_cell
-        elif current == live_cell and count == 4: return live_cell
-        elif current == dead_cell and count <= 1: return dead_cell
-        elif current == dead_cell and count in (2,3): return random.choice([live_cell] + [dead_cell]*2)
-        elif current == dead_cell and count == 4: return live_cell
+        return dead
 
-        return dead_cell
+    def spreadPoints(self, checkpoints):
+        # Use Llyod's algorithm to spread the points by averaging centroid every iteration
 
-    class Room():
-        def __init__(self, x, y, w, h):
-            self.x1 = x
-            self.y1 = y
-            self.x2 = x + w
-            self.y2 = y + h
-            self.w = w
-            self.h = h
+        regions = [[i] for i in checkpoints]
 
-        def center(self):
-            return ((self.x1 + self.x2 ) // 2, (self.y1 + self.y2) // 2)
+        for cell in [(x,y) for x in range(self.size_x) for y in range(self.size_y)]:
+
+            nearestDistanceSquared = 100000
+
+            for i in range(len(checkpoints)):
+                offset = (checkpoints[i][0] - cell[0]) ** 2 + (checkpoints[i][1] - cell[1]) ** 2
+                if offset < nearestDistanceSquared:
+                    nearestDistanceSquared = offset
+                    nearest = i
+
+            regions[nearest].append(cell)
+
+            new_checkpoint = []
+
+            for area in regions:
+                x = 0
+                y = 0
+
+                for points in area:
+                    x += points[0]
+                    y += points[1]
+
+                new_checkpoint.append((round(x/len(area)), round(y/len(area))))
+
+        return new_checkpoint
+
+
+class Forest(World):
+
+    def __init__(self):
+        super().__init__(32, 32)
+
+        self.mapArr = [[self.randomizeTiles(45, Forest.WALL, Forest.WATER) for x in range(self.size_x)] for y in range(self.size_y)]
+
+        for i in range(10):
+            self.cellGeneration(Forest.WALL, Forest.WATER)
+
+        checkpoints = [(random.randrange(self.size_x), random.randrange(self.size_y)) for i in range(5)]
+
+        for i in range(3):
+            checkpoints = self.spreadPoints(checkpoints)
+
+        for i in range(len(checkpoints)):
+            self.drawCircle(checkpoints[i][0], checkpoints[i][1], 2, Forest.GRASS)
+            self.carvePath(checkpoints[i], checkpoints[min(i + 1, len(checkpoints) - 1)], Forest.GRASS)
+
+        wall = [(x, y) for x in range(self.size_x) for y in range(self.size_y) if self.mapArr[y][x] == Forest.WATER]
+
+        for point in wall:
+            self.borderFill(point, Forest.GRASS, Forest.WALL)
+
+        for i in range(5):
+            self.cellGeneration(Forest.WALL, Forest.WATER)
+
+
+
+
+
+
 
 if __name__ == '__main__':
     pygame.init()
-    screen = pygame.display.set_mode((1024, 1024))
+    screen = pygame.display.set_mode((512, 512))
     pygame.display.set_caption('Map Generator')
 
     g = Game(screen)

@@ -1,6 +1,6 @@
 import pygame as pg
 import random
-import settings, mobs, items, sprite, ui, world, controller, particles, ai
+import settings, mobs, items, sprite, ui, world, controller, particles, ai, util
 from events import EventListener
 
 
@@ -18,9 +18,7 @@ class Game:
         self.running = True
         self.events = EventListener(self)
         self.hud = HUD(surface)
-        self.map = world.Dungeon(self)
-
-        self.map.makeMap(32,32,20,20,0)
+        self.map = world.Forest(self)
         self.itemManager = items.ItemController('data/items.json')
 
         self.entityManager = controller.EntityController()
@@ -103,7 +101,7 @@ class Game:
         self.entityManager.entities.empty()
         self.events.clear()
 
-        self.map.makeMap(32, 32, 50, 20, 30)
+        self.map = world.Forest(self)
         self.entityManager.spawnMobs([ai.Goblin, ai.Skeleton],self.map)
         self.entityManager.spawnItems(self.itemManager.getItems(), self.map)
         self.entityManager.spawnChest(self, self.itemManager, self.map)
@@ -127,6 +125,9 @@ class Camera:
         self.windowSize = screenSize
         self.world = world
 
+        self.view_x = 0
+        self.view_y = 0
+
     def apply(self, entity):
         offset = (-self.rect.left,-self.rect.top)
         return entity.rect.move(offset)
@@ -141,15 +142,15 @@ class Camera:
         return (x,y)
 
     def update(self, player):
-        x =  player.rect.left - self.windowSize[0]//2
-        y =  player.rect.top - self.windowSize[1]//2
+        self.view_x =  util.lerp(self.view_x, player.rect.left - self.windowSize[0]//2, 0.1)
+        self.view_y =  util.lerp(self.view_y, player.rect.top - self.windowSize[1]//2, 0.1)
 
-        x = max(0,x)
-        y = max(0,y)
-        x = min(x,self.world.size_x * settings.TILE_SIZE[0])
-        y = min(y,self.world.size_y * settings.TILE_SIZE[1])
+        self.view_x = max(0,self.view_x)
+        self.view_y = max(0,self.view_y)
+        self.view_x = min(self.view_x,self.world.size_x * settings.TILE_SIZE[0] - self.windowSize[0])
+        self.view_y = min(self.view_y,self.world.size_y * settings.TILE_SIZE[1] - self.windowSize[1])
 
-        self.rect.topleft = [x,y]
+        self.rect.topleft = [self.view_x,self.view_y]
 
     def isVisible(self,position):
         return self.rect.collidepoint(position)

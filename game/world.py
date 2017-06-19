@@ -3,282 +3,154 @@ import math, random
 import settings, tile
 from pytmx.util_pygame import load_pygame
 
-class Dungeon:
+class World:
 
     VOID = 0
-    FLOOR = 1
+    GRASS = 1
     FLOOR_1 = 2
     WALL = 3
-    WALL_1 = 4
+    WATER = 4
     EXIT = 5
 
-    def __init__(self,game):
-        self.level = 0
+    def __init__(self, game, width, height):
+        self.level = 1
+
+        self.size_x = width
+        self.size_y = height
+
         self.game = game
         self.tileset = tile.TileManager()
 
-    def makeMap(self, xsize, ysize, fail, b1, mrooms):
-        """Generate random layout of rooms, corridors and other features"""
-        # makeMap can be modified to accept arguments for values of failed, and percentile of features.
-        # Create first room
-        self.level += 1
-        self.roomList = []
-        self.cList = []
-        self.size_x = xsize
-        self.size_y = ysize
-
-        # initialize map to all walls
         self.mapArr = []
-
-        for y in range(ysize):
-            tmp = []
-            for x in range(xsize):
-                tmp.append(Dungeon.VOID)
-            self.mapArr.append(tmp)
-
-        w, l, t = self.makeRoom()
-        while len(self.roomList) == 0:
-            y = random.randrange(ysize - 1 - l) + 1
-            x = random.randrange(xsize - 1 - w) + 1
-            p = self.placeRoom(l, w, x, y, xsize, ysize, 6, 0)
-        failed = 0
-        while failed < fail:  # The lower the value that failed< , the smaller the dungeon
-            chooseRoom = random.randrange(len(self.roomList))
-            ex, ey, ex2, ey2, et = self.makeExit(chooseRoom)
-            feature = random.randrange(100)
-            if feature < b1:  # Begin feature choosing (more features to be added here)
-                w, l, t = self.makeCorridor()
-            else:
-                w, l, t = self.makeRoom()
-            roomDone = self.placeRoom(l, w, ex2, ey2, xsize, ysize, t, et)
-            if roomDone == 0:  # If placement failed increase possibility map is full
-                failed += 1
-            elif roomDone == 2:  # Possiblilty of linking rooms
-                if self.mapArr[ey2][ex2] == Dungeon.FLOOR:
-                    if random.randrange(100) < 7:
-                        self.makePortal(ex, ey)
-                    failed += 1
-            else:  # Otherwise, link up the 2 rooms
-                self.makePortal(ex, ey)
-                failed = 0
-                if t < 5:
-                    tc = [len(self.roomList) - 1, ex2, ey2, t]
-                    self.cList.append(tc)
-                    self.joinCorridor(len(self.roomList) - 1, ex2, ey2, t, 50)
-            if len(self.roomList) == mrooms:
-                failed = fail
-
-        self.finalJoins()
-
-        spawn = self.getCenterPosition(self.roomList[0])
-        self.spawnx = spawn[0]
-        self.spawny = spawn[1]
-
-        finalRoom = self.getCenterPosition(self.getRooms()[-1])
-        fy = finalRoom[1]//settings.TILE_SIZE[1]
-        fx = finalRoom[0]//settings.TILE_SIZE[0]
-        # Exit Tile
-        self.mapArr[fy][fx] = Dungeon.EXIT
-
-        walls = [(y,x) for y in range(self.size_y) for x in range(self.size_x) if self.mapArr[y][x] == Dungeon.WALL]
-        for wall in walls:
-            try:
-                if self.mapArr[wall[0]+1][wall[1]] in (Dungeon.FLOOR, Dungeon.FLOOR_1):
-                    self.mapArr[wall[0]][wall[1]] = Dungeon.WALL_1
-            except:
-                continue
+        self.roomList = []
 
 
-    def getSpawn(self):
-        return (self.spawnx,self.spawny)
+    def setTile(self, x, y, tile):
+        self.mapArr[y][x] = tile
 
-    def getCenterPosition(self,room):
-        x = room.center()[0] * settings.TILE_SIZE[0]
-        y = room.center()[1] * settings.TILE_SIZE[1]
-        return [x,y]
+    def randomizeTiles(self, chance, base, new):
 
-    def getTile(self, position):
-        mapX = round(position[0] / 96)
-        mapY = round(position[1] / 96)
-        return pg.Rect(mapX * 96, mapY * 96, 96, 96)
+        if random.randrange(100) < chance:
+            return new
+        return base
 
-    def getRooms(self):
-        return [room for room in self.roomList if isinstance(room,Dungeon.Room)]
+    def getNeighbourData(self, x, y):
+        # Returns a list of tile data around the position
+        tiles = []
+        y_range = (max(0, y - 1), min(y + 1, self.size_y - 1))
+        x_range = (max(0, x - 1), min(x + 1, self.size_x - 1))
 
-    def makeRoom(self):
-        """Randomly produce room size"""
-        rtype = 5
-        rwide = random.randrange(8) + 3
-        rlong = random.randrange(8) + 3
-        return rwide, rlong, rtype
+        for yy in range(y_range[0], y_range[1] + 1):
+            for xx in range(x_range[0], x_range[1] + 1):
+                if xx == x and yy == y:
+                    continue
+                else:
+                    tiles.append(self.mapArr[yy][xx])
 
-    def makeCorridor(self):
-        """Randomly produce corridor length and heading"""
-        clength = random.randrange(18) + 3
-        heading = random.randrange(4)
-        if heading == 0:  # North
-            wd = 1
-            lg = -clength
-        elif heading == 1:  # East
-            wd = clength
-            lg = 1
-        elif heading == 2:  # South
-            wd = 1
-            lg = clength
-        elif heading == 3:  # West
-            wd = -clength
-            lg = 1
-        return wd, lg, heading
+        return tiles
 
-    def placeRoom(self, ll, ww, xposs, yposs, xsize, ysize, rty, ext):
-        """Place feature if enough space and return canPlace as true or false"""
-        # Arrange for heading
-        xpos = xposs
-        ypos = yposs
-        if ll < 0:
-            ypos += ll + 1
-            ll = abs(ll)
-        if ww < 0:
-            xpos += ww + 1
-            ww = abs(ww)
-        # Make offset if type is room
-        if rty == 5:
-            if ext == 0 or ext == 2:
-                offset = random.randrange(ww)
-                xpos -= offset
-            else:
-                offset = random.randrange(ll)
-                ypos -= offset
-        # Then check if there is space
-        canPlace = 1
-        if ww + xpos + 1 > xsize - 1 or ll + ypos + 1 > ysize:
-            canPlace = 0
-            return canPlace
-        elif xpos < 1 or ypos < 1:
-            canPlace = 0
-            return canPlace
-        else:
-            for j in range(ll):
-                for k in range(ww):
-                    if self.mapArr[(ypos) + j][(xpos) + k] != Dungeon.VOID:
-                        canPlace = 2
-        # If there is space, add to list of rooms
-        if canPlace == 1:
-            temp = [ll, ww, xpos, ypos]
+    def getNeighbourPosition(self, x, y):
+        # Returns a list of tile positions around the tile[x,y]
 
-            for j in range(ll + 2):  # Then build walls
-                for k in range(ww + 2):
-                    wx = (xpos - 1) + k
-                    wy = (ypos - 1) + j
-                    self.mapArr[wy][wx] = Dungeon.WALL
-            for j in range(ll):  # Then build floor
-                for k in range(ww):
-                    if random.randrange(10) > 0:
-                        tf = Dungeon.FLOOR
-                    else:
-                        tf = Dungeon.FLOOR_1
+        y_range = (max(0, y - 1), min(y + 1, self.size_y - 1))
+        x_range = (max(0, x - 1), min(x + 1, self.size_x - 1))
 
-                    self.mapArr[ypos + j][xpos + k] = tf
+        return [(x_range[0], y), (x_range[1], y),
+                (x, y_range[0]), (x, y_range[1])]
 
-            if rty == 5:
-                self.roomList.append(Dungeon.Room(self, xpos, ypos, ww, ll))
-            else:
-                self.roomList.append(Dungeon.Hallway(self, xpos, ypos, ww, ll))
+    def carvePath(self, start, end, tile):
+        current = start
 
-        return canPlace  # Return whether placed is true/false
+        while current[0] != end[0] or current[1] != end[1]:
+            angle = math.atan2((end[1] - current[1]), (end[0] - current[0]))
+            new_x = current[0] + round(1 * math.cos(angle))
+            new_y = current[1] + round(1 * math.sin(angle))
 
-    def makeExit(self, rn):
-        """Pick random wall and random point along that wall"""
-        room = self.roomList[rn]
-        while True:
-            rw = random.randrange(4)
-            if rw == 0:  # North wall
-                rx = random.randrange(room.x1,room.x2)
-                ry = room.y1 - 1
-                rx2 = rx
-                ry2 = ry - 1
-            elif rw == 1:  # East wall
-                ry = random.randrange(room.y1,room.y2)
-                rx = room.x2
-                rx2 = rx + 1
-                ry2 = ry
-            elif rw == 2:  # South wall
-                rx = random.randrange(room.x1,room.x2)
-                ry = room.y2
-                rx2 = rx
-                ry2 = ry + 1
-            elif rw == 3:  # West wall
-                ry = random.randrange(room.y1,room.y2)
-                rx = room.x1 - 1
-                rx2 = rx - 1
-                ry2 = ry
-            if self.mapArr[ry][rx] == Dungeon.WALL:  # If space is a wall, exit
-                break
-        return rx, ry, rx2, ry2, rw
+            self.setTile(new_x, new_y, Forest.GRASS)
+            self.setTile(new_x - 1, new_y, Forest.GRASS)
+            self.setTile(new_x, new_y - 1, Forest.GRASS)
 
-    def makePortal(self, px, py):
-        """Create doors in walls"""
-        self.mapArr[py][px] = Dungeon.FLOOR
+            current = (new_x, new_y)
 
-    def joinCorridor(self, cno, xp, yp, ed, psb):
-        """Check corridor endpoint and make an exit if it links to another room"""
-        cArea = self.roomList[cno]
-        if xp != cArea.x1 or yp != cArea.y1:  # Find the corridor endpoint
-            endx = xp - (cArea.w - 1)
-            endy = yp - (cArea.h - 1)
-        else:
-            endx = xp + (cArea.w - 1)
-            endy = yp + (cArea.h - 1)
-        checkExit = []
-        if ed == 0:  # North corridor
-            if endx > 1:
-                coords = [endx - 2, endy, endx - 1, endy]
-                checkExit.append(coords)
-            if endy > 1:
-                coords = [endx, endy - 2, endx, endy - 1]
-                checkExit.append(coords)
-            if endx < self.size_x - 2:
-                coords = [endx + 2, endy, endx + 1, endy]
-                checkExit.append(coords)
-        elif ed == 1:  # East corridor
-            if endy > 1:
-                coords = [endx, endy - 2, endx, endy - 1]
-                checkExit.append(coords)
-            if endx < self.size_x - 2:
-                coords = [endx + 2, endy, endx + 1, endy]
-                checkExit.append(coords)
-            if endy < self.size_y - 2:
-                coords = [endx, endy + 2, endx, endy + 1]
-                checkExit.append(coords)
-        elif ed == 2:  # South corridor
-            if endx < self.size_x - 2:
-                coords = [endx + 2, endy, endx + 1, endy]
-                checkExit.append(coords)
-            if endy < self.size_y - 2:
-                coords = [endx, endy + 2, endx, endy + 1]
-                checkExit.append(coords)
-            if endx > 1:
-                coords = [endx - 2, endy, endx - 1, endy]
-                checkExit.append(coords)
-        elif ed == 3:  # West corridor
-            if endx > 1:
-                coords = [endx - 2, endy, endx - 1, endy]
-                checkExit.append(coords)
-            if endy > 1:
-                coords = [endx, endy - 2, endx, endy - 1]
-                checkExit.append(coords)
-            if endy < self.size_y - 2:
-                coords = [endx, endy + 2, endx, endy + 1]
-                checkExit.append(coords)
-        for xxx, yyy, xxx1, yyy1 in checkExit:  # Loop through possible exits
-            if self.mapArr[yyy][xxx] == Dungeon.FLOOR:  # If joins to a room
-                if random.randrange(100) < psb:  # Possibility of linking rooms
-                    self.makePortal(xxx1, yyy1)
+        # self.roomList.append(World.Room(self, start[0], start[1], end[0] - start[0], end[1] - start[1]))
 
-    def finalJoins(self):
-        """Final stage, loops through all the corridors to see if any can be joined to other rooms"""
-        for x in self.cList:
-            self.joinCorridor(x[0], x[1], x[2], x[3], 10)
+    def floodFill(self, position, target, new):
+        if self.mapArr[position[1]][position[0]] != target:
+            return
+
+        self.setTile(position[0], position[1], new)
+        self.floodFill((position[0],min(position[1] + 1, self.size_y - 1)), target, new)
+        self.floodFill((position[0], max(0, position[1] - 1)), target, new)
+        self.floodFill((min(position[0] + 1, self.size_x - 1), position[1]), target, new)
+        self.floodFill((max(0, position[0] - 1), position[1]), target, new)
+
+    def borderFill(self, position, target, new):
+        for pos in self.getNeighbourPosition(position[0], position[1]):
+            if self.mapArr[pos[1]][pos[0]] == target:
+                self.setTile(position[0], position[1], new)
+
+    def drawCircle(self, x, y, radius, tile):
+        for yy in range(-radius, radius + 1):
+            for xx in range(-radius, radius + 1):
+                if xx**2 + yy**2 <= radius**2:
+                    self.setTile(x + xx, y + yy, tile)
+
+        self.roomList.append(World.Room(self, x - radius//4, y - radius//4, radius, radius))
+
+
+    def cellGeneration(self, dead, live):
+        # Goes through every tile on the map and uses the neighbours to determine the tile data
+
+        for y in range(self.size_y):
+            for x in range(self.size_x):
+                if self.mapArr[y][x] in (dead, live):
+                    count = 0
+                    for neighbour in self.getNeighbourData(x, y):
+                        if neighbour == live:
+                            count += 1
+
+                    self.setTile(x, y, self.cellRule(self.mapArr[y][x], count, dead, live))
+
+    def cellRule(self, tile, count, dead, live):
+
+        if tile == live and count >= 4:
+            return live
+
+        if tile == dead and count >= 5:
+            return live
+
+        return dead
+
+    def spreadPoints(self, checkpoints):
+        # Use Llyod's algorithm to spread the points by averaging centroid every iteration
+
+        regions = [[i] for i in checkpoints]
+
+        for cell in [(x,y) for x in range(self.size_x) for y in range(self.size_y)]:
+
+            nearestDistanceSquared = 100000
+
+            for i in range(len(checkpoints)):
+                offset = (checkpoints[i][0] - cell[0]) ** 2 + (checkpoints[i][1] - cell[1]) ** 2
+                if offset < nearestDistanceSquared:
+                    nearestDistanceSquared = offset
+                    nearest = i
+
+            regions[nearest].append(cell)
+
+            new_checkpoint = []
+
+            for area in regions:
+                x = 0
+                y = 0
+
+                for points in area:
+                    x += points[0]
+                    y += points[1]
+
+                new_checkpoint.append((round(x/len(area)), round(y/len(area))))
+
+        return new_checkpoint
 
     def render(self,surface,camera):
         start = camera.rect.topleft
@@ -294,11 +166,6 @@ class Dungeon:
                 py = y * settings.TILE_SIZE[1] - start[1]
                 surface.blit(self.tileset[self.mapArr[y][x]], (px,py))
 
-    def drawRoomOutline(self,surface,camera):
-        for room in self.getRooms():
-            rect = pg.Rect(room.x1*settings.TILE_SIZE[0],room.y1*settings.TILE_SIZE[1],room.w*settings.TILE_SIZE[0],room.h*settings.TILE_SIZE[1])
-            camera.drawRectangle(surface,pg.Color('purple'),rect)
-
     def getCollidableTiles(self, rect):
         collidables = []
         start_pos = rect.topleft
@@ -308,18 +175,21 @@ class Dungeon:
 
         for y in range(max(0,render_y[0] - 1), min(render_y[1] + 1,self.size_y)):
             for x in range(max(0,render_x[0] -  1), min(render_x[1] + 1,self.size_x)):
-                if self.mapArr[y][x] in [Dungeon.WALL, Dungeon.WALL_1, Dungeon.EXIT]:
-                    if self.mapArr[y][x] == Dungeon.EXIT:
-                        obj = Dungeon.ExitObject(self.game, x, y)
+                if self.mapArr[y][x] in [World.WALL, World.WATER, World.EXIT]:
+                    if self.mapArr[y][x] == Forest.EXIT:
+                        obj = World.ExitObject(self.game, x, y)
                     else:
-                        obj = Dungeon.WorldObject(x, y)
+                        obj = World.WorldObject(x, y)
 
                     collidables.append(obj)
 
         return collidables
 
-    def getWorldSize(self):
-        return (self.size_x * settings.TILE_SIZE[0], self.size_y * settings.TILE_SIZE[1])
+    def getSpawn(self):
+        return(self.spawnx, self.spawny)
+
+    def getRooms(self):
+        return self.roomList[1:]
 
     class WorldObject():
 
@@ -342,7 +212,7 @@ class Dungeon:
             self.game.generateLevel()
 
     class Room():
-        def __init__(self,world,x,y,w,h):
+        def __init__(self, world, x, y, w, h):
             self.world = world
             self.x1 = x
             self.y1 = y
@@ -352,7 +222,7 @@ class Dungeon:
             self.h = h
 
         def center(self):
-            return ((self.x1 + self.x2)//2,(self.y1 + self.y2)//2)
+            return ((self.x1 + self.x2) // 2, (self.y1 + self.y2) // 2)
 
         def getSpawnableSpace(self):
             mapData = self.world.mapArr
@@ -360,13 +230,14 @@ class Dungeon:
             x = 0
             y = 0
             while not spawnable:
-                x = random.randrange(self.x1,self.x2)
-                y = random.randrange(self.y1,self.y2)
-                floor_tiles = (Dungeon.FLOOR, Dungeon.FLOOR_1)
-                if mapData[y-1][x] in floor_tiles and mapData[y+1][x] in floor_tiles and mapData[y][x-1] in floor_tiles and mapData[y][x+1] in floor_tiles:
+                x = random.randrange(self.x1, self.x2)
+                y = random.randrange(self.y1, self.y2)
+                floor_tiles = (World.GRASS, World.FLOOR_1)
+                if mapData[y - 1][x] in floor_tiles and mapData[y + 1][x] in floor_tiles and mapData[y][
+                            x - 1] in floor_tiles and mapData[y][x + 1] in floor_tiles:
                     spawnable = True
 
-            return [x * settings.TILE_SIZE[0],y * settings.TILE_SIZE[1]]
+            return [x * settings.TILE_SIZE[0], y * settings.TILE_SIZE[1]]
 
         def getSurroundingTiles(self, x, y):
             mapData = self.world.mapArr
@@ -376,21 +247,41 @@ class Dungeon:
             return (self.x1 * settings.TILE_SIZE[0], self.y1 * settings.TILE_SIZE[1])
 
         def getCornerTile(self):
-            return random.choice([(self.x1,self.y1), (self.x2, self.y1), (self.x1, self.y2), (self.x2, self.y2)])
+            return random.choice([(self.x1, self.y1), (self.x2, self.y1), (self.x1, self.y2), (self.x2, self.y2)])
 
         def getCornerTiles(self):
-            return [(self.x1,self.y1), (self.x2, self.y1), (self.x1, self.y2), (self.x2, self.y2)]
+            return [(self.x1, self.y1), (self.x2, self.y1), (self.x1, self.y2), (self.x2, self.y2)]
 
-    class Hallway():
-        def __init__(self,world,x,y,w,h):
-            self.world = world
-            self.x1 = x
-            self.y1 = y
-            self.x2 = x + w
-            self.y2 = y + h
-            self.w = w
-            self.h = h
 
-        def center(self):
-            return ((self.x1 + self.x2)//2,(self.y1 + self.y2)//2)
+class Forest(World):
 
+    def __init__(self, game):
+        super().__init__(game, 64, 64)
+
+        self.mapArr = [[self.randomizeTiles(45, Forest.WALL, Forest.WATER) for x in range(self.size_x)] for y in range(self.size_y)]
+
+        for i in range(10):
+            self.cellGeneration(Forest.WALL, Forest.WATER)
+
+        checkpoints = [(random.randrange(self.size_x), random.randrange(self.size_y)) for i in range(5)]
+
+        for i in range(3):
+            checkpoints = self.spreadPoints(checkpoints)
+
+        for i in range(len(checkpoints)):
+            self.drawCircle(checkpoints[i][0], checkpoints[i][1], 5, Forest.GRASS)
+            self.carvePath(checkpoints[i], checkpoints[min(i + 1, len(checkpoints) - 1)], Forest.GRASS)
+
+        wall = [(x, y) for x in range(self.size_x) for y in range(self.size_y) if self.mapArr[y][x] == Forest.WATER]
+
+        for point in wall:
+            self.borderFill(point, Forest.GRASS, Forest.WALL)
+
+        for i in range(5):
+            self.cellGeneration(Forest.WALL, Forest.WATER)
+
+        self.spawnx = self.roomList[0].center()[0] * settings.TILE_SIZE[0]
+        self.spawny = self.roomList[0].center()[1] * settings.TILE_SIZE[1]
+
+        lastRoom = self.getRooms()[-1].center()
+        self.setTile(lastRoom[0], lastRoom[1], Forest.EXIT)

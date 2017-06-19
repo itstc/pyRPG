@@ -36,13 +36,13 @@ class EntityController:
 
     def spawnChest(self, game, itemManager, world):
         count = 0
-        while count < 2 * world.level:
+        while count < 5 * world.level:
             room = random.choice(world.getRooms())
             corners = random.choice(room.getCornerTiles()[:1]) # Get top corners only and select random corner after
             chest = Chest(game, itemManager, self.entities, (corners[0] * settings.TILE_SIZE[0], corners[1] * settings.TILE_SIZE[1]))
 
             # If no entities are in that position and there are at least 2 walls surrounding it then add it to the game
-            if not pg.sprite.spritecollideany(chest,self.entities) and len([wall for wall in room.getSurroundingTiles(corners[0], corners[1]) if wall in (3,4)]) >= 2:
+            if not pg.sprite.spritecollideany(chest,self.entities): #and len([wall for wall in room.getSurroundingTiles(corners[0], corners[1]) if wall in (3,4)]) >= 2:
                 self.entities.add(chest)
 
             count += 1

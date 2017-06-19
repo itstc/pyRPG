@@ -16,3 +16,6 @@ class Polygon:
             j = i
 
         return c
+
+def lerp(start, end, t):
+    return start + t * (end - start)

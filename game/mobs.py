@@ -221,7 +221,7 @@ class Player(Mob):
             'attack_right':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1), (6, 1), (6, 1)], [16,16],size,125)
                        }
 
-        super().__init__(group, states, size, pos, 100, 1000)
+        super().__init__(group, states, size, pos, 100, 10)
         self.inventory = Inventory(self,12)
         self.input = input
         self.action = Player.PlayerActions(self,states)

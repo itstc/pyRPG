@@ -33,7 +33,9 @@ class Game:
         self.camera = Camera(self.player.position,surface.get_size(), self.map)
 
         self.ui_manager = {
-        'inventory': ui.InventoryGUI(self.windowScreen,self.player.inventory, (settings.WINDOW_SIZE[0] // 2,settings.WINDOW_SIZE[1] // 2))}
+        'inventory': ui.InventoryGUI(self.windowScreen,self.player.inventory, (settings.WINDOW_SIZE[0] // 2,settings.WINDOW_SIZE[1] // 2)),
+        'stats': ui.StatsGUI(self.windowScreen, (settings.WINDOW_SIZE[0] // 2,settings.WINDOW_SIZE[1] // 2), self.player)
+        }
 
         self.gui = self.ui_manager['inventory']
 
@@ -44,7 +46,7 @@ class Game:
         prev = 1
         while self.running:
             time = clock.tick(128)
-            dt = (time / prev) * 12
+            dt = (time / prev)
             pg.display.set_caption('%s %i fps' % ('pyLota Alpha Build:', clock.get_fps()//1))
 
             if not self.disable:
@@ -59,7 +61,7 @@ class Game:
         self.camera.update(self.player)
 
         if self.gui.showing:
-            self.gui.updateSlots()
+            self.gui.update()
 
         self.hud.update(dt)
 
@@ -85,8 +87,8 @@ class Game:
             panel = pg.Surface([400,100])
             panel.fill(pg.Color(135,27,51))
             panel.set_alpha(200)
-            string_size = ui.StringRenderer.getStringSize(self,'You are Dead!',48)
-            ui.StringRenderer.drawString(self,panel, 'You are Dead!', ((400 - string_size[0])//2,(100 - string_size[1])//2),48)
+            string_size = ui.StringRenderer.getStringSize(self,'You are Dead!',3)
+            ui.StringRenderer.drawStringIndependent(self,panel, 'You are Dead!', ((400 - string_size[0])//2,(100 - string_size[1])//2),3)
 
             self.windowScreen.blit(panel,((self.windowSize[0] - 400)//2,(self.windowSize[1] - 100)//2))
 
@@ -96,6 +98,7 @@ class Game:
         return self.map
 
     def generateLevel(self):
+        print(self.player.position)
 
         self.disable = True
         self.entityManager.entities.empty()
@@ -108,7 +111,7 @@ class Game:
 
 
         pg.time.wait(500)
-        self.hud.drawQueue.append(particles.FadingText('Dungeon Level %i' % self.map.level, (self.windowSize[0] // 2, self.windowSize[1] // 12), 4))
+        self.hud.drawQueue.append(particles.FadingText('Dungeon Level %i' % self.map.level, (self.windowSize[0] // 2, self.windowSize[1] // 12), 2))
         self.disable = False
 
         self.player.setPosition(self.map.getSpawn())
@@ -135,6 +138,10 @@ class Camera:
     def applyOnRect(self, rect):
         offset = (-self.rect.left,-self.rect.top)
         return rect.move(offset)
+
+    def getAppliedRect(self, rect):
+        new_rect = rect.move((-self.rect.left,-self.rect.top))
+        return new_rect
 
     def applyOnPosition(self,pos):
         x = pos[0] - self.rect.left

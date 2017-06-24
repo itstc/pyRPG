@@ -4,22 +4,31 @@ import random
 
 class StringRenderer():
 
-    def getStringAsSurface(self, string, scale = 1, color = pg.Color('white')):
-        size = self.getStringSize(string, int(16 * scale))
-        return pg.transform.scale(pg.font.Font('res/gamefont.ttf', 16).render(str(string),1,color), size)
+    def __init__(self):
+        self.font = pg.font.Font('res/gamefont.ttf', 16)
 
-    def drawString(self,surface, string, position, size = 16,color = pg.Color(224,228,204)):
-        text = pg.font.Font('res/gamefont.ttf', size).render(str(string),1,color)
+    def getStringAsSurface(self, string, scale = 1, color = pg.Color('white')):
+        size = self.font.size(str(string))
+        return pg.transform.scale(self.font.render(str(string),1,color), tuple(map(lambda t: t * scale, size)))
+
+    def drawString(self,surface, string, position, size = 1 ,color = pg.Color(224,228,204)):
+        text_size = self.font.size(str(string))
+        text = pg.transform.scale(self.font.render(str(string),1,color), list(map(lambda t: t * size, text_size)))
         surface.blit(text,position)
 
-    def drawStrings(self, surface, strings, position, size = 16, color = pg.Color(224,228,204)):
-        font = pg.font.Font('res/gamefont.ttf', size)
-        for i in range(len(strings)):
-            text = font.render(str(strings[i]),1,color)
-            surface.blit(text, (position[0], position[1] + (i * font.size(strings[i])[1])))
+    def drawStringIndependent(self,surface, string, position, size = 1 ,color = pg.Color(224,228,204)):
+        font = pg.font.Font('res/gamefont.ttf', 16)
+        text_size = font.size(str(string))
+        text = pg.transform.scale(font.render(str(string),1,color), list(map(lambda t: t * size, text_size)))
+        surface.blit(text,position)
 
-    def getStringSize(self,string,size=16):
-        return pg.font.Font('res/gamefont.ttf', size).size(str(string))
+    def drawStrings(self, surface, strings, position, size = 1, color = pg.Color(224,228,204)):
+        for i in range(len(strings)):
+            text = self.font.render(str(strings[i]),1,color)
+            surface.blit(text, (position[0], position[1] + (i * self.font.size(strings[i])[1])))
+
+    def getStringSize(self,string,size = 1):
+        return pg.font.Font('res/gamefont.ttf', 16 * size).size(str(string))
 
     def getStringsSize(self,strings):
         size = [self.font.size(strings[0])[0],0]
@@ -38,11 +47,13 @@ class GUI(StringRenderer):
         self.showing = False
         self.active = False
         self.spritesheet = sprite.AlphaSpritesheet('ui.png')
+        self.pressed = False
         self.interface = pg.transform.scale(self.spritesheet.getSprite([32,48],[0,0]),size)
         self.interface.set_alpha(200)
 
         adjusted_pos = (pos[0] - size[0] // 2, pos[1] - size[1] // 2)
         self.rect = pg.Rect(adjusted_pos,size)
+        self.state = None
 
     def update(self):
         pass
@@ -56,11 +67,169 @@ class GUI(StringRenderer):
         pass
 
     def toggle(self):
-        pass
+        self.showing = not self.showing
+        self.active = not self.active
+
+        if not self.showing:
+            self.selectedSlot = None
+            self.state = None
+            self.active = False
+        else:
+            self.active = True
 
     def show(self):
         self.showing = True
         self.active = True
+
+    def handleEvents(self,event):
+        pass
+        """
+        if event.type == pg.MOUSEBUTTONDOWN:
+            self.handleMouseDownEvent(event.pos)
+            self.pressed = True
+        elif event.type == pg.MOUSEBUTTONUP:
+            self.pressed = False
+        elif event.type == pg.MOUSEMOTION:
+            if self.active:
+                # If hovering state is not hovered over
+                if isinstance(self.state,OptionState):
+                    self.state.check(event.pos)
+                elif isinstance(self.state,HoveringState) and not self.selectedSlot.isHovering(event.pos):
+                    self.state = None
+                # If no state check if mouse is over a slot with an item
+                elif not self.state and self.isHoveringSlot(event.pos) and self.selectedSlot.item:
+                        self.state = HoveringState(self.selectedSlot)
+        """
+
+
+    def handleMouseDownEvent(self,pos):
+        pass
+        """
+        if not self.pressed:
+            if self.state and isinstance(self.state,OptionState) and self.state.isHovering(pos):
+                # If state is OptionState and mouse is hovering
+                self.state.selected.use()
+                self.state = None
+            elif self.state and not self.selectedSlot.isHovering(pos):
+                # If there is a state but mouse is not hovering over slot
+                self.state = None
+            elif self.selectedSlot and self.selectedSlot.item and self.selectedSlot.isHovering(pos):
+                # If selected slot has an item and is being hovered over
+                self.state = OptionState(self.selectedSlot,self)
+        """
+
+class StatsGUI(GUI):
+    type = 'main_ui'
+
+    colors = {
+        'common': pg.Color(224,228,204),
+        'uncommon': pg.Color(102,255,0),
+        'rare': pg.Color(204,0,0),
+        'super_rare': pg.Color(236,208,120)
+    }
+
+    equipment_order = ['head', 'body', 'leg', 'weapon']
+
+    def __init__(self, surface, pos, player):
+        super().__init__(surface, [384,384], pos)
+        self.player = player
+
+
+        self.interface = pg.Surface((384, 384), pg.SRCALPHA, 32)
+        gui_image = pg.transform.scale(self.spritesheet.getSprite([32,32],[0,2]), (384,384))
+        gui_image.set_alpha(200)
+
+        self.interface.blit(gui_image, (0, 0))
+        self.textfield = self.interface.subsurface(pg.Rect(32, 80, 128, 96))
+
+        self.drawString(self.interface, 'Stats', (32, 32), 2)
+        self.equipments = [StatsGUI.Tile(self, (64,64), (384 - 96, 32 + 80 * i)) for i in range(4)]
+
+        self.selectedSlot = None
+
+
+    def update(self):
+        for i in range(4):
+            self.equipments[i].item = self.player.stats.equipment[StatsGUI.equipment_order[i]]
+            self.equipments[i].update()
+
+    def drawFeatures(self):
+        self.textfield.fill(pg.Color(78,77,74,200))
+
+        self.drawString(self.textfield, 'Health: %i / %i' % (self.player.stats.hp, self.player.stats.maxHP), (0, 0))
+        self.drawString(self.textfield, 'Attack: %i' % self.player.stats.ad, (0, 16))
+
+        for tile in self.equipments:
+            tile.draw()
+
+        if self.state:
+            self.state.draw(self.surface)
+
+    def handleEvents(self,event):
+        if event.type == pg.MOUSEBUTTONDOWN:
+            self.handleMouseDownEvent(event.pos)
+            self.pressed = True
+        elif event.type == pg.MOUSEBUTTONUP:
+            self.pressed = False
+        elif event.type == pg.MOUSEMOTION:
+            if self.active:
+                # If hovering state is not hovered over
+                if isinstance(self.state,EquipState):
+                    self.state.check(event.pos)
+                elif isinstance(self.state,HoveringState) and not self.selectedSlot.isHovering(event.pos):
+                    self.state = None
+                # If no state check if mouse is over a slot with an item
+                elif not self.state and self.isHoveringSlot(event.pos) and self.selectedSlot.item:
+                    self.state = HoveringState(self.selectedSlot)
+
+    def handleMouseDownEvent(self,pos):
+        if not self.pressed:
+            if self.state and isinstance(self.state,EquipState) and self.state.isHovering(pos):
+                # If state is EquipState and mouse is hovering
+                self.state.selected.use()
+                self.state = None
+            elif self.state and not self.selectedSlot.isHovering(pos):
+                # If there is a state but mouse is not hovering over slot
+                self.state = None
+            elif self.selectedSlot and self.selectedSlot.item and self.selectedSlot.isHovering(pos):
+                # If selected slot has an item and is being hovered over
+                self.state = EquipState(self.selectedSlot,self)
+
+    def isHoveringSlot(self,pos):
+        self.selectedSlot = None
+        for slot in self.equipments:
+            if slot.rect.collidepoint(pos):
+                self.selectedSlot = slot
+                return True
+        return False
+
+    def unequipSlot(self):
+        self.player.stats.unequipItem(self.selectedSlot.item.equipment_type)
+
+    class Tile(StringRenderer):
+        def __init__(self,gui,size,pos,item = None):
+            super().__init__()
+            self.gui = gui
+            self.rect = pg.Rect(pos,size)
+            self.position = pos
+            self.size = size
+            self.item = item
+            self.image = pg.transform.scale(sprite.Spritesheet('ui.png').getSprite([16,16],[2,1]),size)
+
+        def isHovering(self,pos):
+            return self.rect.collidepoint(pos)
+
+        def update(self):
+            # update tile position based on gui position
+            self.rect.topleft = [self.gui.rect.topleft[0] + self.position[0],self.gui.rect.topleft[1] + self.position[1]]
+
+        def draw(self):
+            # Draw slot image onto gui
+            self.gui.interface.blit(self.image,self.position)
+            # If there is an item occupying slot draw the item and the amount
+            if self.item:
+                self.gui.interface.blit(pg.transform.scale(self.item.image,self.size),self.position)
+                self.drawString(self.gui.interface,self.item.amount,(self.position[0] + 2,self.position[1] + 2))
 
 class InventoryGUI(GUI):
 
@@ -78,7 +247,7 @@ class InventoryGUI(GUI):
         self.inventory = inventory
         self.grid = []
 
-        self.drawString(self.interface, ui_heading, (16,16), 32)
+        self.drawString(self.interface, ui_heading, (16,16), 2)
 
         start = [16,64]
         for y in range(4):
@@ -88,6 +257,9 @@ class InventoryGUI(GUI):
         self.selectedSlot = None
         self.state = None
 
+        self.updateSlots()
+
+    def update(self):
         self.updateSlots()
 
     def useSlot(self):
@@ -181,7 +353,7 @@ class InventoryGUI(GUI):
             self.position = pos
             self.size = size
             self.item = item
-            self.image = pg.transform.scale(sprite.Spritesheet('ui.png').getSprite([16,16],[2,0]),size)
+            self.image = pg.transform.scale(sprite.Spritesheet('ui.png').getSprite([16,16],[2,1]),size)
 
         def isHovering(self,pos):
             return self.rect.collidepoint(pos)
@@ -196,10 +368,11 @@ class InventoryGUI(GUI):
             # If there is an item occupying slot draw the item and the amount
             if self.item:
                 self.gui.interface.blit(pg.transform.scale(self.item.image,self.size),self.position)
-                self.drawString(self.gui.interface,self.item.amount,(self.position[0]+2,self.position[1]+2))
+                self.drawString(self.gui.interface,self.item.amount,(self.position[0] + 2,self.position[1] + 2))
 
 class HoveringState(StringRenderer):
     def __init__(self,slot):
+        super().__init__()
         self.slot = slot
         self.rect = pg.Rect(slot.rect.center,[200,110])
         self.selected = None
@@ -211,14 +384,14 @@ class HoveringState(StringRenderer):
         panel = pg.Surface([200, 110])
         panel.fill(pg.Color('black'))
         panel.set_alpha(200)
-        self.drawString(panel, self.slot.item.name, [8, 8], 24,
-                        InventoryGUI.colors[self.slot.item.rarity])
-        self.drawStrings(panel, self.slot.item.desc, [8, 32], 18)
+        self.drawString(panel, self.slot.item.name, [8, 8], color = InventoryGUI.colors[self.slot.item.rarity])
+        self.drawStrings(panel, self.slot.item.desc, (8, 32))
 
         surface.blit(panel,self.slot.rect.center)
 
 class OptionState(StringRenderer):
     def __init__(self,slot,ui):
+        super().__init__()
         self.rect = pg.Rect(slot.rect.center,[100,60])
         self.options = [
             UseButton(self.rect.topleft,[100,30],'Use',ui),
@@ -243,6 +416,15 @@ class OptionState(StringRenderer):
         for option in self.options:
             option.draw(surface)
 
+class EquipState(OptionState):
+
+    def __init__(self, slot, ui):
+        super().__init__(slot, ui)
+
+        self.options = [
+            UnequipButton(self.rect.topleft, [100, 30], 'Unequip', ui)
+        ]
+
 class TransactionState(OptionState):
 
     def __init__(self, slot, ui):
@@ -256,6 +438,7 @@ class TransactionState(OptionState):
 
 class Button(StringRenderer):
     def __init__(self,pos,size,string):
+        super().__init__()
         self.color = pg.Color('black')
         self.rect = pg.Rect(pos,size)
         self.panel = pg.Surface(size)
@@ -287,6 +470,14 @@ class Button(StringRenderer):
 
         # Draw Button on gui location
         surface.blit(self.panel,self.rect.topleft)
+
+class UnequipButton(Button):
+    def __init__(self,pos,size,string,ui):
+        super().__init__(pos,size,string)
+        self.ui = ui
+
+    def use(self):
+        self.ui.unequipSlot()
 
 class UseButton(Button):
     def __init__(self,pos,size,string,ui):

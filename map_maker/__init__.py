@@ -54,7 +54,7 @@ class Game(StringRenderer):
         prev = 1
         while self.running:
             time = clock.tick(128)
-            dt = (time / prev)
+            dt = time // prev
 
             self.handleEvent()
             self.update(dt)

@@ -5,8 +5,9 @@ from mobs import Player
 from particles import BouncyText as Text
 
 class Item:
+    type = 'item'
     stackable = False
-    def __init__(self,name,desc,rarity,imageData):
+    def __init__(self, name, desc, rarity, imageData):
         self.name = name
         self.desc = desc
         self.rarity = rarity
@@ -19,8 +20,6 @@ class Item:
 
     def __eq__(self, other):
         return self.name == other.name
-
-
 
 class ItemSprite(pg.sprite.Sprite):
 
@@ -36,18 +35,18 @@ class ItemSprite(pg.sprite.Sprite):
         self.rect = pg.Rect(pos,self.size)
         self.fov = []
         self.bouncing = True
-        self.time = 0
+        self.time = 60
 
         self.item = item
 
     def update(self,dt):
         self.rect.topleft = self.position
-        self.time += dt
+        self.time -= dt
 
-        if self.time / 500 > 1:
+        if self.time <= 0:
             self.bouncing = not self.bouncing
             self.bounce(dt,self.bouncing)
-            self.time = 0
+            self.time = 60
 
         for obj in self.fov:
             if self.rect.colliderect(obj.rect) and isinstance(obj,Player):
@@ -74,6 +73,7 @@ class UsableItem:
 class Consumable(StackableItem,UsableItem):
     def __init__(self,name,desc,rarity,imageData,attribute):
         super().__init__(name,desc,rarity,imageData)
+
         self.attribute = attribute
 
     def use(self,player):
@@ -83,13 +83,36 @@ class Consumable(StackableItem,UsableItem):
         else:
             player.stats.hp += self.attribute
 
-class Weapon(Item,UsableItem):
-    def __init__(self,name,desc,rarity,imageData,attribute):
-        super().__init__(name,desc,rarity,imageData)
+class Equipment(Item, UsableItem):
+
+    type = 'equipment'
+
+    def __init__(self, name, desc, rarity, imageData, spriteID, attribute):
+        super().__init__(name, desc, rarity, imageData)
         self.attribute = attribute
+        sheet = sprite.Spritesheet(settings.ITEMSPRITE)
+        self.sprite = {
+            'idle_left': sprite.AnimatedSprite(sheet, [(0, spriteID)], (16, 16), (64, 64), 12),
+            'idle_right': sprite.AnimatedSprite(sheet, [(1, spriteID)], (16, 16), (64, 64), 12),
+            'walk_left': sprite.AnimatedSprite(sheet, [(0, spriteID)], (16, 16), (64, 64), 12),
+            'walk_right': sprite.AnimatedSprite(sheet, [(1, spriteID)], (16, 16), (64, 64), 12),
+            'attack_left': sprite.AnimatedSprite(sheet, [(0, spriteID),(2, spriteID),(3, spriteID)], (16, 16), (64, 64), 9),
+            'attack_right': sprite.AnimatedSprite(sheet, [(1, spriteID),(4, spriteID),(5, spriteID)], (16, 16), (64, 64), 9)
+        }
+
+class Weapon(Equipment):
+
+    type = 'equipment'
+    equipment_type = 'weapon'
+
+    def __init__(self,name, desc, rarity, imageData, spriteID, attribute):
+        super().__init__(name,desc,rarity,imageData, spriteID, attribute)
 
     def use(self,player):
         player.stats.ad += self.attribute
+
+    def unequip(self, player):
+        player.stats.ad -= self.attribute
 
 class ItemController():
     itemClass = {'Consumable': Consumable,
@@ -103,7 +126,13 @@ class ItemController():
         # Creates a item class for the item based on 'class' key in id
         item = self.data[str(id)]
         cls = ItemController.itemClass[item['class']]
-        return cls(item['name'],item['desc'],item['rarity'],item['imageData'],item['attribute'])
+
+        if cls.type == 'equipment':
+            itemClass = cls(item['name'],item['desc'],item['rarity'],item['imageData'],item['spriteID'],item['attribute'])
+        else:
+            itemClass =  cls(item['name'],item['desc'],item['rarity'],item['imageData'],item['attribute'])
+
+        return itemClass
 
     def getItems(self):
         return [self.getItem(id) for id in range(8)]

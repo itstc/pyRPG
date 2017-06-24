@@ -18,7 +18,7 @@ class Mob(pg.sprite.Sprite):
         self.rect = pg.Rect(position[0],position[1],size[0],size[1])
 
         self.fov = []
-        self.maxcd = 500
+        self.maxcd = 45
         self.cooldown = self.maxcd
 
         self.action = Mob.Actions(self,images)
@@ -81,7 +81,8 @@ class Mob(pg.sprite.Sprite):
                         self.stats.damage(obj)
                 self.action['attack'] = False
                 self.cooldown = self.maxcd
-        else: self.cooldown = self.maxcd
+        else:
+            self.cooldown = self.maxcd
 
         self.stats.update(dt)
         self.action.update(dt)
@@ -166,6 +167,7 @@ class Mob(pg.sprite.Sprite):
                 self.mob.stats.current_speed = 0
 
             self.images[self.current].update(dt)
+            self.currentFrame = self.images[self.current].frame
 
         def draw(self,surface,camera):
             self.mob.image = self.images[self.current].currentFrame()
@@ -191,11 +193,10 @@ class Mob(pg.sprite.Sprite):
 
         def damage(self,target):
             target.stats.hurt(self.ad)
-            self.statQueue.append(particles.BouncyText(self,self.ad,[target.rect.centerx,target.rect.top - 18 * len(self.statQueue)]))
+            self.statQueue.append(particles.BouncyText(self,self.ad,[target.rect.centerx,target.rect.top - 18 * len(target.stats.statQueue)]))
 
         def hurt(self,value):
             self.hp -= value
-            self.statQueue.append(particles.BouncyText(self, value, [self.mob.rect.centerx, self.mob.rect.top - 18 * len(self.statQueue)]))
 
         def update(self,dt):
             for (i,item) in enumerate(self.statQueue):
@@ -213,17 +214,18 @@ class Player(Mob):
         sheet = sprite.Spritesheet(settings.PLAYERSHEET)
         states = {
             # Animated Sprite will be called by syntax: action_direction
-            'idle_left': sprite.AnimatedSprite(sheet, [(0, 0)], [16,16], size, 200),
-            'idle_right': sprite.AnimatedSprite(sheet, [(0, 1)], [16,16], size, 200),
-            'walk_left':sprite.AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0), (3, 0)], [16,16],size,200),
-            'walk_right':sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1), (3, 1)], [16,16],size,200),
-            'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0), (6, 0), (6, 0)], [16,16],size,125),
-            'attack_right':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1), (6, 1), (6, 1)], [16,16],size,125)
+            'idle_left': sprite.AnimatedSprite(sheet, [(0, 0)], [16,16], size, 12),
+            'idle_right': sprite.AnimatedSprite(sheet, [(0, 1)], [16,16], size, 12),
+            'walk_left':sprite.AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0), (3, 0)], [16,16],size,12),
+            'walk_right':sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1), (3, 1)], [16,16],size,12),
+            'attack_left':sprite.AnimatedSprite(sheet, [(0, 0), (4, 0), (5, 0)], [16,16],size, 15),
+            'attack_right':sprite.AnimatedSprite(sheet, [(1, 1), (4, 1), (5, 1)], [16,16],size, 15)
                        }
 
         super().__init__(group, states, size, pos, 100, 10)
         self.inventory = Inventory(self,12)
         self.input = input
+        self.stats = Player.PlayerStats(self, 100, 10)
         self.action = Player.PlayerActions(self,states)
         self.interactable = None
 
@@ -240,11 +242,46 @@ class Player(Mob):
         self.camera_pos = camera.applyOnPosition(self.rect.center)
 
 
+
     def getPosition(self):
         return self.position
 
     def getSize(self):
         return self.size
+
+    class PlayerStats(Mob.Stats):
+        def __init__(self, player, health, ad):
+            super().__init__(player, health, ad)
+
+            self.equipment = {
+                'head': None,
+                'body': None,
+                'leg': None,
+                'weapon': None
+            }
+
+            self.sprite_offsets = {
+                'idle_left': sprite.animationOffset([(16, 16)]),
+                'idle_right': sprite.animationOffset([(-16, 16)]),
+                'walk_left': sprite.animationOffset([(16, 16)]),
+                'walk_right': sprite.animationOffset([(-16, 16)]),
+                'attack_left': sprite.animationOffset([(16, 16), (-8, 0), (-8, 8)]),
+                'attack_right': sprite.animationOffset([(-16, 16), (8, 0), (8, 8)])
+            }
+
+        def unequipItem(self, slot):
+            if self.equipment[slot]:
+                self.equipment[slot].unequip(self.mob)
+                self.mob.inventory.addItem(self.equipment[slot])
+                self.equipment[slot] = None
+
+        def draw(self,surface,camera):
+            super().draw(surface, camera)
+
+            if self.equipment['weapon']:
+                weapon_offset = self.sprite_offsets[self.mob.action.current].getFrame(self.mob.action.currentFrame)
+                weapon_sprite = self.equipment['weapon'].sprite[self.mob.action.current].getFrame(self.mob.action.currentFrame)
+                surface.blit(weapon_sprite, camera.applyOnRect(self.mob.rect.move(weapon_offset)))
 
     class PlayerActions(Mob.Actions):
         def __init__(self,mob,images):
@@ -253,7 +290,7 @@ class Player(Mob):
         def keyMove(self, dt):
             ax = 0
             ay = 0
-            ac = 0.02
+            ac = 3
 
             if self.moveDirections['up']:
                 ay -= ac

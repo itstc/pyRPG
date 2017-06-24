@@ -48,7 +48,7 @@ class EventListener:
                 self.game.gui.active = False
                 if not self.game.player.action['attack']:
                     self.game.player.action.attack()
-                    self.game.player.action.fire(event.pos)
+                    #self.game.player.action.fire(event.pos)
 
         elif event.type == pg.MOUSEMOTION:
             self.game.player.action.direction = self.getMouseDirection(event.pos)
@@ -77,6 +77,9 @@ class EventListener:
             self.game.player.action.moveDirections['right'] = True
 
         # Key Handling related to Game
+        if key == pg.K_q and not self.pressed:
+            self.game.gui = self.game.ui_manager['stats']
+            self.game.gui.toggle()
         if key == pg.K_i and not self.pressed:
             self.game.gui = self.game.ui_manager['inventory']
             self.game.gui.toggle()

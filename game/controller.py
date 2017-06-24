@@ -10,7 +10,7 @@ class EntityController:
 
     def spawnMobs(self,mobs,world):
         count = 0
-        while count < 5 * world.level:
+        while count < 2 * world.level:
             # Get a random room and a random mob in a spawnable space in the room
             room = random.choice(world.getRooms())
             new_mob = random.choice(mobs)(self.entities, room.getSpawnableSpace())
@@ -25,7 +25,7 @@ class EntityController:
 
     def spawnItems(self,items,world):
         count = 0
-        while count < 2 * world.level:
+        while count < 4 * world.level:
             room = random.choice(world.getRooms())
             new_item = random.choice(items).drop(room.getSpawnableSpace())
 
@@ -36,7 +36,7 @@ class EntityController:
 
     def spawnChest(self, game, itemManager, world):
         count = 0
-        while count < 5 * world.level:
+        while count < 3 * world.level:
             room = random.choice(world.getRooms())
             corners = random.choice(room.getCornerTiles()[:1]) # Get top corners only and select random corner after
             chest = Chest(game, itemManager, self.entities, (corners[0] * settings.TILE_SIZE[0], corners[1] * settings.TILE_SIZE[1]))

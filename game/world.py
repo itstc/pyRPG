@@ -13,7 +13,7 @@ class World:
     EXIT = 5
 
     def __init__(self, game, width, height):
-        self.level = 1
+        self.level = 5
 
         self.size_x = width
         self.size_y = height
@@ -26,7 +26,10 @@ class World:
 
 
     def setTile(self, x, y, tile):
-        self.mapArr[y][x] = tile
+        try:
+            self.mapArr[y][x] = tile
+        except:
+            pass
 
     def randomizeTiles(self, chance, base, new):
 
@@ -256,14 +259,14 @@ class World:
 class Forest(World):
 
     def __init__(self, game):
-        super().__init__(game, 64, 64)
+        super().__init__(game, 32, 32)
 
         self.mapArr = [[self.randomizeTiles(45, Forest.WALL, Forest.WATER) for x in range(self.size_x)] for y in range(self.size_y)]
 
         for i in range(10):
             self.cellGeneration(Forest.WALL, Forest.WATER)
 
-        checkpoints = [(random.randrange(self.size_x), random.randrange(self.size_y)) for i in range(5)]
+        checkpoints = [(random.randrange(self.size_x), random.randrange(self.size_y)) for i in range(3)]
 
         for i in range(3):
             checkpoints = self.spreadPoints(checkpoints)

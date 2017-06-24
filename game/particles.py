@@ -1,5 +1,5 @@
 import pygame as pg
-import ui
+import ui, util
 
 class BouncyText(ui.StringRenderer):
     critical = pg.Color(236,208,120)
@@ -10,13 +10,13 @@ class BouncyText(ui.StringRenderer):
         self.host = host
         self.value = value
         self.position = list(position)
-        self.position[0] -= self.getStringSize(value,16*scale)[0] // 2
+        self.position[0] -= self.getStringSize(value, scale)[0] // 2
 
         self.fg = state
         self.bg = back
 
         self.alive = True
-        self.lifeTime = 500
+        self.lifeTime = 30
 
     def update(self,dt):
         if self.alive:
@@ -24,21 +24,22 @@ class BouncyText(ui.StringRenderer):
             if self.lifeTime <= 0:
                 self.alive = False
 
-            self.position[1] -= (0.01 * dt) * dt
+            self.position[1] -= 1.5 * dt**2
         else:
             self.host.statQueue.remove(self)
 
     def draw(self,surface,camera):
         ox = self.position[0] + 3
         if self.alive:
-            self.drawString(surface,self.value,camera.applyOnPosition([ox,self.position[1]]),16 * self.scale,self.bg)
-            self.drawString(surface,self.value,camera.applyOnPosition([self.position[0],self.position[1]]),16 * self.scale,self.fg)
+            self.drawString(surface,self.value,camera.applyOnPosition([ox,self.position[1]]),1 * self.scale,self.bg)
+            self.drawString(surface,self.value,camera.applyOnPosition([self.position[0],self.position[1]]),1 * self.scale,self.fg)
 
 
 class FadingText(ui.StringRenderer):
     def __init__(self, string, position, scale = 1, time = 1500, fg = pg.Color(250,250,250), bg = pg.Color(32,32,32)):
+        super().__init__()
         self.time = time
-        self.string_size = self.getStringSize(string, 16 * scale)
+        self.string_size = self.getStringSize(string, scale)
         self.bg_display = self.getStringAsSurface(string, scale, bg)
         self.fg_display = self.getStringAsSurface(string, scale, fg)
         self.size = self.bg_display.get_size()

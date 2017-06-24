@@ -25,7 +25,7 @@ class AI(mobs.Mob):
 class AI_State():
     def __init__(self):
         self.ai_direction = None
-        self.ai_move_time = 500
+        self.ai_move_time = 60
         self.next_move = self.ai_move_time
 
 class Wander(AI_State):
@@ -48,7 +48,7 @@ class Wander(AI_State):
 
             self.next_move = self.ai_move_time
 
-        move_speed = 0.01 * dt**2
+        move_speed = 1 * dt**2
 
         # Check if ai wants to move
         if self.current_option == 'move':
@@ -72,17 +72,17 @@ class Goblin(AI):
         size = (64,64)
         sheet = sprite.Spritesheet(settings.MOBSHEET)
         states = {
-            'idle_left': sprite.AnimatedSprite(sheet, [(0, 0)], [16, 16], size, 800),
-            'idle_right': sprite.AnimatedSprite(sheet, [(0, 1)], [16, 16], size, 800),
-            'walk_left':sprite.AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0), (3, 0)], [16, 16],size,250),
-            'walk_right':sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1), (3, 1)], [16, 16],size,250),
-            'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0), (6, 0)], [16, 16],size,500),
-            'attack_right':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1), (6, 1)], [16, 16],size,500)
+            'idle_left': sprite.AnimatedSprite(sheet, [(0, 0)], [16, 16], size, 30),
+            'idle_right': sprite.AnimatedSprite(sheet, [(0, 1)], [16, 16], size, 30),
+            'walk_left':sprite.AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0), (3, 0)], [16, 16],size,30),
+            'walk_right':sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1), (3, 1)], [16, 16],size,30),
+            'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0), (6, 0)], [16, 16],size,60),
+            'attack_right':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1), (6, 1)], [16, 16],size,60)
         }
 
         super().__init__(group, states, size, pos, 25, 8)
-        self.maxcd = 1500
-        self.cooldown = 1500
+        self.maxcd = 90
+        self.cooldown = 90
 
     def update(self,dt):
         super().update(dt)
@@ -94,17 +94,17 @@ class Skeleton(AI):
         size = (64,128)
         sheet = sprite.Spritesheet(settings.MOBSHEET)
         states = {
-            'idle_left': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 800),
-            'idle_right': sprite.AnimatedSprite(sheet, [(2,1), (3,1)], [16, 32], size, 800),
-            'walk_left': sprite.AnimatedSprite(sheet, [(0, 1), (1, 1)], [16, 32], size, 800),
-            'walk_right': sprite.AnimatedSprite(sheet, [(2, 1), (3, 1)], [16, 32], size, 800),
-            'attack_left': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 1000),
-            'attack_right': sprite.AnimatedSprite(sheet, [(2,1), (3,1)], [16, 32], size, 1000)
+            'idle_left': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 30),
+            'idle_right': sprite.AnimatedSprite(sheet, [(2,1), (3,1)], [16, 32], size, 30),
+            'walk_left': sprite.AnimatedSprite(sheet, [(0, 1), (1, 1)], [16, 32], size, 60),
+            'walk_right': sprite.AnimatedSprite(sheet, [(2, 1), (3, 1)], [16, 32], size, 60),
+            'attack_left': sprite.AnimatedSprite(sheet, [(0,1), (1,1)], [16, 32], size, 60),
+            'attack_right': sprite.AnimatedSprite(sheet, [(2,1), (3,1)], [16, 32], size, 60)
         }
 
         super().__init__(group, states, size, pos, 30, 10)
-        self.maxcd = 1500
-        self.cooldown = 1500
+        self.maxcd = 90
+        self.cooldown = 90
 
     def update(self,dt):
         super().update(dt)

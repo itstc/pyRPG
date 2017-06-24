@@ -16,7 +16,7 @@ class Projectile(pg.sprite.Sprite):
         self.end = (pos[0] + range * math.cos(angle), pos[1] + range * math.sin(angle))
         self.rate = (speed * math.cos(angle), speed * math.sin(angle))
 
-        self.time = 1500
+        self.time = 60
 
         self.fov = None
 
@@ -38,7 +38,7 @@ class Projectile(pg.sprite.Sprite):
 
 class Arrow(Projectile):
     def __init__(self, host, angle, pos):
-        super().__init__(pg.transform.scale(sprite.Spritesheet(settings.ATTACKSHEET).getSprite((16, 16), (1, 0)), (64, 32)), angle, pos, 500, 0.5)
+        super().__init__(pg.transform.scale(sprite.Spritesheet(settings.ATTACKSHEET).getSprite((16, 16), (1, 0)), (64, 32)), angle, pos, 500, 6)
 
         self.host = host
         self.damage = 6

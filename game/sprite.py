@@ -49,8 +49,26 @@ class AnimatedSprite:
         self.time = 0
         self.frame = 0
 
+    def getFrame(self, frame):
+        try:
+            return self.images[frame]
+        except:
+            return self.images[-1]
+
     def currentFrame(self):
         return self.images[self.frame]
+
+class animationOffset():
+
+    def __init__(self, sequence):
+        self.sequence = sequence
+
+    def getFrame(self, frame):
+        try:
+            return self.sequence[frame]
+        except:
+            return self.sequence[-1]
+
 
 
 class EntityGroup(pg.sprite.Group):
@@ -87,7 +105,7 @@ class EntityGroup(pg.sprite.Group):
         surface_blit = surface.blit
 
         # Sorts renderables by y position in ascending order
-        self.renderables = sorted([spr for spr in sprites if camera.isVisible(spr.rect.center) or isinstance(spr,mobs.Player)], key = lambda spr: spr.rect.bottom)
+        self.renderables = sorted([spr for spr in sprites if camera.isVisible(spr.rect.center)], key = lambda spr: spr.rect.bottom)
 
         for spr in self.renderables:
             # Draws sprite

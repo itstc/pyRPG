@@ -40,7 +40,8 @@ class Chest(GameObject):
         self.opened = False
 
         self.inventory = inventory.Inventory(self, 3)
-        self.inventory.addItem(self.items.getItem(0))
+        for i in range(3):
+            self.inventory.addItem(self.items.getRandomItem())
 
     def interact(self):
         if not self.opened:

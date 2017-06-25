@@ -260,15 +260,6 @@ class Player(Mob):
                 'weapon': None
             }
 
-            self.sprite_offsets = {
-                'idle_left': sprite.animationOffset([(16, 16)]),
-                'idle_right': sprite.animationOffset([(-16, 16)]),
-                'walk_left': sprite.animationOffset([(16, 16)]),
-                'walk_right': sprite.animationOffset([(-16, 16)]),
-                'attack_left': sprite.animationOffset([(16, 16), (-8, 0), (-8, 8)]),
-                'attack_right': sprite.animationOffset([(-16, 16), (8, 0), (8, 8)])
-            }
-
         def unequipItem(self, slot):
             if self.equipment[slot]:
                 self.equipment[slot].unequip(self.mob)
@@ -278,10 +269,21 @@ class Player(Mob):
         def draw(self,surface,camera):
             super().draw(surface, camera)
 
+            if self.equipment['head']:
+                head_sprite = self.equipment['head'].sprite[self.mob.action.current].getFrame(self.mob.action.currentFrame)
+                surface.blit(head_sprite, camera.applyOnRect(self.mob.rect))
+
+            if self.equipment['body']:
+                body_sprite = self.equipment['body'].sprite[self.mob.action.current].getFrame(self.mob.action.currentFrame)
+                surface.blit(body_sprite, camera.applyOnRect(self.mob.rect))
+
+            if self.equipment['leg']:
+                leg_sprite = self.equipment['leg'].sprite[self.mob.action.current].getFrame(self.mob.action.currentFrame)
+                surface.blit(leg_sprite, camera.applyOnRect(self.mob.rect))
+
             if self.equipment['weapon']:
-                weapon_offset = self.sprite_offsets[self.mob.action.current].getFrame(self.mob.action.currentFrame)
                 weapon_sprite = self.equipment['weapon'].sprite[self.mob.action.current].getFrame(self.mob.action.currentFrame)
-                surface.blit(weapon_sprite, camera.applyOnRect(self.mob.rect.move(weapon_offset)))
+                surface.blit(weapon_sprite, camera.applyOnRect(self.mob.rect))
 
     class PlayerActions(Mob.Actions):
         def __init__(self,mob,images):

@@ -58,17 +58,6 @@ class AnimatedSprite:
     def currentFrame(self):
         return self.images[self.frame]
 
-class animationOffset():
-
-    def __init__(self, sequence):
-        self.sequence = sequence
-
-    def getFrame(self, frame):
-        try:
-            return self.sequence[frame]
-        except:
-            return self.sequence[-1]
-
 
 
 class EntityGroup(pg.sprite.Group):

@@ -14,5 +14,11 @@
   "6": {"class": "Consumable", "name": "Golden Branch", "desc":["A stackable item that","increases a players", "defence by 5"],
         "rarity":"super_rare", "imageData": [[8, 8], [0, 1]], "attribute": 5},
   "7": {"class": "Consumable", "name": "Scroll of Attack", "desc":["A scroll that","increases a players", "attack by 15"],
-        "rarity":"super_rare", "imageData": [[16, 16], [0, 1]], "attribute": 15}
+        "rarity":"super_rare", "imageData": [[16, 16], [0, 1]], "attribute": 15},
+  "8": {"class": "Head", "name": "Knight Helmet", "desc":["A steel helmet","that once belonged", "to a knight."],
+        "rarity":"uncommon", "imageData": [[8, 8], [1, 1]], "spriteID": 0, "attribute": 5},
+  "9": {"class": "Body", "name": "Knight Chestplate", "desc":["A steel chestplate","that once belonged", "to a knight."],
+        "rarity":"uncommon", "imageData": [[8, 8], [2, 1]], "spriteID": 0, "attribute": 15},
+  "10": {"class": "Leg", "name": "Knight Plateleg", "desc":["A steel plateleg","that once belonged", "to a knight."],
+        "rarity":"rare", "imageData": [[8, 8], [3, 1]], "spriteID": 0, "attribute": 10}
 }

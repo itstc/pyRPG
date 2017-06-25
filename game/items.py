@@ -34,19 +34,11 @@ class ItemSprite(pg.sprite.Sprite):
         self.position = list(pos)
         self.rect = pg.Rect(pos,self.size)
         self.fov = []
-        self.bouncing = True
-        self.time = 60
 
         self.item = item
 
     def update(self,dt):
         self.rect.topleft = self.position
-        self.time -= dt
-
-        if self.time <= 0:
-            self.bouncing = not self.bouncing
-            self.bounce(dt,self.bouncing)
-            self.time = 60
 
         for obj in self.fov:
             if self.rect.colliderect(obj.rect) and isinstance(obj,Player):
@@ -55,10 +47,6 @@ class ItemSprite(pg.sprite.Sprite):
 
     def draw(self, surface, camera):
         pass
-
-    def bounce(self, dt, bounce):
-        if bounce: self.position[1] -= (dt/1000) * 40
-        else: self.position[1] += (dt/1000) * 40
 
 class StackableItem(Item):
     stackable = True
@@ -90,6 +78,65 @@ class Equipment(Item, UsableItem):
     def __init__(self, name, desc, rarity, imageData, spriteID, attribute):
         super().__init__(name, desc, rarity, imageData)
         self.attribute = attribute
+
+    def use(self,player):
+        player.stats.ad += self.attribute
+
+    def unequip(self, player):
+        player.stats.ad -= self.attribute
+
+class Head(Equipment):
+    equipment_type = 'head'
+
+    def __init__(self, name, desc, rarity, imageData, spriteID, attribute):
+        super().__init__(name,desc,rarity,imageData, spriteID, attribute)
+        sheet = sprite.Spritesheet(settings.ARMORSPRITE)
+        self.sprite = {
+            'idle_left': sprite.AnimatedSprite(sheet, [(0, spriteID)], (16, 16), (64, 64), 12),
+            'idle_right': sprite.AnimatedSprite(sheet, [(1, spriteID)], (16, 16), (64, 64), 12),
+            'walk_left': sprite.AnimatedSprite(sheet, [(0, spriteID)], (16, 16), (64, 64), 12),
+            'walk_right': sprite.AnimatedSprite(sheet, [(1, spriteID)], (16, 16), (64, 64), 12),
+            'attack_left': sprite.AnimatedSprite(sheet, [(0, spriteID)], (16, 16), (64, 64), 9),
+            'attack_right': sprite.AnimatedSprite(sheet, [(1, spriteID)], (16, 16), (64, 64), 9)
+        }
+
+class Body(Equipment):
+    equipment_type = 'body'
+
+    def __init__(self, name, desc, rarity, imageData, spriteID, attribute):
+        super().__init__(name,desc,rarity,imageData, spriteID, attribute)
+        sheet = sprite.Spritesheet(settings.ARMORSPRITE)
+        self.sprite = {
+            'idle_left': sprite.AnimatedSprite(sheet, [(2, spriteID)], (16, 16), (64, 64), 12),
+            'idle_right': sprite.AnimatedSprite(sheet, [(3, spriteID)], (16, 16), (64, 64), 12),
+            'walk_left': sprite.AnimatedSprite(sheet, [(2, spriteID)], (16, 16), (64, 64), 12),
+            'walk_right': sprite.AnimatedSprite(sheet, [(3, spriteID)], (16, 16), (64, 64), 12),
+            'attack_left': sprite.AnimatedSprite(sheet, [(2, spriteID), (4, spriteID), (5, spriteID)], (16, 16), (64, 64), 9),
+            'attack_right': sprite.AnimatedSprite(sheet, [(3, spriteID), (6, spriteID), (7, spriteID)], (16, 16), (64, 64), 9)
+        }
+
+class Leg(Equipment):
+    equipment_type = 'leg'
+
+    def __init__(self, name, desc, rarity, imageData, spriteID, attribute):
+        super().__init__(name,desc,rarity,imageData, spriteID, attribute)
+        sheet = sprite.Spritesheet(settings.ARMORSPRITE)
+        self.sprite = {
+            'idle_left': sprite.AnimatedSprite(sheet, [(8, spriteID)], (16, 16), (64, 64), 12),
+            'idle_right': sprite.AnimatedSprite(sheet, [(9, spriteID)], (16, 16), (64, 64), 12),
+            'walk_left': sprite.AnimatedSprite(sheet, [(8, spriteID),(10, spriteID),(11, spriteID),(12, spriteID)], (16, 16), (64, 64), 12),
+            'walk_right': sprite.AnimatedSprite(sheet, [(9, spriteID),(13, spriteID),(14, spriteID),(15, spriteID)], (16, 16), (64, 64), 12),
+            'attack_left': sprite.AnimatedSprite(sheet, [(8, spriteID)], (16, 16), (64, 64), 9),
+            'attack_right': sprite.AnimatedSprite(sheet, [(9, spriteID)], (16, 16), (64, 64), 9)
+        }
+
+class Weapon(Equipment):
+
+    type = 'equipment'
+    equipment_type = 'weapon'
+
+    def __init__(self,name, desc, rarity, imageData, spriteID, attribute):
+        super().__init__(name,desc,rarity,imageData, spriteID, attribute)
         sheet = sprite.Spritesheet(settings.ITEMSPRITE)
         self.sprite = {
             'idle_left': sprite.AnimatedSprite(sheet, [(0, spriteID)], (16, 16), (64, 64), 12),
@@ -100,27 +147,20 @@ class Equipment(Item, UsableItem):
             'attack_right': sprite.AnimatedSprite(sheet, [(1, spriteID),(4, spriteID),(5, spriteID)], (16, 16), (64, 64), 9)
         }
 
-class Weapon(Equipment):
-
-    type = 'equipment'
-    equipment_type = 'weapon'
-
-    def __init__(self,name, desc, rarity, imageData, spriteID, attribute):
-        super().__init__(name,desc,rarity,imageData, spriteID, attribute)
-
-    def use(self,player):
-        player.stats.ad += self.attribute
-
-    def unequip(self, player):
-        player.stats.ad -= self.attribute
-
 class ItemController():
     itemClass = {'Consumable': Consumable,
+                 'Head': Head,
+                 'Body': Body,
+                 'Leg': Leg,
                  'Weapon': Weapon}
 
     def __init__(self,file):
+        self.amount = 0
         with open(file,'r') as f:
             self.data = json.load(f)
+
+            for i in self.data:
+                self.amount += 1
 
     def getItem(self,id):
         # Creates a item class for the item based on 'class' key in id
@@ -135,7 +175,11 @@ class ItemController():
         return itemClass
 
     def getItems(self):
-        return [self.getItem(id) for id in range(8)]
+        return [self.getItem(id) for id in range(self.amount)]
+
+    def getRandomItem(self):
+        return self.getItem(random.randrange(self.amount))
+
 
 
 

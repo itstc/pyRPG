@@ -26,7 +26,7 @@ class Game:
         self.player = mobs.Player(self.entityManager.entities, (self.map.spawnx,self.map.spawny))
         self.player.inventory.addItems([self.itemManager.getItem(0)]*10)
 
-        self.entityManager.spawnMobs([ai.Goblin, ai.Skeleton],self.map)
+        self.entityManager.spawnMobs([ai.Goblin, ai.Barbarian],self.map)
         self.entityManager.spawnItems(self.itemManager.getItems(),self.map)
         self.entityManager.entities.add(self.player)
 
@@ -105,7 +105,7 @@ class Game:
         self.events.clear()
 
         self.map = world.Forest(self)
-        self.entityManager.spawnMobs([ai.Goblin, ai.Skeleton],self.map)
+        self.entityManager.spawnMobs([ai.Goblin, ai.Barbarian],self.map)
         self.entityManager.spawnItems(self.itemManager.getItems(), self.map)
         self.entityManager.spawnChest(self, self.itemManager, self.map)
 

@@ -18,6 +18,7 @@ class AI(mobs.Mob):
         for obj in self.fov:
             if isinstance(obj,mobs.Player) and self.getAttackRange(self.action.direction).colliderect(obj):
                 if not self.action['attack']:
+                    self.action['walk'] = False
                     self.action.attack(obj)
 
 
@@ -76,8 +77,8 @@ class Goblin(AI):
             'idle_right': sprite.AnimatedSprite(sheet, [(0, 1)], [16, 16], size, 30),
             'walk_left':sprite.AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0), (3, 0)], [16, 16],size,30),
             'walk_right':sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1), (3, 1)], [16, 16],size,30),
-            'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0), (6, 0)], [16, 16],size,60),
-            'attack_right':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1), (6, 1)], [16, 16],size,60)
+            'attack_left':sprite.AnimatedSprite(sheet, [(4, 0), (5, 0), (6, 0)], [16, 16],size,30),
+            'attack_right':sprite.AnimatedSprite(sheet, [(4, 1), (5, 1), (6, 1)], [16, 16],size,30)
         }
 
         super().__init__(group, states, size, pos, 25, 8)
@@ -105,6 +106,27 @@ class Skeleton(AI):
         super().__init__(group, states, size, pos, 30, 10)
         self.maxcd = 90
         self.cooldown = 90
+
+    def update(self,dt):
+        super().update(dt)
+
+class Barbarian(AI):
+    name = 'Barbarian'
+    def __init__(self, group, pos):
+        size = (64,64)
+        sheet = sprite.Spritesheet(settings.MOBSHEET)
+        states = {
+            'idle_left': sprite.AnimatedSprite(sheet, [(0, 4)], [16, 16], size, 30),
+            'idle_right': sprite.AnimatedSprite(sheet, [(0, 5)], [16, 16], size, 30),
+            'walk_left':sprite.AnimatedSprite(sheet, [(0, 4), (1, 4), (2, 4), (3, 4)], [16, 16],size,30),
+            'walk_right':sprite.AnimatedSprite(sheet, [(0, 5), (1, 5), (2, 5), (3, 5)], [16, 16],size,30),
+            'attack_left':sprite.AnimatedSprite(sheet, [(4, 4), (5, 4), (6, 4)], [16, 16],size,15),
+            'attack_right':sprite.AnimatedSprite(sheet, [(4, 5), (5, 5), (6, 5)], [16, 16],size,15)
+        }
+
+        super().__init__(group, states, size, pos, 45, 8)
+        self.maxcd = 45
+        self.cooldown = 45
 
     def update(self,dt):
         super().update(dt)

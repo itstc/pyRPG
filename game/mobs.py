@@ -219,7 +219,7 @@ class Player(Mob):
             'walk_left':sprite.AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0), (3, 0)], [16,16],size,12),
             'walk_right':sprite.AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1), (3, 1)], [16,16],size,12),
             'attack_left':sprite.AnimatedSprite(sheet, [(0, 0), (4, 0), (5, 0)], [16,16],size, 15),
-            'attack_right':sprite.AnimatedSprite(sheet, [(1, 1), (4, 1), (5, 1)], [16,16],size, 15)
+            'attack_right':sprite.AnimatedSprite(sheet, [(0, 1), (4, 1), (5, 1)], [16,16],size, 15)
                        }
 
         super().__init__(group, states, size, pos, 100, 10)
@@ -269,6 +269,7 @@ class Player(Mob):
         def draw(self,surface,camera):
             super().draw(surface, camera)
 
+            # Draw Equipment on Player Here
             if self.equipment['head']:
                 head_sprite = self.equipment['head'].sprite[self.mob.action.current].getFrame(self.mob.action.currentFrame)
                 surface.blit(head_sprite, camera.applyOnRect(self.mob.rect))

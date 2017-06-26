@@ -13,7 +13,7 @@ class World:
     EXIT = 5
 
     def __init__(self, game, width, height):
-        self.level = 5
+        self.level = 1
 
         self.size_x = width
         self.size_y = height
@@ -268,7 +268,7 @@ class Forest(World):
 
         checkpoints = [(random.randrange(self.size_x), random.randrange(self.size_y)) for i in range(3)]
 
-        for i in range(3):
+        for i in range(5):
             checkpoints = self.spreadPoints(checkpoints)
 
         for i in range(len(checkpoints)):

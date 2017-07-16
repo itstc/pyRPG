@@ -30,8 +30,8 @@ class Chest(GameObject):
     collidable = True
 
     def __init__(self, game, item_controller, sprite_group, pos):
-        self.states = [sprite.Spritesheet(settings.MOBSHEET).getSprite((16, 16), (0, 7)),
-                       sprite.Spritesheet(settings.MOBSHEET).getSprite((16, 16), (1, 7))]
+        self.states = [sprite.Spritesheet(settings.MOBSHEET).getSprite((16, 16), (0, 8)),
+                       sprite.Spritesheet(settings.MOBSHEET).getSprite((16, 16), (1, 8))]
 
         super().__init__(sprite_group, self.states[0], pos, (64,64))
 

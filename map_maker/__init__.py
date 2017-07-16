@@ -1,4 +1,4 @@
-import pygame, os, random, math
+import pygame, os, random, math, numpy
 
 class Spritesheet:
     def __init__(self,path):

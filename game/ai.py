@@ -131,4 +131,25 @@ class Barbarian(AI):
     def update(self,dt):
         super().update(dt)
 
+class Bear(AI):
+    name = 'Bear'
+    def __init__(self, group, pos):
+        size = (64,64)
+        sheet = sprite.Spritesheet(settings.MOBSHEET)
+        states = {
+            'idle_left': sprite.AnimatedSprite(sheet, [(0, 6)], [16, 16], size, 30),
+            'idle_right': sprite.AnimatedSprite(sheet, [(0, 7)], [16, 16], size, 30),
+            'walk_left':sprite.AnimatedSprite(sheet, [(0, 6), (1, 6), (2, 6), (3, 6)], [16, 16],size,30),
+            'walk_right':sprite.AnimatedSprite(sheet, [(0, 7), (1, 7), (2, 7), (3, 7)], [16, 16],size,30),
+            'attack_left':sprite.AnimatedSprite(sheet, [(4, 6), (5, 6), (6, 6)], [16, 16],size,40),
+            'attack_right':sprite.AnimatedSprite(sheet, [(4, 7), (5, 7), (6, 7)], [16, 16],size,40)
+        }
+
+        super().__init__(group, states, size, pos, 100, 15)
+        self.maxcd = 120
+        self.cooldown = 120
+
+    def update(self,dt):
+        super().update(dt)
+
 

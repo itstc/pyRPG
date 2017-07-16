@@ -269,6 +269,9 @@ class Player(Mob):
         def draw(self,surface,camera):
             super().draw(surface, camera)
 
+            if self.statQueue:
+                camera.shake(1, self.mob.action.direction)
+
             # Draw Equipment on Player Here
             if self.equipment['head']:
                 head_sprite = self.equipment['head'].sprite[self.mob.action.current].getFrame(self.mob.action.currentFrame)

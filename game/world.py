@@ -1,5 +1,5 @@
 import pygame as pg
-import math, random
+import math, random, numpy
 import settings, tile
 from pytmx.util_pygame import load_pygame
 
@@ -21,7 +21,7 @@ class World:
         self.game = game
         self.tileset = tile.TileManager()
 
-        self.mapArr = []
+        self.mapArr = numpy.array([[0]*width]*height)
         self.roomList = []
 
 

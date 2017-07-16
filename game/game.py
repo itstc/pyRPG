@@ -1,6 +1,6 @@
 import pygame as pg
 import random
-import settings, mobs, items, sprite, ui, world, controller, particles, ai, util
+import settings, mobs, items, sprite, ui, world, controller, particles, ai, util, math
 from events import EventListener
 
 
@@ -26,7 +26,7 @@ class Game:
         self.player = mobs.Player(self.entityManager.entities, (self.map.spawnx,self.map.spawny))
         self.player.inventory.addItems([self.itemManager.getItem(0)]*10)
 
-        self.entityManager.spawnMobs([ai.Goblin, ai.Barbarian],self.map)
+        self.entityManager.spawnMobs([ai.Goblin, ai.Barbarian, ai.Bear],self.map)
         self.entityManager.spawnItems(self.itemManager.getItems(),self.map)
         self.entityManager.entities.add(self.player)
 
@@ -58,7 +58,7 @@ class Game:
 
     def update(self,dt):
         self.entityManager.update(self.map,dt)
-        self.camera.update(self.player)
+        self.camera.update(self.player, dt)
 
         if self.gui.showing:
             self.gui.update()
@@ -105,7 +105,7 @@ class Game:
         self.events.clear()
 
         self.map = world.Forest(self)
-        self.entityManager.spawnMobs([ai.Goblin, ai.Barbarian],self.map)
+        self.entityManager.spawnMobs([ai.Goblin, ai.Barbarian, ai.Bear],self.map)
         self.entityManager.spawnItems(self.itemManager.getItems(), self.map)
         self.entityManager.spawnChest(self, self.itemManager, self.map)
 
@@ -131,6 +131,9 @@ class Camera:
         self.view_x = 0
         self.view_y = 0
 
+        self.shaking = False
+        self.recoveryRate = 0.1
+
     def apply(self, entity):
         offset = (-self.rect.left,-self.rect.top)
         return entity.rect.move(offset)
@@ -148,9 +151,9 @@ class Camera:
         y = pos[1] - self.rect.top
         return (x,y)
 
-    def update(self, player):
-        self.view_x =  util.lerp(self.view_x, player.rect.left - self.windowSize[0]//2, 0.1)
-        self.view_y =  util.lerp(self.view_y, player.rect.top - self.windowSize[1]//2, 0.1)
+    def update(self, player, dt):
+        self.view_x = util.lerp(self.view_x, player.rect.left - self.windowSize[0] // 2, self.recoveryRate)
+        self.view_y = util.lerp(self.view_y, player.rect.top - self.windowSize[1] // 2, self.recoveryRate)
 
         self.view_x = max(0,self.view_x)
         self.view_y = max(0,self.view_y)
@@ -164,6 +167,21 @@ class Camera:
 
     def drawRectangle(self,surface,color,rect):
         pg.draw.rect(surface,color,self.applyOnRect(rect),1)
+
+    def toggleShake(self):
+        self.shaking = not self.shaking
+
+    def shake(self, time, direction):
+        if time <= 0:
+            self.toggleShake()
+            return
+        else:
+            if direction == 'right':
+                self.view_x += math.sin(2 * time) * (1 - time / 3)
+            else:
+                self.view_x -= math.sin(2 * time) * (1 - time / 3)
+
+            self.shake(time - 0.5, direction)
 
 class HUD(ui.StringRenderer):
     sprite_size = [16,16]

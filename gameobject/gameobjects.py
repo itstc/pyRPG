@@ -1,5 +1,8 @@
 import pygame as pg
-import settings, sprite, items, inventory, ui
+from game.settings import MOBSHEET
+from sprite.sprite import Spritesheet
+from item.inventory import Inventory
+from ui.ui import LootUI
 
 class GameObject(pg.sprite.Sprite):
 
@@ -30,8 +33,8 @@ class Chest(GameObject):
     collidable = True
 
     def __init__(self, game, item_controller, sprite_group, pos):
-        self.states = [sprite.Spritesheet(settings.MOBSHEET).getSprite((16, 16), (0, 8)),
-                       sprite.Spritesheet(settings.MOBSHEET).getSprite((16, 16), (1, 8))]
+        self.states = [Spritesheet(MOBSHEET).getSprite((16, 16), (0, 8)),
+                       Spritesheet(MOBSHEET).getSprite((16, 16), (1, 8))]
 
         super().__init__(sprite_group, self.states[0], pos, (64,64))
 
@@ -39,7 +42,7 @@ class Chest(GameObject):
         self.items = item_controller
         self.opened = False
 
-        self.inventory = inventory.Inventory(self, 3)
+        self.inventory = Inventory(self, 3)
         for i in range(3):
             self.inventory.addItem(self.items.getRandomItem())
 
@@ -48,5 +51,5 @@ class Chest(GameObject):
             self.opened = True
             self.image = pg.transform.scale(self.states[1], (64,64))
 
-        self.game.gui = ui.LootUI(self.game.windowScreen, self.game.player.inventory, self.inventory,
+        self.game.gui = LootUI(self.game.windowScreen, self.game.player.inventory, self.inventory,
                                   (self.game.windowSize[0] // 2, self.game.windowSize[1] // 2))

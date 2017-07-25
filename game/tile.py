@@ -1,19 +1,21 @@
-import random, settings, sprite
 import pygame as pg
+
+from .settings import TILESHEET, TILE_SIZE
+from sprite.sprite import Spritesheet
 
 class TileManager():
 
     sprite_size = (16,16)
 
     def __init__(self):
-        self.spritesheet = sprite.Spritesheet(settings.TILESHEET)
+        self.spritesheet = Spritesheet(TILESHEET)
         self.tileset = {
-            0: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (0, 2)), settings.TILE_SIZE),
-            1: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (0, 0)), settings.TILE_SIZE),
-            2: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (0, 1)), settings.TILE_SIZE),
-            3: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (0, 3)), settings.TILE_SIZE),
-            4: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (1, 0)), settings.TILE_SIZE),
-            5: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (5, 0)), settings.TILE_SIZE)
+            0: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (0, 2)), TILE_SIZE),
+            1: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (0, 0)), TILE_SIZE),
+            2: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (0, 1)), TILE_SIZE),
+            3: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (0, 3)), TILE_SIZE),
+            4: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (1, 0)), TILE_SIZE),
+            5: pg.transform.scale(self.spritesheet.getSprite(TileManager.sprite_size, (5, 0)), TILE_SIZE)
         }
 
     def __getitem__(self, item):

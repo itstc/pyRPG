@@ -1,7 +1,7 @@
 import pygame as pg
-from util import Polygon
-import math
-import ui
+
+from util.util import Polygon
+
 
 class EventListener:
 

@@ -1,5 +1,5 @@
 import pygame as pg
-from sprite import Spritesheet
+import os
 
 # Window Size
 WINDOW_SIZE = (1280,720)
@@ -16,3 +16,5 @@ UISHEET = 'ui.png'
 HUDSHEET = 'hud.png'
 
 TILE_SIZE = (64,64)
+
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))

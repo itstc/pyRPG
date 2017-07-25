@@ -1,33 +1,33 @@
 import pygame as pg
-import sprite, settings
-import random
+from sprite.sprite import AlphaSpritesheet, Spritesheet
 
-class StringRenderer():
+
+class StringRenderer:
 
     def __init__(self):
         self.font = pg.font.Font('res/gamefont.ttf', 16)
 
     def getStringAsSurface(self, string, scale = 1, color = pg.Color('white')):
         size = self.font.size(str(string))
-        return pg.transform.scale(self.font.render(str(string),1,color), tuple(map(lambda t: t * scale, size)))
+        return pg.transform.scale(self.font.render(str(string), 1, color), tuple(map(lambda t: t * scale, size)))
 
-    def drawString(self,surface, string, position, size = 1 ,color = pg.Color(224,228,204)):
+    def drawString(self,surface, string, position, size=1 ,color=pg.Color(224, 228, 204)):
         text_size = self.font.size(str(string))
-        text = pg.transform.scale(self.font.render(str(string),1,color), list(map(lambda t: t * size, text_size)))
-        surface.blit(text,position)
+        text = pg.transform.scale(self.font.render(str(string), 1, color), list(map(lambda t: t * size, text_size)))
+        surface.blit(text, position)
 
     def drawStringIndependent(self,surface, string, position, size = 1 ,color = pg.Color(224,228,204)):
         font = pg.font.Font('res/gamefont.ttf', 16)
         text_size = font.size(str(string))
-        text = pg.transform.scale(font.render(str(string),1,color), list(map(lambda t: t * size, text_size)))
-        surface.blit(text,position)
+        text = pg.transform.scale(font.render(str(string), 1, color), list(map(lambda t: t * size, text_size)))
+        surface.blit(text, position)
 
     def drawStrings(self, surface, strings, position, size = 1, color = pg.Color(224,228,204)):
         for i in range(len(strings)):
-            text = self.font.render(str(strings[i]),1,color)
+            text = self.font.render(str(strings[i]), 1, color)
             surface.blit(text, (position[0], position[1] + (i * self.font.size(strings[i])[1])))
 
-    def getStringSize(self,string,size = 1):
+    def getStringSize(self, string, size = 1):
         return pg.font.Font('res/gamefont.ttf', 16 * size).size(str(string))
 
     def getStringsSize(self,strings):
@@ -46,7 +46,7 @@ class GUI(StringRenderer):
         self.surface = surface
         self.showing = False
         self.active = False
-        self.spritesheet = sprite.AlphaSpritesheet('ui.png')
+        self.spritesheet = AlphaSpritesheet('ui.png')
         self.pressed = False
         self.interface = pg.transform.scale(self.spritesheet.getSprite([32,48],[0,0]),size)
         self.interface.set_alpha(200)
@@ -83,49 +83,18 @@ class GUI(StringRenderer):
 
     def handleEvents(self,event):
         pass
-        """
-        if event.type == pg.MOUSEBUTTONDOWN:
-            self.handleMouseDownEvent(event.pos)
-            self.pressed = True
-        elif event.type == pg.MOUSEBUTTONUP:
-            self.pressed = False
-        elif event.type == pg.MOUSEMOTION:
-            if self.active:
-                # If hovering state is not hovered over
-                if isinstance(self.state,OptionState):
-                    self.state.check(event.pos)
-                elif isinstance(self.state,HoveringState) and not self.selectedSlot.isHovering(event.pos):
-                    self.state = None
-                # If no state check if mouse is over a slot with an item
-                elif not self.state and self.isHoveringSlot(event.pos) and self.selectedSlot.item:
-                        self.state = HoveringState(self.selectedSlot)
-        """
-
 
     def handleMouseDownEvent(self,pos):
         pass
-        """
-        if not self.pressed:
-            if self.state and isinstance(self.state,OptionState) and self.state.isHovering(pos):
-                # If state is OptionState and mouse is hovering
-                self.state.selected.use()
-                self.state = None
-            elif self.state and not self.selectedSlot.isHovering(pos):
-                # If there is a state but mouse is not hovering over slot
-                self.state = None
-            elif self.selectedSlot and self.selectedSlot.item and self.selectedSlot.isHovering(pos):
-                # If selected slot has an item and is being hovered over
-                self.state = OptionState(self.selectedSlot,self)
-        """
 
 class StatsGUI(GUI):
     type = 'main_ui'
 
     colors = {
-        'common': pg.Color(224,228,204),
-        'uncommon': pg.Color(102,255,0),
-        'rare': pg.Color(204,0,0),
-        'super_rare': pg.Color(236,208,120)
+        'common': pg.Color(224, 228, 204),
+        'uncommon': pg.Color(102, 255, 0),
+        'rare': pg.Color(204, 0, 0),
+        'super_rare': pg.Color(236, 208, 120)
     }
 
     equipment_order = ['head', 'body', 'leg', 'weapon']
@@ -136,7 +105,7 @@ class StatsGUI(GUI):
 
 
         self.interface = pg.Surface((384, 384), pg.SRCALPHA, 32)
-        gui_image = pg.transform.scale(self.spritesheet.getSprite([32,32],[0,2]), (384,384))
+        gui_image = pg.transform.scale(self.spritesheet.getSprite([32, 32],[0, 2]), (384, 384))
         gui_image.set_alpha(200)
 
         self.interface.blit(gui_image, (0, 0))
@@ -154,7 +123,7 @@ class StatsGUI(GUI):
             self.equipments[i].update()
 
     def drawFeatures(self):
-        self.textfield.fill(pg.Color(78,77,74,200))
+        self.textfield.fill(pg.Color(78, 77, 74, 200))
 
         self.drawString(self.textfield, 'Health: %i / %i' % (self.player.stats.hp, self.player.stats.maxHP), (0, 0))
         self.drawString(self.textfield, 'Attack: %i' % self.player.stats.ad, (0, 16))
@@ -214,7 +183,7 @@ class StatsGUI(GUI):
             self.position = pos
             self.size = size
             self.item = item
-            self.image = pg.transform.scale(sprite.Spritesheet('ui.png').getSprite([16,16],[2,1]),size)
+            self.image = pg.transform.scale(Spritesheet('ui.png').getSprite([16,16],[2,1]),size)
 
         def isHovering(self,pos):
             return self.rect.collidepoint(pos)
@@ -353,7 +322,7 @@ class InventoryGUI(GUI):
             self.position = pos
             self.size = size
             self.item = item
-            self.image = pg.transform.scale(sprite.Spritesheet('ui.png').getSprite([16,16],[2,1]),size)
+            self.image = pg.transform.scale(Spritesheet('ui.png').getSprite([16,16],[2,1]),size)
 
         def isHovering(self,pos):
             return self.rect.collidepoint(pos)

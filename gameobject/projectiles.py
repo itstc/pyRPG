@@ -1,6 +1,8 @@
 import pygame as pg
 import math
-import settings, sprite, mobs
+
+from game.settings import ATTACKSHEET
+from sprite.sprite import Spritesheet
 
 class Projectile(pg.sprite.Sprite):
 
@@ -38,7 +40,7 @@ class Projectile(pg.sprite.Sprite):
 
 class Arrow(Projectile):
     def __init__(self, host, angle, pos):
-        super().__init__(pg.transform.scale(sprite.Spritesheet(settings.ATTACKSHEET).getSprite((16, 16), (1, 0)), (64, 32)), angle, pos, 500, 6)
+        super().__init__(pg.transform.scale(Spritesheet(ATTACKSHEET).getSprite((16, 16), (1, 0)), (64, 32)), angle, pos, 500, 6)
 
         self.host = host
         self.damage = 6
@@ -50,7 +52,7 @@ class Arrow(Projectile):
             collideBox = obj.rect
 
             if self.rect.colliderect(collideBox) and obj.collidable:
-                if obj.type == 'mob':
+                if obj.type == 'gameobject':
                     obj.stats.hurt(self.damage)
                 return True
 

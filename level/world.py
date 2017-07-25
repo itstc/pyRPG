@@ -1,7 +1,8 @@
 import pygame as pg
 import math, random, numpy
-import settings, tile
-from pytmx.util_pygame import load_pygame
+
+from game.settings import TILE_SIZE
+from game.tile import TileManager
 
 class World:
 
@@ -19,7 +20,7 @@ class World:
         self.size_y = height
 
         self.game = game
-        self.tileset = tile.TileManager()
+        self.tileset = TileManager()
 
         self.mapArr = numpy.array([[0]*width]*height)
         self.roomList = []
@@ -74,8 +75,6 @@ class World:
             self.setTile(new_x, new_y - 1, Forest.GRASS)
 
             current = (new_x, new_y)
-
-        # self.roomList.append(World.Room(self, start[0], start[1], end[0] - start[0], end[1] - start[1]))
 
     def floodFill(self, position, target, new):
         if self.mapArr[position[1]][position[0]] != target:
@@ -160,21 +159,21 @@ class World:
         end = camera.rect.bottomright
 
         # amount of tiles to render on x and y
-        render_x = [start[0] // settings.TILE_SIZE[0], math.ceil(end[0] / settings.TILE_SIZE[0])]
-        render_y = [start[1] // settings.TILE_SIZE[1], math.ceil(end[1] / settings.TILE_SIZE[1])]
+        render_x = [start[0] // TILE_SIZE[0], math.ceil(end[0] / TILE_SIZE[0])]
+        render_y = [start[1] // TILE_SIZE[1], math.ceil(end[1] / TILE_SIZE[1])]
 
         for y in range(max(0,render_y[0]), min(render_y[1], self.size_y)):
             for x in range(max(0,render_x[0]), min(render_x[1], self.size_x)):
-                px = x * settings.TILE_SIZE[0] - start[0]
-                py = y * settings.TILE_SIZE[1] - start[1]
+                px = x * TILE_SIZE[0] - start[0]
+                py = y * TILE_SIZE[1] - start[1]
                 surface.blit(self.tileset[self.mapArr[y][x]], (px,py))
 
     def getCollidableTiles(self, rect):
         collidables = []
         start_pos = rect.topleft
         end_pos =  rect.bottomright
-        render_x = [start_pos[0]//settings.TILE_SIZE[0], end_pos[0]//settings.TILE_SIZE[0]]
-        render_y = [start_pos[1]//settings.TILE_SIZE[1], end_pos[1]//settings.TILE_SIZE[1]]
+        render_x = [start_pos[0]//TILE_SIZE[0], end_pos[0]//TILE_SIZE[0]]
+        render_y = [start_pos[1]//TILE_SIZE[1], end_pos[1]//TILE_SIZE[1]]
 
         for y in range(max(0,render_y[0] - 1), min(render_y[1] + 1,self.size_y)):
             for x in range(max(0,render_x[0] -  1), min(render_x[1] + 1,self.size_x)):
@@ -200,7 +199,7 @@ class World:
         collidable = True
 
         def __init__(self, x, y):
-            self.rect = pg.Rect((x * settings.TILE_SIZE[0], y * settings.TILE_SIZE[1]), settings.TILE_SIZE)
+            self.rect = pg.Rect((x * TILE_SIZE[0], y * TILE_SIZE[1]), TILE_SIZE)
 
     class ExitObject(WorldObject):
 
@@ -240,14 +239,14 @@ class World:
                             x - 1] in floor_tiles and mapData[y][x + 1] in floor_tiles:
                     spawnable = True
 
-            return [x * settings.TILE_SIZE[0], y * settings.TILE_SIZE[1]]
+            return [x * TILE_SIZE[0], y * TILE_SIZE[1]]
 
         def getSurroundingTiles(self, x, y):
             mapData = self.world.mapArr
             return (mapData[y - 1][x], mapData[y + 1][x], mapData[y][x - 1], mapData[y][x + 1])
 
         def getCorner(self):
-            return (self.x1 * settings.TILE_SIZE[0], self.y1 * settings.TILE_SIZE[1])
+            return (self.x1 * TILE_SIZE[0], self.y1 * TILE_SIZE[1])
 
         def getCornerTile(self):
             return random.choice([(self.x1, self.y1), (self.x2, self.y1), (self.x1, self.y2), (self.x2, self.y2)])
@@ -259,7 +258,7 @@ class World:
 class Forest(World):
 
     def __init__(self, game):
-        super().__init__(game, 32, 32)
+        super().__init__(game, 48, 32)
 
         self.mapArr = [[self.randomizeTiles(45, Forest.WALL, Forest.WATER) for x in range(self.size_x)] for y in range(self.size_y)]
 
@@ -283,8 +282,8 @@ class Forest(World):
         for i in range(5):
             self.cellGeneration(Forest.WALL, Forest.WATER)
 
-        self.spawnx = self.roomList[0].center()[0] * settings.TILE_SIZE[0]
-        self.spawny = self.roomList[0].center()[1] * settings.TILE_SIZE[1]
+        self.spawnx = self.roomList[0].center()[0] * TILE_SIZE[0]
+        self.spawny = self.roomList[0].center()[1] * TILE_SIZE[1]
 
         lastRoom = self.getRooms()[-1].center()
         self.setTile(lastRoom[0], lastRoom[1], Forest.EXIT)

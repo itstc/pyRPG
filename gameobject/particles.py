@@ -1,7 +1,7 @@
 import pygame as pg
-import ui, util
+from ui.ui import StringRenderer
 
-class BouncyText(ui.StringRenderer):
+class BouncyText(StringRenderer):
     critical = pg.Color(236,208,120)
 
     def __init__(self, host, value, position, scale = 2, state = pg.Color(192,41,66), back = pg.Color(84,36,55)):
@@ -35,7 +35,7 @@ class BouncyText(ui.StringRenderer):
             self.drawString(surface,self.value,camera.applyOnPosition([self.position[0],self.position[1]]),1 * self.scale,self.fg)
 
 
-class FadingText(ui.StringRenderer):
+class FadingText(StringRenderer):
     def __init__(self, string, position, scale = 1, time = 1500, fg = pg.Color(250,250,250), bg = pg.Color(32,32,32)):
         super().__init__()
         self.time = time

@@ -1,4 +1,6 @@
 import pygame as pg
+import math
+from util.util import lerp
 from .particles import BouncyText
 
 class Mob(pg.sprite.Sprite):
@@ -17,6 +19,8 @@ class Mob(pg.sprite.Sprite):
         self.fov = []
         self.maxcd = 45
         self.cooldown = self.maxcd
+
+        self.targetPos = (0,0)
 
         self.action = Mob.Actions(self,images)
         self.stats = Mob.Stats(self,health,ad)
@@ -70,19 +74,30 @@ class Mob(pg.sprite.Sprite):
     def update(self,dt):
         # Update collision box position
         self.rect.topleft = self.position
+
         if self.action['attack']:
             self.cooldown -= dt
             if self.cooldown < 0:
                 for obj in self.fov:
                     if self.getAttackRange(self.action.direction).colliderect(obj) and isinstance(obj, Mob):
                         self.stats.damage(obj)
+                        obj.targetPos = obj.knockback(1, self)
                 self.action['attack'] = False
                 self.cooldown = self.maxcd
-        else:
+
+        if self.action['knockback']:
+            self.cooldown -= dt
+            if self.cooldown > 0:
+                self.action.move(self.targetPos[0], self.targetPos[1])
+            else:
+                self.action.clearActions()
+
+        if self.cooldown < 0:
             self.cooldown = self.maxcd
 
         self.stats.update(dt)
         self.action.update(dt)
+
 
         if self.stats.hp <= 0:
             self.kill()
@@ -102,6 +117,14 @@ class Mob(pg.sprite.Sprite):
 
         return collide
 
+    def knockback(self, impact, obj):
+        self.action['knockback'] = True
+        angle = math.atan2(self.position[1] - obj.position[1], self.position[0] - obj.position[0])
+        fx = math.cos(angle) * impact
+        fy = math.sin(angle) * impact
+        return (fx, fy)
+
+
     class Actions:
         # Handles all the gameobject actions here
         def __init__(self,mob,images):
@@ -110,6 +133,7 @@ class Mob(pg.sprite.Sprite):
             self.actions = {
                 'attack':False,
                 'walk': False,
+                'knockback': False,
             }
             self.direction = 'left'
             self.moveDirections = {
@@ -175,6 +199,10 @@ class Mob(pg.sprite.Sprite):
             if self.direction == 'right':
                 rect = self.mob.rect.topright
             return (rect[0] + offset[0], rect[1] + offset[1])
+
+        def clearActions(self):
+            for k in self.actions.keys():
+                self.actions[k] = False
 
     class Stats:
         # Handle all of gameobject stats here

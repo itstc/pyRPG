@@ -52,8 +52,8 @@ class Game:
         clock = pg.time.Clock()
         prev = 1
         while self.running:
-            time = clock.tick(128)
-            dt = (time / prev)
+            time = clock.tick(256)
+            dt = time / prev
             pg.display.set_caption('%s %i fps' % ('pyLota Alpha Build:', clock.get_fps()//1))
 
             if not self.disable:

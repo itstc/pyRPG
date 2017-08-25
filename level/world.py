@@ -169,7 +169,6 @@ class World:
                 surface.blit(self.tileset[self.mapArr[y][x]], (px,py))
 
     def getCollidableTiles(self, rect):
-        collidables = []
         start_pos = rect.topleft
         end_pos =  rect.bottomright
         render_x = [start_pos[0]//TILE_SIZE[0], end_pos[0]//TILE_SIZE[0]]
@@ -182,10 +181,7 @@ class World:
                         obj = World.ExitObject(self.game, x, y)
                     else:
                         obj = World.WorldObject(x, y)
-
-                    collidables.append(obj)
-
-        return collidables
+                    yield obj
 
     def getSpawn(self):
         return(self.spawnx, self.spawny)
@@ -252,7 +248,7 @@ class World:
             return random.choice([(self.x1, self.y1), (self.x2, self.y1), (self.x1, self.y2), (self.x2, self.y2)])
 
         def getCornerTiles(self):
-            return [(self.x1, self.y1), (self.x2, self.y1), (self.x1, self.y2), (self.x2, self.y2)]
+            return ((self.x1, self.y1), (self.x2, self.y1), (self.x1, self.y2), (self.x2, self.y2))
 
 
 class Forest(World):
@@ -274,7 +270,7 @@ class Forest(World):
             self.drawCircle(checkpoints[i][0], checkpoints[i][1], 5, Forest.GRASS)
             self.carvePath(checkpoints[i], checkpoints[min(i + 1, len(checkpoints) - 1)], Forest.GRASS)
 
-        wall = [(x, y) for x in range(self.size_x) for y in range(self.size_y) if self.mapArr[y][x] == Forest.WATER]
+        wall = ((x, y) for x in range(self.size_x) for y in range(self.size_y) if self.mapArr[y][x] == Forest.WATER)
 
         for point in wall:
             self.borderFill(point, Forest.GRASS, Forest.WALL)

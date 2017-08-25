@@ -10,13 +10,13 @@ class EntityGroup(pg.sprite.Group):
     def getProximityObjects(self,target,proximity):
         # Returns a list of proximity objects EXCEPT the target object
         sprites = self.renderables
-        return [spr for spr in sprites if proximity.colliderect(spr.rect) and spr != target]
+        return tuple(spr for spr in sprites if proximity.colliderect(spr.rect) and spr != target)
 
     def update(self,world,dt):
         # Adds objects into fov if they are collidables
         for spr in self.renderables:
             proximity = pg.Rect(spr.rect.x - 32, spr.rect.y, 128, 128)
-            spr.fov = self.getProximityObjects(spr,proximity) + world.getCollidableTiles(proximity)
+            spr.fov = self.getProximityObjects(spr,proximity) + tuple(world.getCollidableTiles(proximity))
             spr.update(dt)
 
 

@@ -97,7 +97,7 @@ class Player(Mob):
         def keyMove(self, dt):
             ax = 0
             ay = 0
-            ac = 3
+            ac = 2
 
             if self.moveDirections['up']:
                 ay -= ac

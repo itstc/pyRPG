@@ -2,7 +2,7 @@ import pygame as pg
 import os
 
 # Window Size
-WINDOW_SIZE = (1280,720)
+WINDOW_SIZE = (1280, 720)
 
 # Assets
 TILESHEET = 'tilesheet.png'

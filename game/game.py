@@ -159,8 +159,8 @@ class Camera:
         return (x,y)
 
     def update(self, player, dt):
-        self.view_x = lerp(self.view_x, player.rect.left - self.windowSize[0] // 2, self.recoveryRate)
-        self.view_y = lerp(self.view_y, player.rect.top - self.windowSize[1] // 2, self.recoveryRate)
+        self.view_x = lerp(self.view_x, (player.rect.left - self.windowSize[0] // 2), self.recoveryRate)
+        self.view_y = lerp(self.view_y, (player.rect.top - self.windowSize[1] // 2), self.recoveryRate)
 
         self.view_x = max(0,self.view_x)
         self.view_y = max(0,self.view_y)

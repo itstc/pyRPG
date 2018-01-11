@@ -1,4 +1,4 @@
-# pyLota
+# pyRPG
 A 2d roguelike game built with the pygame library.
 
 ## Screenshots

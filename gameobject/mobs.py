@@ -118,7 +118,7 @@ class Mob(pg.sprite.Sprite):
         return collide
 
     def knockback(self, impact, obj):
-        self.action['knockback'] = True
+        #self.action['knockback'] = True
         angle = math.atan2(self.position[1] - obj.position[1], self.position[0] - obj.position[0])
         fx = math.cos(angle) * impact
         fy = math.sin(angle) * impact

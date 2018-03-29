@@ -52,14 +52,14 @@ class Game:
         clock = pg.time.Clock()
         prev = 1
         while self.running:
-            time = clock.tick(256)
+            time = clock.tick(60)
             dt = time / prev
-            pg.display.set_caption('%s %i fps' % ('pyLota Alpha Build:', clock.get_fps()//1))
+            pg.display.set_caption('%s %i fps' % ('pyRPG Engine Alpha Build:', clock.get_fps()//1))
 
             if not self.disable:
                 self.render()
                 self.events.handleEvent()
-                self.update(dt)
+                self.update(1.5)
 
             prev = time
 
@@ -104,14 +104,14 @@ class Game:
     def getCurrentMap(self):
         return self.map
 
-    def generateLevel(self):
+    def generateLevel(self, level = 1):
         print(self.player.position)
 
         self.disable = True
         self.entityManager.entities.empty()
         self.events.clear()
 
-        self.map = Forest(self)
+        self.map = Forest(self, level)
         self.entityManager.spawnMobs([Goblin, Barbarian, Bear],self.map)
         self.entityManager.spawnItems(self.itemManager.getItems(), self.map)
         self.entityManager.spawnChest(self, self.itemManager, self.map)

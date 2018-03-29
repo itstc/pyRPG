@@ -13,8 +13,8 @@ class World:
     WATER = 4
     EXIT = 5
 
-    def __init__(self, game, width, height):
-        self.level = 1
+    def __init__(self, game, level, width, height):
+        self.level = level
 
         self.size_x = width
         self.size_y = height
@@ -178,7 +178,7 @@ class World:
             for x in range(max(0,render_x[0] -  1), min(render_x[1] + 1,self.size_x)):
                 if self.mapArr[y][x] in [World.WALL, World.WATER, World.EXIT]:
                     if self.mapArr[y][x] == Forest.EXIT:
-                        obj = World.ExitObject(self.game, x, y)
+                        obj = World.ExitObject(self.level, self.game, x, y)
                     else:
                         obj = World.WorldObject(x, y)
                     yield obj
@@ -202,12 +202,14 @@ class World:
         type = 'world'
         collidable = False
 
-        def __init__(self, game, x, y):
+        def __init__(self, level, game, x, y):
             super().__init__(x, y)
+            self.level = level
             self.game = game
 
         def interact(self):
-            self.game.generateLevel()
+            level = self.level + 1
+            self.game.generateLevel(level)
 
     class Room():
         def __init__(self, world, x, y, w, h):
@@ -253,8 +255,8 @@ class World:
 
 class Forest(World):
 
-    def __init__(self, game):
-        super().__init__(game, 48, 32)
+    def __init__(self, game, level = 1):
+        super().__init__(game, level, 48, 32)
 
         self.mapArr = [[self.randomizeTiles(45, Forest.WALL, Forest.WATER) for x in range(self.size_x)] for y in range(self.size_y)]
 

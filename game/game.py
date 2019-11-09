@@ -242,7 +242,3 @@ class HUD(StringRenderer):
         size = [imageSize[0] * scale, imageSize[1] * scale]
         image = pg.transform.scale(self.spritesheet.getSprite(imageSize, imagePosition), size)
         return self.hud.blit(image, position)
-
-
-
-

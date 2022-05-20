@@ -3,6 +3,15 @@ import pygame as pg
 from .settings import TILESHEET, TILE_SIZE
 from sprite.sprite import Spritesheet
 
+TILE_COLOR_MAP = {
+    0: pg.Color('gray'),
+    1: pg.Color('white'),
+    2: pg.Color('white'),
+    3: pg.Color('gray'),
+    4: pg.Color('cyan'),
+    5: pg.Color('brown')
+}
+
 class TileManager():
 
     sprite_size = (16,16)

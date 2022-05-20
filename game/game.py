@@ -9,6 +9,7 @@ from gameobject.player import Player
 from level.world import Forest
 from sprite.sprite import Spritesheet
 from ui.ui import InventoryGUI, StatsGUI, StringRenderer
+from ui.minimap import MinimapGUI
 from util.util import lerp
 from .controller import EntityController, ItemController
 from .settings import WINDOW_SIZE, TILE_SIZE, UISHEET
@@ -41,6 +42,7 @@ class Game:
 
         self.ui_manager = {
         'inventory': InventoryGUI(self.windowScreen,self.player.inventory, (WINDOW_SIZE[0] // 2,WINDOW_SIZE[1] // 2)),
+        'minimap': MinimapGUI(self.windowScreen, self.map, self.player, (WINDOW_SIZE[0] // 2,WINDOW_SIZE[1] // 2)),
         'stats': StatsGUI(self.windowScreen, (WINDOW_SIZE[0] // 2,WINDOW_SIZE[1] // 2), self.player)
         }
 
@@ -123,6 +125,7 @@ class Game:
 
         self.player.setPosition(self.map.getSpawn())
         self.entityManager.entities.add(self.player)
+        self.ui_manager['minimap'] = MinimapGUI(self.windowScreen, self.map, self.player, (WINDOW_SIZE[0] // 2,WINDOW_SIZE[1] // 2))
 
 class Camera:
     def __init__(self,pos,screenSize,world):

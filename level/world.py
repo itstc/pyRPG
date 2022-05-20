@@ -26,6 +26,9 @@ class World:
         self.roomList = []
 
 
+    def getMap(self):
+        return self.mapArr
+
     def setTile(self, x, y, tile):
         try:
             self.mapArr[y][x] = tile

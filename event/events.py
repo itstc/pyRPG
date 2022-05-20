@@ -48,7 +48,7 @@ class EventListener:
                 self.game.gui.active = False
                 if not self.game.player.action['attack']:
                     self.game.player.action.attack()
-                    #self.game.player.action.fire(event.pos)
+                    # self.game.player.action.fire(event.pos)
 
         elif event.type == pg.MOUSEMOTION:
             self.game.player.action.direction = self.getMouseDirection(event.pos)
@@ -88,8 +88,9 @@ class EventListener:
                 self.game.player.interactable[0].interact()
         if key == pg.K_SPACE and not self.pressed:
             self.game.generateLevel()
-        if key == pg.K_ESCAPE and not self.pressed:
-            self.game.running = False
+        if key == pg.K_TAB and not self.pressed:
+            self.game.gui = self.game.ui_manager['minimap']
+            self.game.gui.toggle()
 
     def handleKeyUp(self, key):
 

@@ -8,8 +8,10 @@ from gameobject.particles import FadingText
 from gameobject.player import Player
 from level.world import Forest
 from sprite.sprite import Spritesheet
-from ui.ui import InventoryGUI, StatsGUI, StringRenderer
+from ui.ui import StringRenderer
 from ui.minimap import MinimapGUI
+from ui.inventory import InventoryGUI
+from ui.stats import StatsGUI
 from util.util import lerp
 from .controller import EntityController, ItemController
 from .settings import WINDOW_SIZE, TILE_SIZE, UISHEET
@@ -224,9 +226,6 @@ class HUD(StringRenderer):
 
         for item in self.drawQueue:
             item.render(self.surface)
-
-
-
 
     def drawStringToSurface(self, string, position, scale=1, color=pg.Color('white')):
         size = self.getStringSize(string, int(16*scale))

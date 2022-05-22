@@ -1,4 +1,3 @@
-
 import json, random
 
 def jsonConverter():

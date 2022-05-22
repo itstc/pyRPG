@@ -2,7 +2,7 @@ import pygame as pg
 from game.settings import MOBSHEET
 from sprite.sprite import Spritesheet
 from item.inventory import Inventory
-from ui.ui import LootUI
+from ui.loot import LootUI
 
 class GameObject(pg.sprite.Sprite):
 

@@ -2,7 +2,6 @@ import pygame as pg
 
 from util.util import Polygon
 
-
 class EventListener:
 
     def __init__(self,game):
@@ -19,8 +18,6 @@ class EventListener:
                 self.game.gui.handleEvents(event)
 
             self.handleEvents(event)
-
-
 
     def getMouseDirection(self, pos):
         playerPos = self.game.camera.applyOnPosition(self.game.player.rect.center)
@@ -91,6 +88,9 @@ class EventListener:
         if key == pg.K_TAB and not self.pressed:
             self.game.gui = self.game.ui_manager['minimap']
             self.game.gui.toggle()
+        if key == pg.K_ESCAPE and not self.pressed:
+            if self.game.gui.showing:
+                self.game.gui.toggle()
 
     def handleKeyUp(self, key):
 

@@ -38,10 +38,10 @@ class InventoryGUI(GUI):
     type = 'main_ui'
 
     colors = {
-        'common': pg.Color(224,228,204),
-        'uncommon': pg.Color(102,255,0),
-        'rare': pg.Color(204,0,0),
-        'super_rare': pg.Color(236,208,120)
+        'common': pg.Color('white'),
+        'uncommon': pg.Color('green'),
+        'rare': pg.Color('blue'),
+        'super_rare': pg.Color('purple')
     }
     def __init__(self, surface, inventory, pos, ui_heading = 'Inventory'):
         super().__init__(surface,[256,384], pos)

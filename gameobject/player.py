@@ -6,7 +6,6 @@ from .mobs import Mob
 from sprite.sprite import Spritesheet, AnimatedSprite
 from item.inventory import Inventory
 
-
 class Player(Mob):
     # TODO: Create a player and place it on the map
     def __init__(self, group, pos):
@@ -19,11 +18,11 @@ class Player(Mob):
             'idle_right': AnimatedSprite(sheet, [(0, 1)], [16, 16], size, 12),
             'walk_left': AnimatedSprite(sheet, [(0, 0), (1, 0), (2, 0), (3, 0)], [16, 16], size, 12),
             'walk_right': AnimatedSprite(sheet, [(0, 1), (1, 1), (2, 1), (3, 1)], [16, 16], size, 12),
-            'attack_left': AnimatedSprite(sheet, [(0, 0), (4, 0), (5, 0)], [16, 16], size, 8),
-            'attack_right': AnimatedSprite(sheet, [(0, 1), (4, 1), (5, 1)], [16, 16], size, 8)
+            'attack_left': AnimatedSprite(sheet, [(0, 0), (4, 0), (5, 0)], [16, 16], size, 15),
+            'attack_right': AnimatedSprite(sheet, [(0, 1), (4, 1), (5, 1)], [16, 16], size, 15)
        }
 
-        super().__init__(group, states, size, pos, 100, 10)
+        super().__init__(group, states, size, pos, 100, 2)
         self.inventory = Inventory(self,12)
         self.input = input
         self.stats = Player.PlayerStats(self, 100, 10)
@@ -60,9 +59,6 @@ class Player(Mob):
                 'leg': None,
                 'weapon': None
             }
-
-            self.moveSpeed = 12
-            self.attackSpeed = 15
 
         def unequipItem(self, slot):
             if self.equipment[slot]:

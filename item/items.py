@@ -4,6 +4,7 @@ from sprite.sprite import Spritesheet, AnimatedSprite
 from game.settings import ITEMSHEET, ARMORSPRITE, ITEMSPRITE
 from gameobject.player import Player
 from gameobject.particles import BouncyText
+from .effect import ITEM_EFFECT_MAP
 
 class Item:
     type = 'item'
@@ -54,43 +55,41 @@ class StackableItem(Item):
     def __init__(self,name,desc,rarity,imageData):
         super().__init__(name,desc,rarity,imageData)
 
-
 class UsableItem:
     def use(self,player):
         pass
 
 class Consumable(StackableItem,UsableItem):
-    def __init__(self,name,desc,rarity,imageData,attribute):
+    def __init__(self,name,desc,rarity,imageData,attributes):
         super().__init__(name,desc,rarity,imageData)
 
-        self.attribute = attribute
+        self.attributes = attributes
 
     def use(self,player):
-        player.stats.statQueue.append(BouncyText(player.stats,self.attribute,[player.rect.centerx,player.rect.top],2,pg.Color(76, 243, 94),pg.Color(101, 199, 2)))
-        if player.stats.hp + self.attribute > player.stats.maxHP:
-            player.stats.hp = player.stats.maxHP
-        else:
-            player.stats.hp += self.attribute
+        for k,v in self.attributes.items():
+            ITEM_EFFECT_MAP[k](player, v)
 
 class Equipment(Item, UsableItem):
 
     type = 'equipment'
 
-    def __init__(self, name, desc, rarity, imageData, spriteID, attribute):
+    def __init__(self, name, desc, rarity, imageData, spriteID, attributes):
         super().__init__(name, desc, rarity, imageData)
-        self.attribute = attribute
+        self.attributes = attributes
 
     def use(self,player):
-        player.stats.ad += self.attribute
+        for k,v in self.attributes.items():
+            ITEM_EFFECT_MAP[k](player, v)
 
     def unequip(self, player):
-        player.stats.ad -= self.attribute
+        for k,v in self.attributes.items():
+            ITEM_EFFECT_MAP[k](player, -v)
 
 class Head(Equipment):
     equipment_type = 'head'
 
-    def __init__(self, name, desc, rarity, imageData, spriteID, attribute):
-        super().__init__(name,desc,rarity,imageData, spriteID, attribute)
+    def __init__(self, name, desc, rarity, imageData, spriteID, attributes):
+        super().__init__(name,desc,rarity,imageData, spriteID, attributes)
         sheet = Spritesheet(ARMORSPRITE)
         self.sprite = {
             'idle_left': AnimatedSprite(sheet, [(0, spriteID)], (16, 16), (64, 64), 12),
@@ -104,8 +103,8 @@ class Head(Equipment):
 class Body(Equipment):
     equipment_type = 'body'
 
-    def __init__(self, name, desc, rarity, imageData, spriteID, attribute):
-        super().__init__(name,desc,rarity,imageData, spriteID, attribute)
+    def __init__(self, name, desc, rarity, imageData, spriteID, attributes):
+        super().__init__(name,desc,rarity,imageData, spriteID, attributes)
         sheet = Spritesheet(ARMORSPRITE)
         self.sprite = {
             'idle_left': AnimatedSprite(sheet, [(2, spriteID)], (16, 16), (64, 64), 12),
@@ -119,8 +118,8 @@ class Body(Equipment):
 class Leg(Equipment):
     equipment_type = 'leg'
 
-    def __init__(self, name, desc, rarity, imageData, spriteID, attribute):
-        super().__init__(name,desc,rarity,imageData, spriteID, attribute)
+    def __init__(self, name, desc, rarity, imageData, spriteID, attributes):
+        super().__init__(name,desc,rarity,imageData, spriteID, attributes)
         sheet = Spritesheet(ARMORSPRITE)
         self.sprite = {
             'idle_left': AnimatedSprite(sheet, [(8, spriteID)], (16, 16), (64, 64), 12),
@@ -136,18 +135,17 @@ class Weapon(Equipment):
     type = 'equipment'
     equipment_type = 'weapon'
 
-    def __init__(self,name, desc, rarity, imageData, spriteID, attribute):
-        super().__init__(name,desc,rarity,imageData, spriteID, attribute)
+    def __init__(self,name, desc, rarity, imageData, spriteID, attributes):
+        super().__init__(name,desc,rarity,imageData, spriteID, attributes)
         sheet = Spritesheet(ITEMSPRITE)
+
+        spriteSpeed = attributes.get("speed", 15)
         self.sprite = {
             'idle_left': AnimatedSprite(sheet, [(0, spriteID)], (16, 16), (64, 64), 12),
             'idle_right': AnimatedSprite(sheet, [(1, spriteID)], (16, 16), (64, 64), 12),
             'walk_left': AnimatedSprite(sheet, [(0, spriteID)], (16, 16), (64, 64), 12),
             'walk_right': AnimatedSprite(sheet, [(1, spriteID)], (16, 16), (64, 64), 12),
-            'attack_left': AnimatedSprite(sheet, [(0, spriteID),(2, spriteID),(3, spriteID)], (16, 16), (64, 64), 9),
-            'attack_right': AnimatedSprite(sheet, [(1, spriteID),(4, spriteID),(5, spriteID)], (16, 16), (64, 64), 9)
+            'attack_left': AnimatedSprite(sheet, [(0, spriteID),(2, spriteID),(3, spriteID)], (16, 16), (64, 64), spriteSpeed),
+            'attack_right': AnimatedSprite(sheet, [(1, spriteID),(4, spriteID),(5, spriteID)], (16, 16), (64, 64), spriteSpeed)
         }
-
-
-
 

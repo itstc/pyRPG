@@ -79,9 +79,9 @@ class ItemController():
         cls = ItemController.itemClass[item['class']]
 
         if cls.type == 'equipment':
-            itemClass = cls(item['name'],item['desc'],item['rarity'],item['imageData'],item['spriteID'],item['attribute'])
+            itemClass = cls(item['name'],item['desc'],item['rarity'],item['imageData'],item['spriteID'],item['attributes'])
         else:
-            itemClass =  cls(item['name'],item['desc'],item['rarity'],item['imageData'],item['attribute'])
+            itemClass =  cls(item['name'],item['desc'],item['rarity'],item['imageData'],item['attributes'])
 
         return itemClass
 

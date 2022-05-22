@@ -17,8 +17,6 @@ class Mob(pg.sprite.Sprite):
         self.rect = pg.Rect(position[0],position[1],size[0],size[1])
 
         self.fov = []
-        self.maxcd = 45
-        self.cooldown = self.maxcd
 
         self.targetPos = (0,0)
 
@@ -76,24 +74,24 @@ class Mob(pg.sprite.Sprite):
         self.rect.topleft = self.position
 
         if self.action['attack']:
-            self.cooldown -= dt
-            if self.cooldown < 0:
+            self.stats.cooldown -= dt
+            if self.stats.cooldown < 0:
                 for obj in self.fov:
                     if self.getAttackRange(self.action.direction).colliderect(obj) and isinstance(obj, Mob):
                         self.stats.damage(obj)
                         obj.targetPos = obj.knockback(1, self)
                 self.action['attack'] = False
-                self.cooldown = self.maxcd
+                self.stats.cooldown = self.stats.maxcd
 
         if self.action['knockback']:
-            self.cooldown -= dt
-            if self.cooldown > 0:
+            self.stats.cooldown -= dt
+            if self.stats.cooldown > 0:
                 self.action.move(self.targetPos[0], self.targetPos[1])
             else:
                 self.action.clearActions()
 
-        if self.cooldown < 0:
-            self.cooldown = self.maxcd
+        if self.stats.cooldown < 0:
+            self.stats.cooldown = self.stats.maxcd
 
         self.stats.update(dt)
         self.action.update(dt)
@@ -213,6 +211,8 @@ class Mob(pg.sprite.Sprite):
             self.hp = health
             self.ad = ad
             self.defence = 12
+            self.maxcd = 45
+            self.cooldown = self.maxcd
             self.statQueue = []
 
 

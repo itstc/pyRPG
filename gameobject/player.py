@@ -22,10 +22,10 @@ class Player(Mob):
             'attack_right': AnimatedSprite(sheet, [(0, 1), (4, 1), (5, 1)], [16, 16], size, 15)
        }
 
-        super().__init__(group, states, size, pos, 100, 2)
+        super().__init__(group, states, size, pos)
         self.inventory = Inventory(self,12)
         self.input = input
-        self.stats = Player.PlayerStats(self, 100, 10)
+        self.stats = Player.PlayerStats(self, 100, 2)
         self.action = Player.PlayerActions(self,states)
         self.interactable = None
 

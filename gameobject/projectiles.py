@@ -48,8 +48,7 @@ class Projectile(pg.sprite.Sprite):
 
 
     def draw(self,surface,camera):
-        camera.drawRectangle(surface, pg.Color('red'), self.rect)
-        camera.drawRectangle(surface, pg.Color('purple'), self.collidingRect)
+        pass
 
     def isColliding(self):
         pass

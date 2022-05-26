@@ -21,4 +21,3 @@ ITEM_EFFECT_MAP = {
     "hp": hpEffect,
     "defence": defenceEffect
 }
-

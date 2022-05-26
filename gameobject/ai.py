@@ -88,8 +88,8 @@ class Goblin(AI):
         }
 
         super().__init__(group, states, size, pos, 25, 8)
-        self.maxcd = 90
-        self.cooldown = 90
+        self.stats.maxcd = 90
+        self.stats.cooldown = 90
 
     def update(self,dt):
         super().update(dt)
@@ -110,8 +110,8 @@ class Skeleton(AI):
         }
 
         super().__init__(group, states, size, pos, 30, 10)
-        self.maxcd = 90
-        self.cooldown = 90
+        self.stats.maxcd = 90
+        self.stats.cooldown = 90
 
     def update(self,dt):
         super().update(dt)
@@ -131,8 +131,8 @@ class Barbarian(AI):
         }
 
         super().__init__(group, states, size, pos, 45, 8)
-        self.maxcd = 45
-        self.cooldown = 45
+        self.stats.maxcd = 45
+        self.stats.cooldown = 45
 
     def update(self,dt):
         super().update(dt)
@@ -152,8 +152,8 @@ class Bear(AI):
         }
 
         super().__init__(group, states, size, pos, 100, 15)
-        self.maxcd = 120
-        self.cooldown = 120
+        self.stats.maxcd = 120
+        self.stats.cooldown = 120
 
     def update(self,dt):
         super().update(dt)

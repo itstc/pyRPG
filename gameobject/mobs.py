@@ -37,7 +37,8 @@ class Mob(pg.sprite.Sprite):
                             self.size[0], self.size[1] + self.size[1] // 2),
             'down': pg.Rect(tlPos[0] - self.size[0] // 2, tlPos[1] + self.size[1], self.size[0] // 2 * 3,
                             self.size[1] // 4),
-            'right': pg.Rect(tlPos[0] + self.size[0] // 2, tlPos[1], self.size[0] // 2, self.size[1])
+            'right': pg.Rect(tlPos[0] + self.size[0] // 2, tlPos[1] - self.size[1] // 4,
+                            self.size[0], self.size[1] + self.size[1] // 2),
         }
         return range[direction]
 
@@ -64,8 +65,8 @@ class Mob(pg.sprite.Sprite):
         self.drawHealthBar(surface,camera)
 
         # Draws collision box
-        #camera.drawRectangle(surface, pg.Color('purple'), self.getLegBox())
-        #camera.drawRectangle(surface,pg.Color('purple'),self.getAttackRange('left'))
+        # camera.drawRectangle(surface, pg.Color('purple'), self.getLegBox())
+        # camera.drawRectangle(surface,pg.Color('purple'),self.getAttackRange(self.action.direction))
 
         self.stats.draw(surface,camera)
 
@@ -218,10 +219,10 @@ class Mob(pg.sprite.Sprite):
 
         def damage(self,target):
             target.stats.hurt(self.ad)
-            self.statQueue.append(BouncyText(self,self.ad,[target.rect.centerx,target.rect.top - 18 * len(target.stats.statQueue)]))
 
         def hurt(self,value):
             self.hp -= value
+            self.statQueue.append(BouncyText(self,value,[self.mob.rect.centerx, self.mob.rect.top - 20 * len(self.statQueue)]))
 
         def update(self,dt):
             for (i,item) in enumerate(self.statQueue):

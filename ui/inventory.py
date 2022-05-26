@@ -18,7 +18,11 @@ class HoveringState(StringRenderer):
         panel.fill(pg.Color('black'))
         panel.set_alpha(200)
         self.drawString(panel, self.slot.item.name, [8, 8], color = InventoryGUI.colors[self.slot.item.rarity])
-        self.drawStrings(panel, self.slot.item.desc, (8, 32))
+        # self.drawStrings(panel, self.slot.item.desc, (8, 32))
+        for i,(k,v) in enumerate(self.slot.item.attributes.items()):
+            posEffect = v > 0
+            self.drawString(panel, "{} {} {}".format("+" if posEffect else "-", v, k), (8, 32 + i * 16), color = pg.Color('green') if posEffect else pg.Color('red'))
+
 
         surface.blit(panel,self.slot.rect.center)
 

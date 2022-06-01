@@ -58,7 +58,7 @@ class Arrow(Projectile):
         super().__init__(pg.transform.scale(Spritesheet(ATTACKSHEET).getSprite((16, 16), (0, 0)), (64, 32)), angle, pos, 500, 6)
 
         self.host = host
-        self.damage = 6
+        self.damage = host.stats.ad
 
     def isColliding(self):
 
@@ -68,7 +68,7 @@ class Arrow(Projectile):
 
             if self.collidingRect.colliderect(collideBox) and obj.collidable:
                 if obj.type == 'gameobject':
-                    obj.stats.hurt(self.damage)
+                    self.host.stats.damage(obj)
                 return True
 
         return False

@@ -1,7 +1,8 @@
 import pygame as pg
+import random
 import math
 from util.util import lerp
-from .particles import BouncyText
+from .particles import BouncyText, CritText
 
 class Mob(pg.sprite.Sprite):
     sprite_size = [16,16]
@@ -22,6 +23,7 @@ class Mob(pg.sprite.Sprite):
 
         self.action = Mob.Actions(self,images)
         self.stats = Mob.Stats(self,health,ad)
+        self.activeQueue = []
 
         self.group = group
 
@@ -74,24 +76,12 @@ class Mob(pg.sprite.Sprite):
         # Update collision box position
         self.rect.topleft = self.position
 
-        if self.action['attack']:
-            self.stats.cooldown -= dt
-            if self.stats.cooldown < 0:
-                for obj in self.fov:
-                    if self.getAttackRange(self.action.direction).colliderect(obj) and isinstance(obj, Mob):
-                        self.stats.damage(obj)
-                        obj.targetPos = obj.knockback(1, self)
-                self.action['attack'] = False
-                self.stats.cooldown = self.stats.maxcd
-
-        if self.action['knockback']:
-            self.stats.cooldown -= dt
-            if self.stats.cooldown > 0:
-                self.action.move(self.targetPos[0], self.targetPos[1])
-            else:
-                self.action.clearActions()
-
+        self.stats.cooldown -= dt
         if self.stats.cooldown < 0:
+            if self.activeQueue:
+                cb, extra = self.activeQueue.pop()
+                if cb:
+                    cb(extra)
             self.stats.cooldown = self.stats.maxcd
 
         self.stats.update(dt)
@@ -100,6 +90,18 @@ class Mob(pg.sprite.Sprite):
 
         if self.stats.hp <= 0:
             self.kill()
+
+    def addActivity(self, activity, extra=None):
+        if activity == 'ATTACK':
+            self.action.attack()
+            self.activeQueue.append((self.onAttackEnd, extra))
+    
+    def onAttackEnd(self, extra=None):
+        for obj in self.fov:
+            if self.getAttackRange(self.action.direction).colliderect(obj) and isinstance(obj, Mob):
+                self.stats.damage(obj)
+                obj.targetPos = obj.knockback(1, self)
+        self.action['attack'] = False
 
     def isColliding(self, x, y):
         # Takes offset x,y and sees if sprite is colliding with any objects in fov
@@ -152,6 +154,7 @@ class Mob(pg.sprite.Sprite):
             }
 
             self.colliding = False
+            self.actionQueue = []
 
         def __getitem__(self, item):
             return self.actions[item]
@@ -159,7 +162,7 @@ class Mob(pg.sprite.Sprite):
         def __setitem__(self, key, value):
             self.actions[key] = value
 
-        def attack(self,target):
+        def attack(self):
             self.actions['attack'] = True
 
         def move(self, x, y):
@@ -211,23 +214,38 @@ class Mob(pg.sprite.Sprite):
             self.maxHP = health
             self.hp = health
             self.ad = ad
-            self.defence = 12
-            self.maxcd = 45
+            self.defence = 15
+            self.maxcd = 60
+            self.crit = 15
             self.cooldown = self.maxcd
             self.statQueue = []
 
 
         def damage(self,target):
-            target.stats.hurt(self.ad)
+            modifier = None
+            dmg = self.ad
+            critProc = random.randint(1,100)
+            if critProc <= self.crit:
+                modifier = "crit"
+                dmg = self.ad*2
 
-        def hurt(self,value):
-            self.hp -= value
-            self.statQueue.append(BouncyText(self,value,[self.mob.rect.centerx, self.mob.rect.top - 20 * len(self.statQueue)]))
+            target.stats.hurt(dmg, modifier)
+
+        def hurt(self, value, modifier=None):
+            defenceRating = math.log(10 + random.random() * (self.defence / (value + 1)))
+            finalDamage = max(math.floor(value - defenceRating), 0)
+            self.hp -= finalDamage
+            if modifier == "crit":
+                self.statQueue.append(CritText(self,finalDamage,[self.mob.rect.centerx, self.mob.rect.top - 20 * len(self.statQueue)]))
+            else:
+                self.statQueue.append(BouncyText(self,finalDamage,[self.mob.rect.centerx, self.mob.rect.top - 20 * len(self.statQueue)]))
 
         def update(self,dt):
             for (i,item) in enumerate(self.statQueue):
                 item.update(dt)
 
-        def draw(self,surface,camera):
+        def draw(self,surface,camera,statFn=None):
             for i in self.statQueue:
                 i.draw(surface,camera)
+                if statFn:
+                    statFn(surface, camera, i)

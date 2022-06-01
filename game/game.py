@@ -13,8 +13,9 @@ from ui.minimap import MinimapGUI
 from ui.inventory import InventoryGUI
 from ui.stats import StatsGUI
 from util.util import lerp
-from .controller import EntityController, ItemController
-from .settings import WINDOW_SIZE, TILE_SIZE, UISHEET
+from game.controllers.entityController import EntityController
+from game.controllers.itemController import ItemController
+from game.settings import WINDOW_SIZE, TILE_SIZE, UISHEET
 
 class Game:
     bg = pg.Color('black')

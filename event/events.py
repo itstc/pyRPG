@@ -45,7 +45,7 @@ class EventListener:
             else:
                 self.game.gui.active = False
                 if not self.game.player.action['attack']:
-                    self.game.player.action.attack()
+                    self.game.player.addActivity('ATTACK')
 
         elif event.type == pg.MOUSEMOTION:
             self.game.player.action.direction = self.getMouseDirection(event.pos)
@@ -94,7 +94,7 @@ class EventListener:
                 if self.game.gui.showing:
                     self.game.gui.toggle()
             if key == pg.K_1 and not self.game.player.action['attack']:
-                self.game.player.action.fire(pos)
+                self.game.player.addActivity('FIRE', pos)
 
 
     def handleKeyUp(self, key, pos):

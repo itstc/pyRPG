@@ -51,8 +51,11 @@ class StatsGUI(GUI):
     def drawFeatures(self):
         self.textfield.fill(pg.Color(78, 77, 74, 200))
 
-        self.drawString(self.textfield, 'Health: %i / %i' % (self.player.stats.hp, self.player.stats.maxHP), (0, 0))
-        self.drawString(self.textfield, 'Attack: %i' % self.player.stats.ad, (0, 16))
+        self.drawString(self.textfield, 'Health: {} / {}'.format (self.player.stats.hp, self.player.stats.maxHP), (0, 0))
+        self.drawString(self.textfield, 'Attack: {}'.format(self.player.stats.ad), (0, 16))
+        self.drawString(self.textfield, 'Crit: {}%'.format(self.player.stats.crit), (0, 32))
+        self.drawString(self.textfield, 'Defence: {}'.format(self.player.stats.defence), (0, 48))
+        self.drawString(self.textfield, 'Haste: {}'.format(self.player.stats.maxcd), (0, 64))
 
         for tile in self.equipments:
             tile.draw()

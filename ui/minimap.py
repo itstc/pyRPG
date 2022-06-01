@@ -13,7 +13,7 @@ class MinimapGUI(GUI):
     def __init__(self, surface, worldMap, player, pos):
         super().__init__(surface, [256,256], pos)
 
-        self.interface = pg.Surface([256,256])
+        self.interface = pg.Surface([worldMap.size_x,worldMap.size_y])
         self.interface.set_alpha(200)
 
         self.worldMap = worldMap
@@ -32,4 +32,4 @@ class MinimapGUI(GUI):
         player = pg.Surface([MinimapGUI.TILE_SIZE, MinimapGUI.TILE_SIZE])
         player.fill(pg.Color('red'))
         self.interface.blit(player, [playerPos[0] * MinimapGUI.TILE_SIZE, playerPos[1] * MinimapGUI.TILE_SIZE])
-        
+        self.interface = pg.transform.scale(self.interface, (256,256))

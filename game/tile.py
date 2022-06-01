@@ -9,7 +9,7 @@ TILE_COLOR_MAP = {
     2: pg.Color('white'),
     3: pg.Color('gray'),
     4: pg.Color('cyan'),
-    5: pg.Color('brown')
+    5: pg.Color('white')
 }
 
 class TileManager():

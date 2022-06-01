@@ -2,6 +2,7 @@ from math import atan2
 
 from game.settings import PLAYERSHEET
 from .projectiles import Arrow
+from .particles import CritText
 from .mobs import Mob
 from sprite.sprite import Spritesheet, AnimatedSprite
 from item.inventory import Inventory
@@ -31,6 +32,12 @@ class Player(Mob):
 
         self.camera_pos = (0,0)
 
+    def addActivity(self, activity, extra=None):
+        super().addActivity(activity, extra)
+        if activity == 'FIRE' and not self.action['fire']:
+            self.action['fire'] = True
+            self.activeQueue.append((self.action.fire, extra))
+
     def update(self,dt):
         super().update(dt)
 
@@ -40,8 +47,6 @@ class Player(Mob):
         super().draw(surface,camera)
 
         self.camera_pos = camera.applyOnPosition(self.rect.center)
-
-
 
     def getPosition(self):
         return self.position
@@ -59,6 +64,7 @@ class Player(Mob):
                 'leg': None,
                 'weapon': None
             }
+            self.crit = 15
 
         def unequipItem(self, slot):
             if self.equipment[slot]:
@@ -66,11 +72,12 @@ class Player(Mob):
                 self.mob.inventory.addItem(self.equipment[slot])
                 self.equipment[slot] = None
 
-        def draw(self,surface,camera):
-            super().draw(surface, camera)
-
-            if self.statQueue:
+        def shakeOnCrit(self, surface, camera, i):
+            if isinstance(i, CritText):
                 camera.shake(1, self.mob.action.direction)
+
+        def draw(self,surface,camera):
+            super().draw(surface, camera, self.shakeOnCrit)
 
             # Draw Equipment on Player Here
             if self.equipment['head']:
@@ -92,6 +99,7 @@ class Player(Mob):
     class PlayerActions(Mob.Actions):
         def __init__(self,mob,images):
             super().__init__(mob,images)
+            self.actions['fire'] = False
 
         def keyMove(self, dt):
             ax = 0
@@ -121,6 +129,7 @@ class Player(Mob):
             self.images['attack_%s' % self.direction].reset()
 
         def fire(self, pos):
+            self.actions['fire'] = False
             dx = pos[0] - self.mob.camera_pos[0]
             dy = pos[1] - self.mob.camera_pos[1]
             angle = atan2(dy, dx)

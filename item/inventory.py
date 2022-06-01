@@ -25,14 +25,13 @@ class Inventory:
 
     def findItem(self,item):
         for i in self.items:
-            if i == item:
+            if i.name == item.name:
                 return i
 
     def useItem(self,item):
         if item in self.items:
             if item.type == 'equipment':
                 current_equip = self.holder.stats.equipment[item.equipment_type]
-
                 if current_equip:
                     current_equip.unequip(self.holder)
                     self.addItem(current_equip)
@@ -40,17 +39,15 @@ class Inventory:
                 self.holder.stats.equipment[item.equipment_type] = item
                 item.use(self.holder)
                 self.removeItem(item)
-
             else:
-
                 item.use(self.holder)
                 # if item is stackable remove by amount else remove the item completely
                 if item.stackable:
                     item.amount -= 1
-                    if item.amount == 0:
-                        self.items.remove(item)
+                    if item.amount <= 0:
+                        self.removeItem(item)
                 else:
-                    self.items.remove(item)
+                    self.removeItem(item)
 
         self.displayInventory()
 

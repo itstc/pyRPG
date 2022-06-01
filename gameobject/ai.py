@@ -25,7 +25,7 @@ class AI(Mob):
             if isinstance(obj, Player) and self.getAttackRange(self.action.direction).colliderect(obj):
                 if not self.action['attack']:
                     self.action['walk'] = False
-                    self.action.attack(obj)
+                    self.addActivity('ATTACK')
 
 
 

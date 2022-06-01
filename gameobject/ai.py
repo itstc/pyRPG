@@ -28,7 +28,6 @@ class AI(Mob):
                     self.addActivity('ATTACK')
 
 
-
 class AI_State():
     def __init__(self):
         self.ai_direction = None

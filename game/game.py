@@ -35,7 +35,7 @@ class Game:
         self.entityManager = EntityController()
 
         self.player = Player(self.entityManager.entities, (self.map.spawnx,self.map.spawny))
-        self.player.inventory.addItems([self.itemManager.getItem(0)]*10)
+        self.player.inventory.addItems([self.itemManager.getItem(0) for _ in range(3)])
 
         self.entityManager.spawnMobs([Goblin, Barbarian, Bear],self.map)
         self.entityManager.spawnItems(self.itemManager.getItems(),self.map)

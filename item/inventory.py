@@ -5,6 +5,9 @@ class Inventory:
         self.capacity = capacity
         self.holder = holder
 
+    def isFull(self):
+        return len(self.items) >= self.capacity
+
     def addItem(self,item):
         if item.stackable and (item in self.items):
             self.findItem(item).amount += 1

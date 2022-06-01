@@ -53,9 +53,12 @@ class Mob(pg.sprite.Sprite):
         bar_width = self.size[0]
         red_bar = pg.Rect(self.rect.left, self.rect.top - 16, bar_width, 8)
         green_bar = pg.Rect(self.rect.left, self.rect.top - 16, max(0,int(bar_width * (self.stats.hp / self.stats.maxHP))), 8)
+        cd_bar = pg.Rect(self.rect.left, self.rect.top - 32, max(0,int(bar_width * (self.stats.cooldown / self.stats.maxcd))), 8)
 
         pg.draw.rect(surface, pg.Color('red'),camera.applyOnRect(red_bar))
         pg.draw.rect(surface, pg.Color('green'),camera.applyOnRect(green_bar))
+
+        pg.draw.rect(surface, pg.Color('blue'),camera.applyOnRect(cd_bar))
 
     def getHealthRatio(self):
         return self.stats.hp/self.stats.maxHP

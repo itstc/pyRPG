@@ -14,10 +14,14 @@ def hpEffect(player, value):
 def defenceEffect(player, value):
     player.stats.defence += value
 
+def critEffect(player, value):
+    player.stats.crit += value
+
 ITEM_EFFECT_MAP = {
     "attack": attackEffect,
     "speed": speedEffect,
     "maxHP": maxHPEffect,
     "hp": hpEffect,
-    "defence": defenceEffect
+    "defence": defenceEffect,
+    "crit": critEffect
 }

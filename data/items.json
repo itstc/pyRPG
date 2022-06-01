@@ -6,9 +6,9 @@
   "2": {"class": "Weapon", "name": "Scythe", "desc": "A sharp scythe that increases a players attack by 15",
         "rarity":"uncommon", "imageData": [[8, 8], [3, 0]], "spriteID": 2, "attributes": { "attack": 5, "speed": 8 }},
   "3": {"class": "Weapon", "name": "Sword", "desc": "A golden sword that increases a players attack by 18",
-        "rarity":"uncommon", "imageData": [[8, 8], [4, 0]], "spriteID": 3, "attributes": { "attack": 8, "speed": 5 }},
+        "rarity":"uncommon", "imageData": [[8, 8], [4, 0]], "spriteID": 3, "attributes": { "attack": 8, "speed": 5, "crit": 20 }},
   "4": {"class": "Weapon", "name": "Spear", "desc": "",
-        "rarity":"rare", "imageData": [[8, 16], [5, 0]], "spriteID": 4, "attributes": { "attack": 20, "speed": -10 }},
+        "rarity":"rare", "imageData": [[8, 16], [5, 0]], "spriteID": 4, "attributes": { "attack": 20, "speed": -10, "crit": 15 }},
   "5": {"class": "Consumable", "name": "Golden Branch", "desc": "",
         "rarity":"super_rare", "imageData": [[8, 8], [0, 1]], "attributes": { "defence": 5 }},
   "6": {"class": "Consumable", "name": "Scroll of Healing", "desc": "",
@@ -20,9 +20,9 @@
   "9": {"class": "Leg", "name": "Knight Plateleg", "desc": "",
         "rarity":"uncommon", "imageData": [[8, 8], [3, 1]], "spriteID": 0, "attributes": { "attack": 5, "defence": 20 }},
   "10": {"class": "Head", "name": "Ranger Hood", "desc": "",
-        "rarity":"rare", "imageData": [[8, 8], [1, 2]], "spriteID": 1, "attributes": { "attack": 8, "defence": 10 }},
+        "rarity":"rare", "imageData": [[8, 8], [1, 2]], "spriteID": 1, "attributes": { "crit": 8, "speed": 10 }},
   "11": {"class": "Body", "name": "Ranger Torso", "desc": "",
-        "rarity":"rare", "imageData": [[8, 8], [2, 2]], "spriteID": 1, "attributes": { "attack": 8, "defence": 10 }},
+        "rarity":"rare", "imageData": [[8, 8], [2, 2]], "spriteID": 1, "attributes": { "crit": 8, "speed": 10 }},
   "12": {"class": "Leg", "name": "Ranger Legs", "desc": "",
-        "rarity":"rare", "imageData": [[8, 8], [3, 2]], "spriteID": 1, "attributes": { "attack": 8, "defence": 10 }}
+        "rarity":"rare", "imageData": [[8, 8], [3, 2]], "spriteID": 1, "attributes": { "crit": 8, "speed": 10 }}
 }

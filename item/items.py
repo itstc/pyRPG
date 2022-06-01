@@ -43,7 +43,7 @@ class ItemSprite(pg.sprite.Sprite):
         self.rect.topleft = self.position
 
         for obj in self.fov:
-            if self.rect.colliderect(obj.rect) and isinstance(obj,Player):
+            if self.rect.colliderect(obj.rect) and isinstance(obj,Player) and not obj.inventory.isFull():
                 obj.inventory.addItem(self.item)
                 self.kill()
 
@@ -136,7 +136,7 @@ class Weapon(Equipment):
     equipment_type = 'weapon'
 
     def __init__(self,name, desc, rarity, imageData, spriteID, attributes):
-        super().__init__(name,desc,rarity,imageData, spriteID, attributes)
+        super().__init__(name ,desc ,rarity ,imageData, spriteID, attributes)
         sheet = Spritesheet(ITEMSPRITE)
 
         spriteSpeed = attributes.get("speed", 15)

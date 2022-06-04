@@ -30,7 +30,7 @@ class Game:
         self.events = EventListener(self)
         self.hud = HUD(surface)
         self.map = Forest(self)
-        self.itemManager = ItemController('data/items.json')
+        self.itemManager = ItemController('data/final.json')
 
         self.entityManager = EntityController()
 

@@ -70,8 +70,8 @@ class Mob(pg.sprite.Sprite):
         self.drawHealthBar(surface,camera)
 
         # Draws collision box
-        # camera.drawRectangle(surface, pg.Color('purple'), self.getLegBox())
-        # camera.drawRectangle(surface,pg.Color('purple'),self.getAttackRange(self.action.direction))
+        camera.drawRectangle(surface, pg.Color('purple'), self.getLegBox())
+        camera.drawRectangle(surface,pg.Color('purple'),self.getAttackRange(self.action.direction))
 
         self.stats.draw(surface,camera)
 
